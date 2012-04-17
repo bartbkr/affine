@@ -2,13 +2,13 @@ import numpy as np
 import socket
 import pickle
 import os
-import scikits.statsmodels.api as sm
-from scikits.statsmodels.tsa.api import VAR
-from scikits.statsmodels.tsa.stattools import adfuller
-from scikits.statsmodels.base.model import LikelihoodModel
-from scikits.statsmodels.sandbox.regression.numdiff import (approx_hess,
+import statsmodels.api as sm
+from statsmodels.tsa.api import VAR
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.base.model import LikelihoodModel
+from statsmodels.sandbox.regression.numdiff import (approx_hess,
                                                         approx_fprime)
-from scikits.statsmodels.tsa.filters import hpfilter
+from statsmodels.tsa.filters import hpfilter
 
 import pandas as px
 import pandas.core.datetools as dt
