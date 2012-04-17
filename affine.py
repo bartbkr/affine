@@ -87,7 +87,7 @@ class BSR(LikelihoodModel):
             self.delta_0 = 0
             delta_1 = np.zeros([neqs*k_ar,1])
             #delta_1 is vector of zeros, with one grabbing fed_funds rate
-            delta_1[np.argmax(mod_data.columns == 'fed_funds')] = 1
+            delta_1[np.argmax(var_data.columns == 'fed_funds')] = 1
             self.delta_1 = delta_1
 
         else:

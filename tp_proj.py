@@ -245,4 +245,5 @@ six_mth = act_pred.reindex(columns = ['6_mth_act',
 #plot the term premium
 ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
 var_tp['BSR term premium'] = ten_yr['rsk_prem']
-#ten_yr['rsk_prem'].plot()
+ten_yr['rsk_prem'].plot()
+plt.show()
