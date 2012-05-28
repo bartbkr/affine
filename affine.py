@@ -222,6 +222,14 @@ class BSR(LikelihoodModel):
         no_err = self.no_err
         mth_only = self.mth_only
         X_t_new = np.append(X_t, np.zeros((X_t.shape[0],lat)), axis=1)
+        T = X_t.shape[0]
+        #here is the likelihood that needs to be used
+        # sigma is implied VAR sigma
+        #like = -(T - 1)*np.logdet(J) - (T - 1)*1.0 / 2 * \
+            #np.logdet(np.dot(sigma,sigma.T)) - 1.0 / 2 * \
+            # use two matrices to take the difference
+            #np.sum(
+
         for t in range(X_t.shape[0]):
             #mx = c
             m = np.zeros((lat,lat))

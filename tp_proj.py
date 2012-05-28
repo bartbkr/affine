@@ -202,9 +202,9 @@ for x in range(neqs):
 #rerun
 a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
                 bsr.phi, bsr.sig)
-out_bsr = bsr.solve(lam_0_t, lam_1_t, xtol=1e-140, maxfev=1000000,
-                full_output=True)
-
+#out_bsr = bsr.solve(lam_0_t, lam_1_t, xtol=1e-140, maxfev=1000000,
+                #full_output=True)
+"""
 #init pkl
 pkl_file = open("out_bsr1.pkl", 'wb')
 
@@ -247,3 +247,4 @@ ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
 var_tp['BSR term premium'] = ten_yr['rsk_prem']
 ten_yr['rsk_prem'].plot()
 plt.show()
+"""
