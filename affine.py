@@ -51,6 +51,9 @@ class BSR(LikelihoodModel):
         #number of latent variables to include
         lat = self.latent = latent
         self.no_err = no_err
+        yc_data_cols = yc_data.columns.tolist()
+        self.noerr_indx = list(set(y_data_cols).intersection(no_err))
+        self.err_indx = list(set(y_data_cols).difference(no_err))
 
         self.k_ar = k_ar = vreg.k_ar
         self.neqs = neqs = vreg.neqs
@@ -221,14 +224,35 @@ class BSR(LikelihoodModel):
         lat = self.latent
         no_err = self.no_err
         mth_only = self.mth_only
+        yc_data = self.yc_data
         X_t_new = np.append(X_t, np.zeros((X_t.shape[0],lat)), axis=1)
+        errors = X_t[1:] - mu - np.dot(phi,X_t[:-1])
+        X_t = self.var_data
         T = X_t.shape[0]
-        #here is the likelihood that needs to be used
-        # sigma is implied VAR sigma
-        #like = -(T - 1)*np.logdet(J) - (T - 1)*1.0 / 2 * \
-            #np.logdet(np.dot(sigma,sigma.T)) - 1.0 / 2 * \
+
+        # solve for unkown factors
+        noerr_indx = self.noerr_indx
+        A_noerr = select_rows(noerr_indx, A)
+        B_0_noerr = select_rows(noerr_indx, B_0)
+        # this is the right hand for solving for the unobserved latent 
+        # factors
+        r_hs = yc_data[no_err] - A_noerr[None].T - np.dot(B_0_noerr,X_t)
+        lat = la.solve(B_u, r_hs)
+
+        #solve for pricing error on other yields
+        err_indx = self.err_indx
+        A_err = select_rows(err_indx, A)
+        B_0_err = select_rows(err_indx, B_0)
+        r_hs = yc_data[no_err] - A_noerr[None].T - np.dot(B_0_noerr,X_t)
+
+        # here is the likelihood that needs to be used
+        # sig is implied VAR sig
+        like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
+            np.logdet(np.dot(sig, sig.T)) - 1.0 / 2 * \
             # use two matrices to take the difference
-            #np.sum(
+            np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sig, sig.T))),\
+            #only want to sum the pricing errors for 
+            err)) - (T - 1) / 2.0 * np.log(np.sum(np.var(
 
         for t in range(X_t.shape[0]):
             #mx = c
@@ -353,4 +377,22 @@ class BSR(LikelihoodModel):
             sig = self.sig
 
         return lam_0, lam_1, delta_1, phi, sig
+
+    def select_rows(rows, array):
+        """
+        Creates 2-dim submatrix only of rows from list rows
+        array must be 2-dim
+        """
+        if array.ndim = 1:
+            new_array = array[rows[0]]
+            if len(rows) > 1:
+                for i,x in enumerate(rows[1:]):
+                    new_array = np.append(array[rows[i+1]])
+        elif array.ndim = 2:
+            new_array = array[rows[0],:]
+            if len(rows) > 1:
+                for i,x in enumerate(rows[1:]):
+                    new_array = np.append(array[rows[i+1],:], axis=0)
+        return new_array
+
 
