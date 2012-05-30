@@ -51,9 +51,6 @@ class BSR(LikelihoodModel):
         #number of latent variables to include
         lat = self.latent = latent
         self.no_err = no_err
-        yc_data_cols = yc_data.columns.tolist()
-        self.noerr_indx = list(set(y_data_cols).intersection(no_err))
-        self.err_indx = list(set(y_data_cols).difference(no_err))
 
         self.k_ar = k_ar = vreg.k_ar
         self.neqs = neqs = vreg.neqs
@@ -72,6 +69,9 @@ class BSR(LikelihoodModel):
                 pos_lst.append(x+acc)
                 acc += x
             self.pos_lst = pos_lst
+            yc_data_cols = yc_data.columns.tolist()
+            self.noerr_indx = list(set(yc_data_cols).intersection(no_err))
+            self.err_indx = list(set(yc_data_cols).difference(no_err))
 
         mu = np.zeros([k_ar*neqs+lat,1])
         mu[:neqs] = params[0,None].T
@@ -244,15 +244,20 @@ class BSR(LikelihoodModel):
         A_err = select_rows(err_indx, A)
         B_0_err = select_rows(err_indx, B_0)
         r_hs = yc_data[no_err] - A_noerr[None].T - np.dot(B_0_noerr,X_t)
+        meas_err = la.solve(B_m,r_hs)
+
+        #create Jacobian (J) here
 
         # here is the likelihood that needs to be used
         # sig is implied VAR sig
+        # use two matrices to take the difference
         like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
             np.logdet(np.dot(sig, sig.T)) - 1.0 / 2 * \
-            # use two matrices to take the difference
             np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sig, sig.T))),\
-            #only want to sum the pricing errors for 
-            err)) - (T - 1) / 2.0 * np.log(np.sum(np.var(
+            err)) - (T - 1) / 2.0 * \
+            np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
+            np.sum(meas_err/np.var(meas_err, axis=1))
+
 
         for t in range(X_t.shape[0]):
             #mx = c
@@ -383,12 +388,12 @@ class BSR(LikelihoodModel):
         Creates 2-dim submatrix only of rows from list rows
         array must be 2-dim
         """
-        if array.ndim = 1:
+        if array.ndim == 1:
             new_array = array[rows[0]]
             if len(rows) > 1:
                 for i,x in enumerate(rows[1:]):
                     new_array = np.append(array[rows[i+1]])
-        elif array.ndim = 2:
+        elif array.ndim == 2:
             new_array = array[rows[0],:]
             if len(rows) > 1:
                 for i,x in enumerate(rows[1:]):
