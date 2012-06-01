@@ -247,6 +247,8 @@ class BSR(LikelihoodModel):
         meas_err = la.solve(B_m,r_hs)
 
         #create Jacobian (J) here
+        
+        J = 
 
         # here is the likelihood that needs to be used
         # sig is implied VAR sig
@@ -257,7 +259,6 @@ class BSR(LikelihoodModel):
             err)) - (T - 1) / 2.0 * \
             np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
             np.sum(meas_err/np.var(meas_err, axis=1))
-
 
         for t in range(X_t.shape[0]):
             #mx = c
