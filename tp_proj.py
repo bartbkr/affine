@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import itertools as it
 
-from affine import BSR
+from affine import affine
 
 #identify computer
 #identify computer
@@ -120,11 +120,11 @@ irsf = vreg.irf(periods=50)
 #print VAR(data).fit(maxlags=12, ic='bic').k_ar
 
 #########################################
-# Set up BSR affine model               #
+# Set up affine affine model               #
 #########################################
 k_ar = vreg.k_ar
 
-#create BSR X_t
+#create affine X_t
 x_t_na = mod_data.copy()
 for t in range(k_ar-1):
     for var in mod_data.columns:
@@ -183,7 +183,7 @@ var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 #############################################
 
 #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
-bsr = BSR(yc_data = mod_yc_data, var_data = mod_data)
+bsr = affine(yc_data = mod_yc_data, var_data = mod_data)
 neqs = bsr.neqs
 k_ar = bsr.k_ar
 
@@ -218,7 +218,7 @@ pickle.dump(out_bsr, pkl_file)
 #lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr_ld
 lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
 
-#gen BSR predicted
+#gen affine predicted
 X_t = bsr.var_data
 per = bsr.mth_only.index
 act_pred = px.DataFrame(index=per)
@@ -244,7 +244,7 @@ six_mth = act_pred.reindex(columns = ['6_mth_act',
 
 #plot the term premium
 ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
-var_tp['BSR term premium'] = ten_yr['rsk_prem']
+var_tp['affine term premium'] = ten_yr['rsk_prem']
 ten_yr['rsk_prem'].plot()
 plt.show()
 """
