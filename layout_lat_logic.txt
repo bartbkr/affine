@@ -1,3 +1,5 @@
 1) Estimate short-rate system (pg. 20) with unkown factors using least squares
     - get delta_0, delta_1
-2)  - 
+2) The rest of the parameters are estimated via maximum likelihood
+    - with each iteration, A and B need to be iteratively calculated
+    - I could see how this could get very sketchy really fast
