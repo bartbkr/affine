@@ -130,8 +130,10 @@ class affine(LikelihoodModel):
 
         func = self._affine_nsum_errs
         if lat:
-            reslt = 
-        reslt = optimize.leastsq(func, lam, maxfev=maxfev,
+            self.likelihood = 
+            reslt = optimize.
+        else:
+            reslt = optimize.leastsq(func, lam, maxfev=maxfev,
                                 xtol=xtol, full_output=full_output)
         lam_solv = reslt[0]
         output = reslt[1:]
@@ -166,6 +168,12 @@ class affine(LikelihoodModel):
         """
         loglike = self._affine_nsum_errs
         return approx_hess(lam, loglike)[0]
+
+    def loglike(self, params):
+        """
+        Loglikelihood used in latent factor models
+        """
+        
 
     def gen_pred_coef(self, lam_0_ab, lam_1_ab, delta_1, phi, sig):
         lat = self.latent
@@ -219,7 +227,7 @@ class affine(LikelihoodModel):
             errs = errs + (act-pred).tolist()
         return errs
 
-    def _solve_X_t_unkn(self, a, b, X_t):
+    def _solve_X_t_unkn(self, a, b):
         lat = self.latent
         no_err = self.no_err
         mth_only = self.mth_only
@@ -229,7 +237,7 @@ class affine(LikelihoodModel):
         X_t = self.var_data
         T = X_t.shape[0]
 
-        # solve for unkown factors
+        # solve for unknown factors
         noerr_indx = self.noerr_indx
         A_noerr = select_rows(noerr_indx, A)
         B_0_noerr = select_rows(noerr_indx, B_0)
@@ -259,27 +267,6 @@ class affine(LikelihoodModel):
             np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
             np.sum(meas_err/np.var(meas_err, axis=1))
 
-        for t in range(X_t.shape[0]):
-            #mx = c
-            m = np.zeros((lat,lat))
-            c = np.zeros(lat)
-            for x, i in enumerate(no_err):
-                act = mth_only['l_tr_m' + str(i)].values[t]
-                #print "i"
-                #print i
-                #print "act"
-                #print act
-                #print "a[i-1]"
-                #print a[i-1]
-                #print "b[i-1].T[:,:-lat]"
-                #print b[i-1].T[:,:-lat]
-                #print "X_t.values.T[:,t,None]"
-                #print X_t.values.T[:,t,None]
-                c[x] = act - a[i-1] - np.dot(b[i-1].T[:,:-lat],\
-                        X_t.values.T[:,t,None])
-                m[x] = b[i-1].T[:,-lat:]
-            X_t_new[t,-lat:] = la.solve(m,c)
-        return X_t_new
 
     def _proc_to_mth(self):
         frame = self.yc_data

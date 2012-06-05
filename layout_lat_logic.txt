@@ -1,0 +1,3 @@
+1) Estimate short-rate system (pg. 20) with unkown factors using least squares
+    - get delta_0, delta_1
+2)  - 
