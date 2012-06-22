@@ -182,6 +182,10 @@ var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 # Testing                                   #
 #############################################
 
+# subset to pre 2005
+mod_data = mod_data[:217]
+mod_yc_data = mod_yc_data[:214]
+
 #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
 bsr = BSR(yc_data = mod_yc_data, var_data = mod_data)
 neqs = bsr.neqs
@@ -202,6 +206,10 @@ for x in range(neqs):
 #rerun
 a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
                 bsr.phi, bsr.sig)
+
+#let's try running it on a shorter time series closer to BSR 
+#original data set
+
 out_bsr = bsr.solve(lam_0_t, lam_1_t, xtol=1e-140, maxfev=1000000,
                 full_output=True)
 
@@ -247,3 +255,4 @@ ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
 var_tp['BSR term premium'] = ten_yr['rsk_prem']
 ten_yr['rsk_prem'].plot()
 plt.show()
+
