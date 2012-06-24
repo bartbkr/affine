@@ -78,8 +78,8 @@ mthdata['act_infl'] = mthdata['Pers_Cons_P'].diff(periods=12)/mthdata['Pers_Cons
 #plt.show()
 
 #Eurodollar rate is clearly upward trending, so lets difference it
-mthdata['ed_diff'] = mthdata['one_year_ED']
-#mthdata['ed_diff'] = mthdata['one_year_ED'].diff(periods=1)
+mthdata['ed_fut'] = np.log(mthdata['one_year_ED'])
+#mthdata['ed_fut'] = mthdata['one_year_ED'].diff(periods=1)
 
 #############################################
 # Run VAR on Bernanke, Sack, Reinhart Model #
@@ -89,7 +89,7 @@ mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                     'act_infl',
                                     'inflexp_1yr_mean',
                                     'fed_funds',
-                                    'ed_diff']).dropna(axis=0)
+                                    'ed_fut']).dropna(axis=0)
 data = mod_data.values
 names = mod_data.columns
 dates = mod_data.index
