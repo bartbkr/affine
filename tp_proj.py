@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import itertools as it
 
-from affine import affine
+from affine import BSR
 
 #identify computer
 #identify computer
@@ -78,8 +78,8 @@ mthdata['act_infl'] = mthdata['Pers_Cons_P'].diff(periods=12)/mthdata['Pers_Cons
 #plt.show()
 
 #Eurodollar rate is clearly upward trending, so lets difference it
-mthdata['ed_diff'] = mthdata['one_year_ED']
-#mthdata['ed_diff'] = mthdata['one_year_ED'].diff(periods=1)
+mthdata['ed_fut'] = np.log(mthdata['one_year_ED'])
+#mthdata['ed_fut'] = mthdata['one_year_ED'].diff(periods=1)
 
 #############################################
 # Run VAR on Bernanke, Sack, Reinhart Model #
@@ -89,7 +89,7 @@ mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                     'act_infl',
                                     'inflexp_1yr_mean',
                                     'fed_funds',
-                                    'ed_diff']).dropna(axis=0)
+                                    'ed_fut']).dropna(axis=0)
 data = mod_data.values
 names = mod_data.columns
 dates = mod_data.index
@@ -120,11 +120,11 @@ irsf = vreg.irf(periods=50)
 #print VAR(data).fit(maxlags=12, ic='bic').k_ar
 
 #########################################
-# Set up affine affine model               #
+# Set up BSR affine model               #
 #########################################
 k_ar = vreg.k_ar
 
-#create affine X_t
+#create BSR X_t
 x_t_na = mod_data.copy()
 for t in range(k_ar-1):
     for var in mod_data.columns:
@@ -182,8 +182,12 @@ var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 # Testing                                   #
 #############################################
 
+# subset to pre 2005
+mod_data = mod_data[:217]
+mod_yc_data = mod_yc_data[:214]
+
 #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
-bsr = affine(yc_data = mod_yc_data, var_data = mod_data)
+bsr = BSR(yc_data = mod_yc_data, var_data = mod_data)
 neqs = bsr.neqs
 k_ar = bsr.k_ar
 
@@ -202,9 +206,13 @@ for x in range(neqs):
 #rerun
 a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
                 bsr.phi, bsr.sig)
-#out_bsr = bsr.solve(lam_0_t, lam_1_t, xtol=1e-140, maxfev=1000000,
-                #full_output=True)
-"""
+
+#let's try running it on a shorter time series closer to BSR 
+#original data set
+
+out_bsr = bsr.solve(lam_0_t, lam_1_t, xtol=1e-140, maxfev=1000000,
+                full_output=True)
+
 #init pkl
 pkl_file = open("out_bsr1.pkl", 'wb')
 
@@ -218,7 +226,7 @@ pickle.dump(out_bsr, pkl_file)
 #lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr_ld
 lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
 
-#gen affine predicted
+#gen BSR predicted
 X_t = bsr.var_data
 per = bsr.mth_only.index
 act_pred = px.DataFrame(index=per)
@@ -243,8 +251,8 @@ six_mth = act_pred.reindex(columns = ['6_mth_act',
                                       '6_mth_nrsk'])
 
 #plot the term premium
-ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
-var_tp['affine term premium'] = ten_yr['rsk_prem']
-ten_yr['rsk_prem'].plot()
-plt.show()
-"""
+#ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
+#var_tp['BSR term premium'] = ten_yr['rsk_prem']
+#ten_yr['rsk_prem'].plot()
+#plt.show()
+
