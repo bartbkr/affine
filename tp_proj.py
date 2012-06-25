@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import itertools as it
 
-from affine import BSR
+from affine import affine
 
 #identify computer
 #identify computer
@@ -120,7 +120,7 @@ irsf = vreg.irf(periods=50)
 #print VAR(data).fit(maxlags=12, ic='bic').k_ar
 
 #########################################
-# Set up BSR affine model               #
+# Set up affine affine model               #
 #########################################
 k_ar = vreg.k_ar
 
@@ -187,7 +187,7 @@ mod_data = mod_data[:217]
 mod_yc_data = mod_yc_data[:214]
 
 #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
-bsr = BSR(yc_data = mod_yc_data, var_data = mod_data)
+bsr = affine(yc_data = mod_yc_data, var_data = mod_data)
 neqs = bsr.neqs
 k_ar = bsr.k_ar
 
@@ -252,7 +252,7 @@ six_mth = act_pred.reindex(columns = ['6_mth_act',
 
 #plot the term premium
 #ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
-#var_tp['BSR term premium'] = ten_yr['rsk_prem']
+#var_tp['affine term premium'] = ten_yr['rsk_prem']
 #ten_yr['rsk_prem'].plot()
 #plt.show()
 

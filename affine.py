@@ -129,12 +129,12 @@ class affine(LikelihoodModel):
             lam = np.asarray(lam_0_g + lam_1_g)
 
         func = self._affine_nsum_errs
-        if lat:
-            self.likelihood = 
-            reslt = optimize.
-        else:
-            reslt = optimize.leastsq(func, lam, maxfev=maxfev,
-                                xtol=xtol, full_output=full_output)
+        #if lat:
+            #self.likelihood = a
+            #reslt = optimize.
+        #else:
+        reslt = optimize.leastsq(func, lam, maxfev=maxfev,
+                            xtol=xtol, full_output=full_output)
         lam_solv = reslt[0]
         output = reslt[1:]
 
@@ -255,7 +255,8 @@ class affine(LikelihoodModel):
 
         #create Jacobian (J) here
         
-        J = 
+        #this taken out for test run, need to be added back in
+        #J = 
 
         # here is the likelihood that needs to be used
         # sig is implied VAR sig
