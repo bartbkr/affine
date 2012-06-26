@@ -22,6 +22,10 @@ import itertools as it
 
 from affine import BSR
 
+#check for how long this takes to run
+import datetime as dt
+d1 = dt.datetime.now()
+
 #identify computer
 #identify computer
 comp = socket.gethostname()
@@ -195,6 +199,9 @@ k_ar = bsr.k_ar
 lam_0_t = [0.03,0.1,0.2,-0.21,0.32]
 lam_0_nr = np.zeros([5*4, 1])
 
+#set seed for future repl
+np.random.seed(101)
+
 lam_1_t = []
 lam_1_nr = np.zeros([5*4, 5*4])
 for x in range(neqs):
@@ -256,3 +263,5 @@ six_mth = act_pred.reindex(columns = ['6_mth_act',
 #ten_yr['rsk_prem'].plot()
 #plt.show()
 
+d2 = dt.datetime.now()
+print (d2 - d1).seconds/60.0

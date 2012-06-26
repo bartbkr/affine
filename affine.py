@@ -86,7 +86,7 @@ class BSR(LikelihoodModel):
         sig[:neqs, :neqs] = sigma_u
         self.sig = sig
 
-        pdb.set_trace()
+        #pdb.set_trace()
 
         if lat == 0:
             self.delta_0 = 0
@@ -134,17 +134,17 @@ class BSR(LikelihoodModel):
         else:
             lam = np.asarray(lam_0_g + lam_1_g)
 
-        pdb.set_trace()
+        #pdb.set_trace()
 
         func = self._BSR_nsum_errs
         reslt = optimize.leastsq(func, lam, maxfev=maxfev,
                                 xtol=xtol, full_output=full_output)
-        pdb.set_trace()
+        #pdb.set_trace()
 
         lam_solv = reslt[0]
         output = reslt[1:]
 
-        pdb.set_trace()
+        #pdb.set_trace()
 
         lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam_solv)
 
