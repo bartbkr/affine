@@ -243,6 +243,8 @@ for i in bsr.mths:
                                     np.dot(b[i-1].T, X_t.values.T)[0]
     act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
                                     np.dot(b_nrsk[i-1].T, X_t.values.T)[0]
+    act_pred[str(i) + '_mth_err'] = np.abs(act_pred[str(i) + '_mth_act'] - 
+                                            act_pred[str(i) + '_mth_pred'])
 #plot act 10-year plot
 #thirty_yr = act_pred.reindex(columns = filter(lambda x: '360' in x, act_pred))
 ten_yr = act_pred.reindex(columns = filter(lambda x: '120' in x, act_pred))
@@ -252,10 +254,12 @@ three_yr = act_pred.reindex(columns = filter(lambda x: '36' in x,act_pred))
 two_yr = act_pred.reindex(columns = filter(lambda x: '24' in x,act_pred))
 one_yr = act_pred.reindex(columns = ['12_mth_act',
                                      '12_mth_pred',
-                                     '12_mth_nrsk'])
+                                     '12_mth_nrsk',
+                                     '12_mth_err'])
 six_mth = act_pred.reindex(columns = ['6_mth_act',
                                       '6_mth_pred',
-                                      '6_mth_nrsk'])
+                                      '6_mth_nrsk',
+                                      '6_mth_err'])
 
 #plot the term premium
 #ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
@@ -265,3 +269,15 @@ six_mth = act_pred.reindex(columns = ['6_mth_act',
 
 d2 = dt.datetime.now()
 print (d2 - d1).seconds/60.0
+
+#generate st dev of residuals
+yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr', 'seven_yr', 
+            'ten_yr']
+for yld in yields:
+    print yld + " & " + str(np.std(eval(yld).filter(regex='.*err$').values, 
+                            ddof=1))
+
+
+
+    
+
