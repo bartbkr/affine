@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import itertools as it
 
-from affine import BSR
+from affine import affine
 
 #check for how long this takes to run
 import datetime as dt
@@ -204,7 +204,7 @@ def mod1_run():
     mod_yc_data = mod_yc_data[:214]
 
     #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
-    bsr = BSR(yc_data = mod_yc_data, var_data = mod_data)
+    bsr = affine(yc_data = mod_yc_data, var_data = mod_data)
     neqs = bsr.neqs
     k_ar = bsr.k_ar
 
@@ -275,11 +275,21 @@ def mod1_run():
                                           '6_mth_err'])
 
     #plot the term premium
-    fig = ten_yr.plot()
-    fig.save(path_pre + "/Documents/Dissertation/figures/tenyr_rep1.png")
-    fig = two_yr.plot()
-    fig.save(path_pre + "/Documents/Dissertation/figures/twoyr_rep1.png")
-    #ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
+    ten_yr_plot = ten_yr.reindex(columns = ['120_mth_act',
+        '120_mth_pred', '120_mth_nrsk'])
+    fig = ten_yr_plot.plot(legend=False)
+    handles, old_labels = fig.get_legend_handles_labels()
+    fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
+    plt.savefig(path_pre + "/Documents/Dissertation/figures/tenyr_rep.png")
+    #two year
+    two_yr_plot = two_yr.reindex(columns = ['24_mth_act',
+        '24_mth_pred', '24_mth_nrsk'])
+    fig = two_yr_plot.plot()
+    handles, old_labels = fig.get_legend_handles_labels()
+    fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
+    plt.savefig(path_pre + "/Documents/Dissertation/figures/twoyr_rep.png")
+    #ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - \
+    #                            ten_yr['120_mth_nrsk']
     #var_tp['BSR term premium'] = ten_yr['rsk_prem']
     #ten_yr['rsk_prem'].plot()
     #plt.show()
@@ -293,6 +303,7 @@ def mod1_run():
     for yld in yields:
         print yld + " & " + str(np.std(eval(yld).filter(regex='.*err$').values, 
                                 ddof=1))
+    print "Finished model 1"
 
 ##############################################################################
 # Estimate model without Eurodollar futures
@@ -461,7 +472,7 @@ def mod2_run():
                                         'inflexp_1yr_mean',
                                         'fed_funds']]
 
-    bsr_noeur = BSR(yc_data = mod_yc_data, var_data = mod_data_noeur)
+    bsr_noeur = affine(yc_data = mod_yc_data, var_data = mod_data_noeur)
     neqs = bsr_noeur.neqs
     k_ar = bsr_noeur.k_ar
 
@@ -529,10 +540,20 @@ def mod2_run():
                                           '6_mth_err'])
 
     #plot the term premium
-    fig = ten_yr_noeur.plot()
-    fig.save(path_pre + "/Documents/Dissertation/figures/tenyr_rep_noeur.png")
-    fig = two_yr_noeur.plot()
-    fig.save(path_pre + "/Documents/Dissertation/figures/twoyr_rep_noeur.png")
+    #ten year
+    ten_yr_noeur_plot = ten_yr_noeur.reindex(columns = ['120_mth_act',
+        '120_mth_pred', '120_mth_nrsk'])
+    fig = ten_yr_noeur_plot.plot(legend=False)
+    handles, old_labels = fig.get_legend_handles_labels()
+    fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
+    plt.savefig(path_pre + "/Documents/Dissertation/figures/tenyr_rep_noeur.png")
+    #two year
+    two_yr_noeur_plot = two_yr_noeur.reindex(columns = ['24_mth_act',
+        '24_mth_pred', '24_mth_nrsk'])
+    fig = two_yr_noeur_plot.plot()
+    handles, old_labels = fig.get_legend_handles_labels()
+    fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
+    plt.savefig(path_pre + "/Documents/Dissertation/figures/twoyr_rep_noeur.png")
     #ten_yr_noeur['rsk_prem'] = ten_yr_noeur['120_mth_pred'] - \
     #                            ten_yr_noeur['120_mth_nrsk']
     #var_tp['BSR term premium'] = ten_yr_noeur['rsk_prem']
@@ -550,9 +571,7 @@ def mod2_run():
     for yld in yields:
         print yld + " & " + str(np.std(eval(yld).filter(regex='.*err$').values, 
                                 ddof=1))
-
-    d2 = dt.datetime.now()
-    print (d2 - d1).seconds/60.0
+    print "Finished model 2"
 
 #run the two models
 

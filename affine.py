@@ -24,11 +24,11 @@ import pdb
 # Create affine class system                   #
 #############################################
 
-class BSR(LikelihoodModel):
+class affine(LikelihoodModel):
     def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4,
                  freq='M', latent=0, no_err=None):
         """
-        Attemps to solve BSR model
+        Attemps to solve affine model
         yc_data : yield curve data
         var_data : data for var model
         rf_rate : rf_rate for short_rate, used in latent factor case
@@ -115,7 +115,7 @@ class BSR(LikelihoodModel):
         #check this, looks fine
         self.var_data = x_t_na.dropna(axis=0)
 
-        super(BSR, self).__init__(var_data)
+        super(affine, self).__init__(var_data)
 
 
     def solve(self, lam_0_g, lam_1_g, delt_1_g=None, phi_g=None,
@@ -136,7 +136,7 @@ class BSR(LikelihoodModel):
 
         #pdb.set_trace()
 
-        func = self._BSR_nsum_errs
+        func = self._affine_nsum_errs
         reslt = optimize.leastsq(func, lam, maxfev=maxfev,
                                 xtol=xtol, full_output=full_output)
         #pdb.set_trace()
@@ -167,14 +167,14 @@ class BSR(LikelihoodModel):
         -----
         Return numerical gradient
         """
-        loglike = self._BSR_nsum_errs
+        loglike = self._affine_nsum_errs
         return approx_fprime(lam, loglike, epsilon=1e-8)
 
     def hessian(self, lam):
         """
         Returns numerical hessian.
         """
-        loglike = self._BSR_nsum_errs
+        loglike = self._affine_nsum_errs
         return approx_hess(lam, loglike)[0]
 
     def gen_pred_coef(self, lam_0_ab, lam_1_ab, delta_1, phi, sig):
@@ -200,7 +200,7 @@ class BSR(LikelihoodModel):
             b[x] = np.multiply(-B[x], n_inv[x])
         return a, b
 
-    def _BSR_nsum_errs(self, lam):
+    def _affine_nsum_errs(self, lam):
         """
         This function generates the sum of the prediction errors
         """
