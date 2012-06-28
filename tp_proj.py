@@ -276,8 +276,101 @@ yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr', 'seven_yr',
 for yld in yields:
     print yld + " & " + str(np.std(eval(yld).filter(regex='.*err$').values, 
                             ddof=1))
+##############################################################################
+# Estimate model without Eurodollar futures
+##############################################################################
 
+mod_data_noeur = mod_data[['tr_empl_gap_perc',
+                                    'act_infl',
+                                    'inflexp_1yr_mean',
+                                    'fed_funds']]
 
+bsr_noeur = BSR(yc_data = mod_yc_data, var_data = mod_data_noeur)
+neqs = bsr_noeur.neqs
+k_ar = bsr_noeur.k_ar
 
-    
+#test sum_sqr_pe
+lam_0_t = [0.03,0.1,0.2,-0.21]
+lam_0_nr = np.zeros([4*4, 1])
+
+lam_1_t = []
+lam_1_nr = np.zeros([4*4, 4*4])
+for x in range(neqs):
+    lam_1_t = lam_1_t + (np.asarray([[0.03,0.1,0.2,0.21]]) \
+                            *np.random.random())[0].tolist()
+    #lam_2_t[x, :neqs] = np.asarray([[2.5e-90,1e-87,9.5e-75,
+    #                                1.21e-93,-0.5e-88]])
+
+#rerun
+a_nrsk, b_nrsk = bsr_noeur.gen_pred_coef(lam_0_nr, lam_1_nr, bsr_noeur.delta_1,
+                bsr_noeur.phi, bsr_noeur.sig)
+
+#let's try running it on a shorter time series closer to BSR 
+#original data set
+
+out_bsr_noeur = bsr_noeur.solve(lam_0_t, lam_1_t, xtol=1e-140, maxfev=1000000,
+                full_output=True)
+
+#init pkl
+#pkl_file = open("out_bsr_noeur1.pkl", 'wb')
+
+#save rerun
+#pickle.dump(out_bsr_noeur, pkl_file)
+
+#load instead of rerun
+#pkl_file = open("out_bsr_noeur1.pkl", 'rb')
+#out_bsr_noeur_ld = pickle.load(pkl_file)
+
+#lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr_noeur_ld
+lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr_noeur
+
+#gen BSR predicted
+X_t = bsr_noeur.var_data
+per = bsr_noeur.mth_only.index
+act_pred = px.DataFrame(index=per)
+for i in bsr_noeur.mths:
+    act_pred[str(i) + '_mth_act'] = bsr_noeur.mth_only['l_tr_m' + str(i)]
+    act_pred[str(i) + '_mth_pred'] = a[i-1] + \
+                                    np.dot(b[i-1].T, X_t.values.T)[0]
+    act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
+                                    np.dot(b_nrsk[i-1].T, X_t.values.T)[0]
+    act_pred[str(i) + '_mth_err'] = np.abs(act_pred[str(i) + '_mth_act'] - 
+                                            act_pred[str(i) + '_mth_pred'])
+#plot act 10-year plot
+#thirty_yr = act_pred.reindex(columns = filter(lambda x: '360' in x, act_pred))
+ten_yr_noeur = act_pred.reindex(columns = filter(lambda x: '120' in x, act_pred))
+seven_yr_noeur = act_pred.reindex(columns = filter(lambda x: '84' in x, act_pred))
+five_yr_noeur = act_pred.reindex(columns = filter(lambda x: '60' in x,act_pred))
+three_yr_noeur = act_pred.reindex(columns = filter(lambda x: '36' in x,act_pred))
+two_yr_noeur = act_pred.reindex(columns = filter(lambda x: '24' in x,act_pred))
+one_yr_noeur = act_pred.reindex(columns = ['12_mth_act',
+                                     '12_mth_pred',
+                                     '12_mth_nrsk',
+                                     '12_mth_err'])
+six_mth_noeur = act_pred.reindex(columns = ['6_mth_act',
+                                      '6_mth_pred',
+                                      '6_mth_nrsk',
+                                      '6_mth_err'])
+
+#plot the term premium
+#ten_yr_noeur['rsk_prem'] = ten_yr_noeur['120_mth_pred'] - \
+#                            ten_yr_noeur['120_mth_nrsk']
+#var_tp['BSR term premium'] = ten_yr_noeur['rsk_prem']
+#ten_yr_noeur['rsk_prem'].plot()
+#plt.show()
+
+#generate st dev of residuals
+yields = ['six_mth_noeur', 
+          'one_yr_noeur', 
+          'two_yr_noeur', 
+          'three_yr_noeur', 
+          'five_yr_noeur', 
+          'seven_yr_noeur', 
+          'ten_yr_noeur']
+for yld in yields:
+    print yld + " & " + str(np.std(eval(yld).filter(regex='.*err$').values, 
+                            ddof=1))
+
+d2 = dt.datetime.now()
+print (d2 - d1).seconds/60.0
 
