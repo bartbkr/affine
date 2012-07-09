@@ -16,6 +16,10 @@ from operator import itemgetter
 from scipy import optimize
 import scipy.linalg as la
 
+#for sending email
+import smtplib
+import string
+
 import matplotlib.pyplot as plt
 
 import itertools as it
@@ -40,6 +44,8 @@ if comp == "bart-Inspiron-1525":
     path_pre = "/home/bart"
 if comp == "linux-econ6":
     path_pre = "/home/labuser"
+
+passwd = raw_input("Please enter email passwd: ")
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -244,6 +250,21 @@ results = {}
 for i in range(atts):
     print i
     res = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
-    results[str(i)] = [str(np.random.random), res]
-    
+    results[str(i)] = [str(np.random.random()), res[0], res[1][:neqs, :neqs]]
 
+# Initialize SMTP server
+
+server=smtplib.SMTP('smtp.gmail.com:587')
+server.starttls()
+server.login("bartbkr",passwd)
+
+# Send email
+senddate=datetime.strftime(datetime.now(), '%Y-%m-%d')
+subject="Your job has completed"
+m="Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer: My-Mail\r\n\r\n"
+% (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
+msg='''
+Job has completed '''
+
+server.sendmail("bartbkr@gmail.com", "bartbkr@gmail.com", m+msg)
+server.quit()
