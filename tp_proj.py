@@ -26,9 +26,10 @@ import itertools as it
 
 from affine import affine
 
-#check for how long this takes to run
+#send email when done
 import datetime as dt
 d1 = dt.datetime.now()
+import getpass
 
 #attempt multi-threading
 import time
@@ -45,7 +46,7 @@ if comp == "bart-Inspiron-1525":
 if comp == "linux-econ6":
     path_pre = "/home/labuser"
 
-passwd = raw_input("Please enter email passwd: ")
+passwd = getpass.getpass(prompt="Please enter email passwd: ")
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -261,7 +262,7 @@ server.login("bartbkr",passwd)
 # Send email
 senddate=datetime.strftime(datetime.now(), '%Y-%m-%d')
 subject="Your job has completed"
-m="Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer: My-Mail\r\n\r\n"
+m="Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer: My-Mail\r\n\r\n"\
 % (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
 msg='''
 Job has completed '''
