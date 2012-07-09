@@ -99,7 +99,7 @@ mthdata['act_infl'] = mthdata['Pers_Cons_P'].diff(periods=12)/mthdata['Pers_Cons
 #plt.show()
 
 #Eurodollar rate is clearly upward trending, so lets difference it
-mthdata['ed_fut'] = np.log(mthdata['one_year_ED'])
+mthdata['ed_fut'] = 100 - mthdata['one_year_ED']
 #mthdata['ed_fut'] = mthdata['one_year_ED'].diff(periods=1)
 
 #############################################
