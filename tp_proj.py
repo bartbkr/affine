@@ -260,7 +260,7 @@ server.starttls()
 server.login("bartbkr",passwd)
 
 # Send email
-senddate=datetime.strftime(datetime.now(), '%Y-%m-%d')
+senddate=dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d')
 subject="Your job has completed"
 m="Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer: My-Mail\r\n\r\n"\
 % (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
