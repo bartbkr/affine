@@ -236,8 +236,8 @@ def robust(mod_data, mod_yc_data):
     #let's try running it on a shorter time series closer to BSR 
     #original data set
 
-    out_bsr = bsr.solve(lam_0_t, lam_1_t, xtol=1e-140, maxfev=1000000,
-                    full_output=True)
+    out_bsr = bsr.solve(lam_0_t, lam_1_t, ftol=1e-200, xtol=1e-200,
+                        maxfev=1000000, full_output=True)
 
 
     #lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr_ld

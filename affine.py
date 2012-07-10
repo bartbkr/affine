@@ -118,8 +118,8 @@ class affine(LikelihoodModel):
         super(affine, self).__init__(var_data)
 
 
-    def solve(self, lam_0_g, lam_1_g, delt_1_g=None, phi_g=None,
-            sig_g=None, maxfev=10000, xtol=1e-100, full_output=False):
+    def solve(self, lam_0_g, lam_1_g, delt_1_g=None, phi_g=None, sig_g=None,
+              maxfev=10000, ftol=1e-100, xtol=1e-100, full_output=False):
         lat = self.latent
         neqs = self.neqs
         k_ar = self.k_ar
@@ -137,8 +137,8 @@ class affine(LikelihoodModel):
         #pdb.set_trace()
 
         func = self._affine_nsum_errs
-        reslt = optimize.leastsq(func, lam, maxfev=maxfev,
-                                xtol=xtol, full_output=full_output)
+        reslt = optimize.leastsq(func, lam, maxfev=maxfev, ftol=ftol,
+                                 xtol=xtol, full_output=full_output)
         #pdb.set_trace()
 
         lam_solv = reslt[0]
