@@ -253,6 +253,10 @@ for i in range(atts):
     res = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
     results[str(i)] = [str(np.random.random()), res[0], res[1][:neqs, :neqs]]
 
+print results
+
+#should probably pickle the results here
+
 # Initialize SMTP server
 
 server=smtplib.SMTP('smtp.gmail.com:587')
