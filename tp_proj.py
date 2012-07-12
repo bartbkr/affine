@@ -16,21 +16,42 @@ from operator import itemgetter
 from scipy import optimize
 import scipy.linalg as la
 
+#for sending email
+import smtplib
+import string
+
 import matplotlib.pyplot as plt
 
 import itertools as it
 
 from affine import affine
+#send email when done
+import datetime as dt
+d1 = dt.datetime.now()
+import getpass
+
+#attempt multi-threading
+import time
+import multiprocessing
 
 #identify computer
 #identify computer
 comp = socket.gethostname()
+global path_pre
 if comp == "BBAKER":
     path_pre = "C:\\Documents and Settings\\bbaker"
 if comp == "bart-Inspiron-1525":
     path_pre = "/home/bart"
 if comp == "linux-econ6":
     path_pre = "/home/labuser"
+
+passwd = getpass.getpass(prompt="Please enter email passwd: ")
+
+##############################################################################
+# Estimate model with Eurodollar futures
+##############################################################################
+
+print "Model 1 running"
 
 ########################################
 # Get data                             #
@@ -78,7 +99,7 @@ mthdata['act_infl'] = mthdata['Pers_Cons_P'].diff(periods=12)/mthdata['Pers_Cons
 #plt.show()
 
 #Eurodollar rate is clearly upward trending, so lets difference it
-mthdata['ed_fut'] = np.log(mthdata['one_year_ED'])
+mthdata['ed_fut'] = 100 - mthdata['one_year_ED']
 #mthdata['ed_fut'] = mthdata['one_year_ED'].diff(periods=1)
 
 #############################################
@@ -182,77 +203,72 @@ var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 # Testing                                   #
 #############################################
 
-# subset to pre 2005
-mod_data = mod_data[:217]
-mod_yc_data = mod_yc_data[:214]
+def robust(mod_data, mod_yc_data):
 
-#anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
-bsr = affine(yc_data = mod_yc_data, var_data = mod_data)
-neqs = bsr.neqs
-k_ar = bsr.k_ar
+    # subset to pre 2005
+    mod_data = mod_data[:217]
+    mod_yc_data = mod_yc_data[:214]
 
-#test sum_sqr_pe
-lam_0_t = [0.03,0.1,0.2,-0.21,0.32]
-lam_0_nr = np.zeros([5*4, 1])
+    #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
+    bsr = affine(yc_data = mod_yc_data, var_data = mod_data)
+    neqs = bsr.neqs
+    k_ar = bsr.k_ar
 
-lam_1_t = []
-lam_1_nr = np.zeros([5*4, 5*4])
-for x in range(neqs):
-    lam_1_t = lam_1_t + (np.asarray([[0.03,0.1,0.2,0.21,0.32]]) \
-                            *np.random.random())[0].tolist()
-    #lam_2_t[x, :neqs] = np.asarray([[2.5e-90,1e-87,9.5e-75,
-    #                                1.21e-93,-0.5e-88]])
+    #test sum_sqr_pe
+    lam_0_t = [0.03,0.1,0.2,-0.21,0.32]
+    lam_0_nr = np.zeros([5*4, 1])
 
-#rerun
-a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
-                bsr.phi, bsr.sig)
+    #set seed for future repl
 
-#let's try running it on a shorter time series closer to BSR 
-#original data set
+    lam_1_t = []
+    lam_1_nr = np.zeros([5*4, 5*4])
+    for x in range(neqs):
+        lam_1_t = lam_1_t + (np.asarray([[0.03,0.1,0.2,0.21,0.32]]) \
+                                *np.random.random())[0].tolist()
+        #lam_2_t[x, :neqs] = np.asarray([[2.5e-90,1e-87,9.5e-75,
+        #                                1.21e-93,-0.5e-88]])
 
-out_bsr = bsr.solve(lam_0_t, lam_1_t, xtol=1e-140, maxfev=1000000,
-                full_output=True)
+    #rerun
+    a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
+                    bsr.phi, bsr.sig)
 
-#init pkl
-pkl_file = open("out_bsr1.pkl", 'wb')
+    #let's try running it on a shorter time series closer to BSR 
+    #original data set
 
-#save rerun
-pickle.dump(out_bsr, pkl_file)
+    out_bsr = bsr.solve(lam_0_t, lam_1_t, ftol=1e-200, xtol=1e-200,
+                        maxfev=1000000, full_output=True)
 
-#load instead of rerun
-#pkl_file = open("out_bsr1.pkl", 'rb')
-#out_bsr_ld = pickle.load(pkl_file)
 
-#lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr_ld
-lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
+    #lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr_ld
+    #lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
+    return out_bsr
 
-#gen BSR predicted
-X_t = bsr.var_data
-per = bsr.mth_only.index
-act_pred = px.DataFrame(index=per)
-for i in bsr.mths:
-    act_pred[str(i) + '_mth_act'] = bsr.mth_only['l_tr_m' + str(i)]
-    act_pred[str(i) + '_mth_pred'] = a[i-1] + \
-                                    np.dot(b[i-1].T, X_t.values.T)[0]
-    act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
-                                    np.dot(b_nrsk[i-1].T, X_t.values.T)[0]
-#plot act 10-year plot
-#thirty_yr = act_pred.reindex(columns = filter(lambda x: '360' in x, act_pred))
-ten_yr = act_pred.reindex(columns = filter(lambda x: '120' in x, act_pred))
-seven_yr = act_pred.reindex(columns = filter(lambda x: '84' in x, act_pred))
-five_yr = act_pred.reindex(columns = filter(lambda x: '60' in x,act_pred))
-three_yr = act_pred.reindex(columns = filter(lambda x: '36' in x,act_pred))
-two_yr = act_pred.reindex(columns = filter(lambda x: '24' in x,act_pred))
-one_yr = act_pred.reindex(columns = ['12_mth_act',
-                                     '12_mth_pred',
-                                     '12_mth_nrsk'])
-six_mth = act_pred.reindex(columns = ['6_mth_act',
-                                      '6_mth_pred',
-                                      '6_mth_nrsk'])
+atts = 10
+np.random.seed(101)
+results = {}
 
-#plot the term premium
-#ten_yr['rsk_prem'] = ten_yr['120_mth_pred'] - ten_yr['120_mth_nrsk']
-#var_tp['affine term premium'] = ten_yr['rsk_prem']
-#ten_yr['rsk_prem'].plot()
-#plt.show()
+for i in range(atts):
+    print i
+    res = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
+    results[str(i)] = [str(np.random.random()), res[0], res[1][:neqs, :neqs]]
 
+print results
+
+#should probably pickle the results here
+
+# Initialize SMTP server
+
+server=smtplib.SMTP('smtp.gmail.com:587')
+server.starttls()
+server.login("bartbkr",passwd)
+
+# Send email
+senddate=dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d')
+subject="Your job has completed"
+m="Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer: My-Mail\r\n\r\n"\
+% (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
+msg='''
+Job has completed '''
+
+server.sendmail("bartbkr@gmail.com", "bartbkr@gmail.com", m+msg)
+server.quit()

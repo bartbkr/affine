@@ -14,6 +14,9 @@ import scipy.linalg as la
 
 import matplotlib.pyplot as plt
 
+#debugging
+import pdb
+
 #############################################
 # Create affine class system                   #
 #############################################
@@ -83,6 +86,8 @@ class affine(LikelihoodModel):
         sig[:neqs, :neqs] = sigma_u
         self.sig = sig
 
+        #pdb.set_trace()
+
         if lat == 0:
             self.delta_0 = 0
             delta_1 = np.zeros([neqs*k_ar,1])
@@ -106,14 +111,15 @@ class affine(LikelihoodModel):
             for var in var_data.columns:
                 x_t_na[var + '_m' + str(t+1)] = px.Series(var_data[var].
                         values[:-(t+1)], index=var_data.index[t+1:])
+
+        #check this, looks fine
         self.var_data = x_t_na.dropna(axis=0)
 
         super(affine, self).__init__(var_data)
 
 
-    def solve(self, lam_0_g, lam_1_g, delt_1_g=None, phi_g=None,
-            sig_g=None, maxfev=10000, xtol=1e-100,
-              full_output=False):
+    def solve(self, lam_0_g, lam_1_g, delt_1_g=None, phi_g=None, sig_g=None,
+              maxfev=10000, ftol=1e-100, xtol=1e-100, full_output=False):
         lat = self.latent
         neqs = self.neqs
         k_ar = self.k_ar
@@ -129,14 +135,20 @@ class affine(LikelihoodModel):
             lam = np.asarray(lam_0_g + lam_1_g)
 
         func = self._affine_nsum_errs
+
+        #pdb.set_trace()
+
         #if lat:
             #self.likelihood = a
             #reslt = optimize.
         #else:
         reslt = optimize.leastsq(func, lam, maxfev=maxfev,
                             xtol=xtol, full_output=full_output)
+        #pdb.set_trace()
         lam_solv = reslt[0]
         output = reslt[1:]
+
+        #pdb.set_trace()
 
         lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam_solv)
 
