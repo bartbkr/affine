@@ -120,6 +120,13 @@ class affine(LikelihoodModel):
 
     def solve(self, lam_0_g, lam_1_g, delt_1_g=None, phi_g=None, sig_g=None,
               maxfev=10000, ftol=1e-100, xtol=1e-100, full_output=False):
+        """
+        Attempt to solve affine model
+
+        This needs to be fixed
+        !!!!!!!!!!!!
+        Pass in guess as arrays, not lists!!
+        """
         lat = self.latent
         neqs = self.neqs
         k_ar = self.k_ar

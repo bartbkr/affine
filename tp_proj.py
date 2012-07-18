@@ -203,8 +203,19 @@ var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 # Testing                                   #
 #############################################
 
-def robust(mod_data, mod_yc_data):
-
+def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
+    """
+    Function to run model with guesses, also generating 
+    mod_data : pandas DataFrame 
+        model data
+    mod_yc_data : pandas DataFrame
+        model yield curve data
+    lam_0_g : array
+        Guess for lambda 0
+    lam_1_g : array
+        Guess for lambda 1
+    """
+        
     # subset to pre 2005
     mod_data = mod_data[:217]
     mod_yc_data = mod_yc_data[:214]
@@ -215,45 +226,57 @@ def robust(mod_data, mod_yc_data):
     k_ar = bsr.k_ar
 
     #test sum_sqr_pe
-    lam_0_t = [0.03,0.1,0.2,-0.21,0.32]
-    lam_0_nr = np.zeros([5*4, 1])
+    if not lam_0_g:
+        lam_0_t = [0.03,0.1,0.2,-0.21,0.32]
+        lam_0_nr = np.zeros([5*4, 1])
 
     #set seed for future repl
 
-    lam_1_t = []
-    lam_1_nr = np.zeros([5*4, 5*4])
-    for x in range(neqs):
-        lam_1_t = lam_1_t + (np.asarray([[0.03,0.1,0.2,0.21,0.32]]) \
-                                *np.random.random())[0].tolist()
-        #lam_2_t[x, :neqs] = np.asarray([[2.5e-90,1e-87,9.5e-75,
-        #                                1.21e-93,-0.5e-88]])
+    if not lam_1_g:
+        lam_1_t = []
+        lam_1_nr = np.zeros([5*4, 5*4])
+        for x in range(neqs):
+            lam_1_t = lam_1_t + (np.asarray([[0.03,0.1,0.2,0.21,0.32]]) \
+                                    *np.random.random())[0].tolist()
+            #lam_2_t[x, :neqs] = np.asarray([[2.5e-90,1e-87,9.5e-75,
+            #                                1.21e-93,-0.5e-88]])
 
-    #rerun
-    a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
-                    bsr.phi, bsr.sig)
-
-    #let's try running it on a shorter time series closer to BSR 
-    #original data set
+    #generate a and b for no risk 
+    #a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
+                    #bsr.phi, bsr.sig)
 
     out_bsr = bsr.solve(lam_0_t, lam_1_t, ftol=1e-950, xtol=1e-950,
                         maxfev=1000000000, full_output=True)
 
+    lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
+    return lam_0_n, lam_1_n
 
-    #lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr_ld
-    #lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
-    return out_bsr
-
-atts = 10
+big_runs = 1
+runs_groups = []
+atts = 1
 np.random.seed(101)
-results = {}
 
-for i in range(atts):
-    print i
-    res = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
-    results[str(i)] = [str(np.random.random()), res[0], res[1][:neqs, :neqs]]
+#generate decent guesses
+for run in range(big_runs):
+    lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
+    lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
+    for i in range(atts):
+        print (run, i)
+        sin_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
+        lam_0_coll[i] = sin_run[0]
+        lam_1_coll[i] = sin_run[1]
+    lam_0_mn = np.mean(lam_0_coll, axis=0)
+    lam_1_mn = np.mean(lam_1_coll, axis=0)
 
-for i in range(atts):
-    print results[str(i)]
+    runs_groups.append(res_mean)
+
+#now use these means as guesses for the next 10 runs
+res = []
+for guess in range(big_runs):
+    res.append(robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
+        lam_0_g=runs_group[guess,0], lam_1_g=runs_group[guess,1]))
+    print "i\n"
+    print res[guess]
     print "\n"
 
 #should probably pickle the results here
