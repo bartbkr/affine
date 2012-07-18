@@ -131,6 +131,9 @@ class affine(LikelihoodModel):
         neqs = self.neqs
         k_ar = self.k_ar
 
+        lam = []
+        lam.append
+
         assert len(lam_0_g) == neqs + lat, "Length of lam_0_g not correct"
         assert len(lam_1_g) == (neqs + lat)**2, "Length of lam_1_g not correct"
         if lat:
@@ -139,7 +142,10 @@ class affine(LikelihoodModel):
             assert len(sig_g) == lat**2, "Length of sig_g not correct"
             lam = np.asarray(lam_0_g + lam_1_g + delt_1_g + phi_g + sig_g)
         else:
+            #LEFT OFF HERE
             lam = np.asarray(lam_0_g + lam_1_g)
+            lam.append(lam_0_g[:neqs*k_ar].tolist())
+            lam.append(lam_1_g.tolist())
 
         func = self._affine_nsum_errs
 
