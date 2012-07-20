@@ -130,17 +130,21 @@ class affine(LikelihoodModel):
         lat = self.latent
         neqs = self.neqs
         k_ar = self.k_ar
+        lam = []
 
-        assert len(lam_0_g) == neqs + lat, "Length of lam_0_g not correct"
-        assert len(lam_1_g) == (neqs + lat)**2, "Length of lam_1_g not correct"
+        #this needs to be fixed
+        #assert np.shape(lam_0_g) == neqs + lat, "Length of lam_0_g not correct"
+        #assert len(lam_1_g) == (neqs + lat)**2, "Length of lam_1_g not correct"
         if lat:
             assert len(delt_1_g) == lat, "Length of delt_1_g not correct"
             assert len(phi_g) == lat**2, "Length of phi_g not correct"
             assert len(sig_g) == lat**2, "Length of sig_g not correct"
             lam = np.asarray(lam_0_g + lam_1_g + delt_1_g + phi_g + sig_g)
         else:
-            lam_0_list = flatten(lam_0_g[:neqs*k_ar])
+            lam_0_list = flatten(lam_0_g[:neqs])
+            print len(lam_0_list)
             lam_1_list = flatten(lam_1_g[:neqs*k_ar,:neqs*k_ar])
+            print len(lam_1_list)
             for x in range(len(lam_0_list)):
                 lam.append(lam_0_list[x])
             for x in range(len(lam_1_list)):
@@ -379,6 +383,7 @@ class affine(LikelihoodModel):
             lam_0[:neqs] = np.asarray([lam_0_est]).T
 
             lam_1 = np.zeros([k_ar*neqs, k_ar*neqs])
+            #print np.shape(lam_1_est)
             lam_1[:neqs,:neqs] = np.reshape(lam_1_est, (neqs,neqs))
 
             delta_1 = self.delta_1
@@ -403,17 +408,17 @@ class affine(LikelihoodModel):
                 for i,x in enumerate(rows[1:]):
                     new_array = np.append(array[rows[i+1],:], axis=0)
         return new_array
-    def flatten(array):
-        """
-        Flattens array to list values
-        """
-        a_list = []
-        if array.ndim == 1:
-            for x in range(np.shape(array)[0]):
-                a_list.append(array[x])
-            return a_list
-        elif array.ndim == 2:
-            rshape = np.reshape(array, np.size(array))
-            for x in range(np.shape(rshape)[0]):
-                a_list.append(rshape[x])
-            return a_list
+def flatten(array):
+    """
+    Flattens array to list values
+    """
+    a_list = []
+    if array.ndim == 1:
+        for x in range(np.shape(array)[0]):
+            a_list.append(array[x])
+        return a_list
+    elif array.ndim == 2:
+        rshape = np.reshape(array, np.size(array))
+        for x in range(np.shape(rshape)[0]):
+            a_list.append(rshape[x])
+        return a_list

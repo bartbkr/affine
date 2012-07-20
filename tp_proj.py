@@ -227,22 +227,22 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
 
     #test sum_sqr_pe
     if not lam_0_g:
-        lam_0_t = np.zeros([5*4, 1])
-        lam_0_t[:neqs] = np.array([[0.03],[0.1],[0.2],[-0.21],[0.32]])
+        lam_0_g = np.zeros([5*4, 1])
+        lam_0_g[:neqs] = np.array([[0.03],[0.1],[0.2],[-0.21],[0.32]])
 
     #set seed for future repl
 
     if not lam_1_g:
-        lam_1_t = np.zeros([5*4, 5*4])
+        lam_1_g = np.zeros([5*4, 5*4])
         for x in range(neqs):
             guess = [0.03,0.1,0.2,0.21,0.32]
-            lam_1_t[x, :neqs] = np.array([guess])*np.random.random()
+            lam_1_g[x, :neqs] = np.array([guess])*np.random.random()
 
     #generate a and b for no risk 
     #a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
                     #bsr.phi, bsr.sig)
 
-    out_bsr = bsr.solve(lam_0_t, lam_1_t, ftol=1e-950, xtol=1e-950,
+    out_bsr = bsr.solve(lam_0_g, lam_1_g, ftol=1e-950, xtol=1e-950,
                         maxfev=1000000000, full_output=True)
 
     lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
@@ -258,7 +258,7 @@ for run in range(big_runs):
     lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
     lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
     for i in range(atts):
-        print (run, i)
+        #print (run, i)
         sin_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
         lam_0_coll[i] = sin_run[0]
         lam_1_coll[i] = sin_run[1]
