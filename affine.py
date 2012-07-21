@@ -143,7 +143,7 @@ class affine(LikelihoodModel):
         else:
             lam_0_list = flatten(lam_0_g[:neqs])
             print len(lam_0_list)
-            lam_1_list = flatten(lam_1_g[:neqs*k_ar,:neqs*k_ar])
+            lam_1_list = flatten(lam_1_g[:neqs,:neqs])
             print len(lam_1_list)
             for x in range(len(lam_0_list)):
                 lam.append(lam_0_list[x])
@@ -155,6 +155,7 @@ class affine(LikelihoodModel):
         #run optmization
         reslt = optimize.leastsq(func, lam, maxfev=maxfev,
                             xtol=xtol, full_output=full_output)
+        pdb.set_trace()
         lam_solv = reslt[0]
         output = reslt[1:]
 
@@ -383,8 +384,8 @@ class affine(LikelihoodModel):
             lam_0[:neqs] = np.asarray([lam_0_est]).T
 
             lam_1 = np.zeros([k_ar*neqs, k_ar*neqs])
-            #print np.shape(lam_1_est)
             lam_1[:neqs,:neqs] = np.reshape(lam_1_est, (neqs,neqs))
+            pdb.set_trace()
 
             delta_1 = self.delta_1
             phi = self.phi
