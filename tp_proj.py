@@ -226,13 +226,13 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
     k_ar = bsr.k_ar
 
     #test sum_sqr_pe
-    if not lam_0_g:
+    if lam_0_g is None:
         lam_0_g = np.zeros([5*4, 1])
         lam_0_g[:neqs] = np.array([[0.03],[0.1],[0.2],[-0.21],[0.32]])
 
     #set seed for future repl
 
-    if not lam_1_g:
+    if lam_1_g is None:
         lam_1_g = np.zeros([5*4, 5*4])
         for x in range(neqs):
             guess = [0.03,0.1,0.2,0.21,0.32]
@@ -243,14 +243,14 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
                     #bsr.phi, bsr.sig)
 
     out_bsr = bsr.solve(lam_0_g, lam_1_g, ftol=1e-950, xtol=1e-950,
-                        maxfev=1000000000, full_output=True)
+                        #maxfev=1000000000, full_output=True)
 
     lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
     return lam_0_n, lam_1_n
 
-big_runs = 1
-runs_groups = []
-atts = 1
+big_runs = 10
+run_groups = []
+atts = 10
 np.random.seed(101)
 
 #generate decent guesses
@@ -264,14 +264,14 @@ for run in range(big_runs):
         lam_1_coll[i] = sin_run[1]
     lam_0_mn = np.mean(lam_0_coll, axis=0)
     lam_1_mn = np.mean(lam_1_coll, axis=0)
-
-    runs_groups.append(res_mean)
+    #add mean of these runs to runs_gruops
+    run_groups.append((lam_0_mn, lam_1_mn))
 
 #now use these means as guesses for the next 10 runs
 res = []
 for guess in range(big_runs):
     res.append(robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
-        lam_0_g=runs_group[guess,0], lam_1_g=runs_group[guess,1]))
+        lam_0_g=run_groups[guess][0], lam_1_g=run_groups[guess][1]))
     print "i\n"
     print res[guess]
     print "\n"
