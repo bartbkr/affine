@@ -86,8 +86,6 @@ class affine(LikelihoodModel):
         sig[:neqs, :neqs] = sigma_u
         self.sig = sig
 
-        #pdb.set_trace()
-
         if lat == 0:
             self.delta_0 = 0
             delta_1 = np.zeros([neqs*k_ar,1])
@@ -155,7 +153,6 @@ class affine(LikelihoodModel):
         #run optmization
         reslt = optimize.leastsq(func, lam, maxfev=maxfev,
                             xtol=xtol, full_output=full_output)
-        pdb.set_trace()
         lam_solv = reslt[0]
         output = reslt[1:]
 
@@ -385,7 +382,6 @@ class affine(LikelihoodModel):
 
             lam_1 = np.zeros([k_ar*neqs, k_ar*neqs])
             lam_1[:neqs,:neqs] = np.reshape(lam_1_est, (neqs,neqs))
-            pdb.set_trace()
 
             delta_1 = self.delta_1
             phi = self.phi
