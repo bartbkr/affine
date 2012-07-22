@@ -243,7 +243,7 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
                     #bsr.phi, bsr.sig)
 
     out_bsr = bsr.solve(lam_0_g, lam_1_g, ftol=1e-950, xtol=1e-950,
-                        #maxfev=1000000000, full_output=True)
+                        maxfev=1000000000, full_output=True)
 
     lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
     return lam_0_n, lam_1_n
@@ -252,31 +252,38 @@ big_runs = 10
 run_groups = []
 atts = 10
 np.random.seed(101)
+collect = {}
 
 #generate decent guesses
 for run in range(big_runs):
     lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
     lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
     for i in range(atts):
-        #print (run, i)
+        print (run, i)
         sin_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
         lam_0_coll[i] = sin_run[0]
         lam_1_coll[i] = sin_run[1]
     lam_0_mn = np.mean(lam_0_coll, axis=0)
     lam_1_mn = np.mean(lam_1_coll, axis=0)
-    #add mean of these runs to runs_gruops
+    #add mean of these runs to run_groups
     run_groups.append((lam_0_mn, lam_1_mn))
+    collect.append([(run,i)][(lam_0_mn, lam_1_mn)]
+
+pkl_file = open("collect.pkl", "wb")
+pickle.dump(collect, pkl_file)
+pkl_file.close()
 
 #now use these means as guesses for the next 10 runs
 res = []
 for guess in range(big_runs):
     res.append(robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
         lam_0_g=run_groups[guess][0], lam_1_g=run_groups[guess][1]))
-    print "i\n"
-    print res[guess]
-    print "\n"
 
 #should probably pickle the results here
+
+pkl_file = open("out_big_run.pkl", "wb")
+pickle.dump(res, pkl_file)
+pkl_file.close()
 
 # Initialize SMTP server
 
