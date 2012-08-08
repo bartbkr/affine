@@ -267,7 +267,7 @@ for run in range(big_runs):
     lam_1_mn = np.mean(lam_1_coll, axis=0)
     #add mean of these runs to run_groups
     run_groups.append((lam_0_mn, lam_1_mn))
-    collect[(run,i)] = [(lam_0_mn, lam_1_mn)]
+    collect[(run,i)] = [(lam_0_coll, lam_1_coll)]
 
 pkl_file = open("collect.pkl", "wb")
 pickle.dump(collect, pkl_file)
