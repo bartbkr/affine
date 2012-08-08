@@ -6,7 +6,7 @@ import statsmodels.api as sm
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.base.model import LikelihoodModel
-from statsmodels.sandbox.regression.numdiff import (approx_hess,
+from statsmodels.tools.numdiff import (approx_hess,
                                                         approx_fprime)
 from statsmodels.tsa.filters import hpfilter
 
