@@ -25,7 +25,7 @@ class affine(LikelihoodModel):
     def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4,
                  freq='M', latent=0, no_err=None):
         """
-        Attemps to solve affine model
+        Attempts to solve affine model
         yc_data : yield curve data
         var_data : data for var model
         rf_rate : rf_rate for short_rate, used in latent factor case
@@ -121,9 +121,25 @@ class affine(LikelihoodModel):
         """
         Attempt to solve affine model
 
-        This needs to be fixed
-        !!!!!!!!!!!!
-        Pass in guess as arrays, not lists!!
+        lam_0_g : array (n x 1),
+            guess for elements of lam_0
+        lam_1_g : array (n x n),
+            guess for elements of lam_1
+        delt_1_g : array 
+            guess for elements of delt_1
+        phi_g : array
+            guess for elements of phi
+        sig_g : array
+            guess for elements of sigma
+        scipy.optimize.leastsq params
+        maxfev : int
+            maximum number of calls to the function for solution alg
+        ftol : float
+            relative error desired in sum of squares
+        xtol : float
+            relative error desired in the approximate solution
+        full_output : bool
+            non_zero to return all optional outputs
         """
         lat = self.latent
         neqs = self.neqs
