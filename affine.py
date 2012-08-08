@@ -140,9 +140,7 @@ class affine(LikelihoodModel):
             lam = np.asarray(lam_0_g + lam_1_g + delt_1_g + phi_g + sig_g)
         else:
             lam_0_list = flatten(lam_0_g[:neqs])
-            print len(lam_0_list)
             lam_1_list = flatten(lam_1_g[:neqs,:neqs])
-            print len(lam_1_list)
             for x in range(len(lam_0_list)):
                 lam.append(lam_0_list[x])
             for x in range(len(lam_1_list)):
