@@ -207,6 +207,14 @@ class affine(LikelihoodModel):
         
 
     def gen_pred_coef(self, lam_0_ab, lam_1_ab, delta_1, phi, sig):
+        """
+        Generates prediction coefficient vectors A and B
+        lam_0_ab : array
+        lam_1_ab : array
+        delta_1 : array
+        phi : array
+        sig : array
+        """
         lat = self.latent
         mths = self.mths
         delta_0 = self.delta_0
