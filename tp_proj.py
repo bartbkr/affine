@@ -248,7 +248,7 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
     return lam_0_n, lam_1_n
 
 run_groups = []
-atts = 2
+atts = 100
 np.random.seed(101)
 collect_0 = {}
 collect_1 = {}
