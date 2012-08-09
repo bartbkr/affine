@@ -266,26 +266,27 @@ for run in range(big_runs):
     lam_1_mn = np.mean(lam_1_coll, axis=0)
     #add mean of these runs to run_groups
     run_groups.append((lam_0_mn, lam_1_mn))
-    collect[(run,i)] = [(lam_0_coll, lam_1_coll)]
+    collect[(run,i)] = [sin_run[0], sin_run[1]]
 
 pkl_file = open("collect.pkl", "wb")
 pickle.dump(collect, pkl_file)
 pkl_file.close()
 
 #now use these means as guesses for the next 10 runs
-res = []
-for guess in range(big_runs):
-    res.append(robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
-        lam_0_g=run_groups[guess][0], lam_1_g=run_groups[guess][1]))
+# res = []
+# for guess in range(big_runs):
+#     res.append(robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
+#         lam_0_g=run_groups[guess][0], lam_1_g=run_groups[guess][1]))
 
 #should probably pickle the results here
 
-pkl_file = open("out_big_run.pkl", "wb")
-pickle.dump(res, pkl_file)
-pkl_file.close()
+# pkl_file = open("out_big_run.pkl", "wb")
+# pickle.dump(res, pkl_file)
+# pkl_file.close()
 
 # Initialize SMTP server
 
+print "Trying to send email"
 server=smtplib.SMTP('smtp.gmail.com:587')
 server.starttls()
 server.login("bartbkr",passwd)
