@@ -204,6 +204,15 @@ class affine(LikelihoodModel):
         """
         Loglikelihood used in latent factor models
         """
+        # here is the likelihood that needs to be used
+        # sig is implied VAR sig
+        # use two matrices to take the difference
+        like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
+            np.logdet(np.dot(sig, sig.T)) - 1.0 / 2 * \
+            np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sig, sig.T))),\
+            err)) - (T - 1) / 2.0 * \
+            np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
+            np.sum(meas_err/np.var(meas_err, axis=1))
         
 
     def gen_pred_coef(self, lam_0_ab, lam_1_ab, delta_1, phi, sig):
@@ -297,15 +306,6 @@ class affine(LikelihoodModel):
         #this taken out for test run, need to be added back in
         #J = 
 
-        # here is the likelihood that needs to be used
-        # sig is implied VAR sig
-        # use two matrices to take the difference
-        like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
-            np.logdet(np.dot(sig, sig.T)) - 1.0 / 2 * \
-            np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sig, sig.T))),\
-            err)) - (T - 1) / 2.0 * \
-            np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
-            np.sum(meas_err/np.var(meas_err, axis=1))
 
 
     def _proc_to_mth(self):
