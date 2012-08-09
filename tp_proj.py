@@ -6,13 +6,13 @@ import statsmodels.api as sm
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.base.model import LikelihoodModel
-from statsmodels.tools.numdiff import (approx_hess, approx_fprime)
+from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from statsmodels.tsa.filters import hpfilter
 
 import pandas as px
 import pandas.core.datetools as dt
 from operator import itemgetter
-from scipy import optimize
+from scipy import optimize, stats
 import scipy.linalg as la
 
 #for sending email
@@ -247,29 +247,31 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
     lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
     return lam_0_n, lam_1_n
 
-big_runs = 10
 run_groups = []
-atts = 10
+atts = 2
 np.random.seed(101)
-collect = {}
+collect_0 = {}
+collect_1 = {}
 
 #generate decent guesses
-for run in range(big_runs):
-    lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
-    lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
-    for i in range(atts):
-        print (run, i)
-        sin_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
-        lam_0_coll[i] = sin_run[0]
-        lam_1_coll[i] = sin_run[1]
-    lam_0_mn = np.mean(lam_0_coll, axis=0)
-    lam_1_mn = np.mean(lam_1_coll, axis=0)
-    #add mean of these runs to run_groups
-    run_groups.append((lam_0_mn, lam_1_mn))
-    collect[(run,i)] = [sin_run[0], sin_run[1]]
+lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
+lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
+for i in range(atts):
+    print str(i)
+    sin_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
+    lam_0_coll[i] = sin_run[0]
+    lam_1_coll[i] = sin_run[1]
 
-pkl_file = open("collect.pkl", "wb")
-pickle.dump(collect, pkl_file)
+quant = [0, 10, 25, 50, 75, 90, 100]
+for q in quant:
+    collect_0[str(q)] = stats.scoreatpercentile(lam_0_coll[:], q)
+    collect_1[str(q)] = stats.scoreatpercentile(lam_1_coll[:], q)
+
+pkl_file = open("collect_0.pkl", "wb")
+pickle.dump(collect_0, pkl_file)
+pkl_file.close()
+pkl_file = open("collect_1.pkl", "wb")
+pickle.dump(collect_1, pkl_file)
 pkl_file.close()
 
 #now use these means as guesses for the next 10 runs
@@ -277,6 +279,7 @@ pkl_file.close()
 # for guess in range(big_runs):
 #     res.append(robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
 #         lam_0_g=run_groups[guess][0], lam_1_g=run_groups[guess][1]))
+
 
 #should probably pickle the results here
 
