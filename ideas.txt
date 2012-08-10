@@ -1,0 +1,1 @@
+1. Maybe change affine model class so that the VAR model class is passed in

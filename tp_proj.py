@@ -197,95 +197,51 @@ var_tp = px.DataFrame(index=mod_yc_data.index[1:], data=np.asarray(avg_12), colu
 var_tp['act_12'] = mod_yc_data['l_tr_y10']
 var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 
-
 #############################################
 # Testing                                   #
 #############################################
 
-def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
-    """
-    Function to run model with guesses, also generating 
-    mod_data : pandas DataFrame 
-        model data
-    mod_yc_data : pandas DataFrame
-        model yield curve data
-    lam_0_g : array
-        Guess for lambda 0
-    lam_1_g : array
-        Guess for lambda 1
-    """
-        
-    # subset to pre 2005
-    mod_data = mod_data[:217]
-    mod_yc_data = mod_yc_data[:214]
-
-    #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
-    bsr = affine(yc_data = mod_yc_data, var_data = mod_data)
-    neqs = bsr.neqs
-    k_ar = bsr.k_ar
-
-    #test sum_sqr_pe
-    if lam_0_g is None:
-        lam_0_g = np.zeros([5*4, 1])
-        lam_0_g[:neqs] = np.array([[0.03],[0.1],[0.2],[-0.21],[0.32]])
-
-    #set seed for future repl
-
-    if lam_1_g is None:
-        lam_1_g = np.zeros([5*4, 5*4])
-        for x in range(neqs):
-            guess = [0.03,0.1,0.2,0.21,0.32]
-            lam_1_g[x, :neqs] = np.array([guess])*np.random.random()
-
-    #generate a and b for no risk 
-    #a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
-                    #bsr.phi, bsr.sig)
-
-    out_bsr = bsr.solve(lam_0_g, lam_1_g, ftol=1e-950, xtol=1e-950,
-                        maxfev=1000000000, full_output=True)
-
-    lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
-    return lam_0_n, lam_1_n
-
 run_groups = []
 atts = 100
 np.random.seed(101)
-collect_0 = {}
-collect_1 = {}
+collect_0 = []
+collect_1 = []
 
 #generate decent guesses
 lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
-for i in range(atts):
-    print str(i)
-    sin_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
-    lam_0_coll[i] = sin_run[0]
-    lam_1_coll[i] = sin_run[1]
+for a in range(atts):
+    print str(a)
+    sim_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
+    lam_0_coll[a] = sim_run[0]
+    lam_1_coll[a] = sim_run[1]
 
 quant = [0, 10, 25, 50, 75, 90, 100]
 for q in quant:
-    collect_0[str(q)] = stats.scoreatpercentile(lam_0_coll[:], q)
-    collect_1[str(q)] = stats.scoreatpercentile(lam_1_coll[:], q)
+    collect_0.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
+    collect_1_.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
 
-pkl_file = open("collect_0.pkl", "wb")
-pickle.dump(collect_0, pkl_file)
-pkl_file.close()
-pkl_file = open("collect_1.pkl", "wb")
-pickle.dump(collect_1, pkl_file)
-pkl_file.close()
+#use medians to guess for next 50 sims
+atts2 = 50
+lam_0_coll = np.zeros((atts2, neqs*k_ar, 1))
+lam_1_coll = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
+collect_0_ref = []
+collect_1_ref = []
+for a in range(atts2):
+    print str(a)
+    sim_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
+            lam_0_g=collect_0[str(50)], lam_1_g=collect_1[str(50)])
+    lam_0_coll[a] = sim_run[0]
+    lam_1_coll[a] = sim_run[1]
 
-#now use these means as guesses for the next 10 runs
-# res = []
-# for guess in range(big_runs):
-#     res.append(robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
-#         lam_0_g=run_groups[guess][0], lam_1_g=run_groups[guess][1]))
+for q in quant:
+    collect_0_ref.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
+    collect_1_ref.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
 
-
-#should probably pickle the results here
-
-# pkl_file = open("out_big_run.pkl", "wb")
-# pickle.dump(res, pkl_file)
-# pkl_file.close()
+pickl_file(collect_0, "collect_0")
+pickl_file(collect_1, "collect_1")
+pickl_file(collect_0_ref, "collect_0_ref")
+pickl_file(collect_1_ref, "collect_1_ref")
 
 # Initialize SMTP server
 
