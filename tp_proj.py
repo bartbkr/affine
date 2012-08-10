@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import itertools as it
 
 from affine import affine
+from util import robust, pickl_file
 #send email when done
 import datetime as dt
 d1 = dt.datetime.now()
@@ -260,3 +261,5 @@ Job has completed '''
 
 server.sendmail("bartbkr@gmail.com", "bartbkr@gmail.com", m+msg)
 server.quit()
+
+print "Send mail: woohoo!"
