@@ -203,7 +203,7 @@ var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 #############################################
 
 run_groups = []
-atts = 2
+atts = 100
 np.random.seed(101)
 collect_0 = []
 collect_1 = []
@@ -223,7 +223,7 @@ for q in quant:
     collect_1.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
 
 #use medians to guess for next 50 sims
-atts2 = 2
+atts2 = 50
 lam_0_coll = np.zeros((atts2, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
 collect_0_ref = []
