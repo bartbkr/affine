@@ -7,7 +7,7 @@ def pickl_file(obj=None, name=None):
     Pass name without .pkl extension
     """
     pkl_file = open(name + ".pkl", "wb")
-    pickl.dump(obj, pkl_file)
+    pickle.dump(obj, pkl_file)
     pkl_file.close()
 
 def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
@@ -50,7 +50,7 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
                     #bsr.phi, bsr.sig)
 
     out_bsr = bsr.solve(lam_0_g, lam_1_g, ftol=1e-950, xtol=1e-950,
-                        maxfev=1000000000, full_output=True)
+                        maxfev=10, full_output=True)
 
     lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, output_n = out_bsr
     return lam_0_n, lam_1_n

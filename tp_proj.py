@@ -203,7 +203,7 @@ var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 #############################################
 
 run_groups = []
-atts = 100
+atts = 2
 np.random.seed(101)
 collect_0 = []
 collect_1 = []
@@ -220,18 +220,19 @@ for a in range(atts):
 quant = [0, 10, 25, 50, 75, 90, 100]
 for q in quant:
     collect_0.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
-    collect_1_.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
+    collect_1.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
 
 #use medians to guess for next 50 sims
-atts2 = 50
+atts2 = 2
 lam_0_coll = np.zeros((atts2, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
 collect_0_ref = []
 collect_1_ref = []
 for a in range(atts2):
     print str(a)
+    #third element is median
     sim_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
-            lam_0_g=collect_0[str(50)], lam_1_g=collect_1[str(50)])
+            lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1])
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]
 
