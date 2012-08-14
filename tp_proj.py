@@ -44,7 +44,9 @@ if comp == "bart-Inspiron-1525":
 if comp == "linux-econ6":
     path_pre = "/home/labuser"
 
-passwd = getpass.getpass(prompt="Please enter email passwd: ")
+text = open("test.txt")
+passwd = text.readline()[:-1]
+#passwd = getpass.getpass(prompt="Please enter email passwd: ")
 
 ##############################################################################
 # Estimate model with Eurodollar futures
