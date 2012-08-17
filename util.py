@@ -47,7 +47,7 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
             else: 
                 mult = -1
             guess = [[mult*-0.1],[mult*0.1],[mult*-0.1],[mult*0.1],[mult*-0.1]]
-            lam_1_g[x, :neqs] = np.array([guess])*np.random.random()
+            lam_1_g[x, :neqs, None] = np.array([guess])*np.random.random()
 
     #generate a and b for no risk 
     #a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
