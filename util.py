@@ -35,14 +35,18 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
     #test sum_sqr_pe
     if lam_0_g is None:
         lam_0_g = np.zeros([5*4, 1])
-        lam_0_g[:neqs] = np.array([[0.03],[0.1],[0.2],[-0.21],[0.32]])
+        lam_0_g[:neqs] = np.array([[-0.1],[0.1],[-0.1],[0.1],[-0.1]])
 
     #set seed for future repl
 
     if lam_1_g is None:
         lam_1_g = np.zeros([5*4, 5*4])
         for x in range(neqs):
-            guess = [0.03,0.1,0.2,0.21,0.32]
+            if x % 2 == 0:
+                mult = 1
+            else: 
+                mult = -1
+            guess = [[mult*-0.1],[mult*0.1],[mult*-0.1],[mult*0.1],[mult*-0.1]]
             lam_1_g[x, :neqs] = np.array([guess])*np.random.random()
 
     #generate a and b for no risk 
