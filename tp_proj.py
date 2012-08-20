@@ -190,8 +190,8 @@ for q in quant:
     collect_0.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
     collect_1.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
 
-pickl_file(collect_0, "collect_0")
-pickl_file(collect_1, "collect_1")
+pickl_file(collect_0, "collect_0_curve")
+pickl_file(collect_1, "collect_1_curve")
 
 #use medians to guess for next 50 sims
 atts2 = 50
@@ -213,8 +213,8 @@ for q in quant:
     collect_0_ref.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
     collect_1_ref.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
 
-pickl_file(collect_0_ref, "collect_0_ref")
-pickl_file(collect_1_ref, "collect_1_ref")
+pickl_file(collect_0_ref, "collect_0_ref_curve")
+pickl_file(collect_1_ref, "collect_1_ref_curve")
 
 # Initialize SMTP server
 

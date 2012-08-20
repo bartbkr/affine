@@ -144,6 +144,8 @@ class affine(LikelihoodModel):
         neqs = self.neqs
         k_ar = self.k_ar
         lam = []
+        X_t = self.var_data
+        mth_only = self.mth_only
 
         #this needs to be fixed
         #assert np.shape(lam_0_g) == neqs + lat, "Length of lam_0_g not correct"
@@ -161,13 +163,14 @@ class affine(LikelihoodModel):
             for x in range(len(lam_1_list)):
                 lam.append(lam_1_list[x])
 
-        func = self._affine_nsum_errs
+        #this should be specified in function call
+        #func = self._affine_nsum_errs
+        func = _affine_pred
 
         #run optmization
-        reslt = optimize.leastsq(func, lam, maxfev=maxfev,
-                            xtol=xtol, full_output=full_output)
+        reslt = optimize.curve_fit(func, X_t, mth_only, p0=lam)
         lam_solv = reslt[0]
-        output = reslt[1:]
+        lam_cov = reslt[1]
 
         lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam_solv)
 
@@ -176,7 +179,7 @@ class affine(LikelihoodModel):
         if full_output:
             return lam_0, lam_1, delta_1, phi, sig, a, b, output
         else:
-            return lam_0, lam_1, delta_1, phi, sig, a, b
+            return lam_0, lam_1, delta_1, phi, sig, a, b, lam_cov
 
     def score(self, lam):
         """
@@ -213,7 +216,6 @@ class affine(LikelihoodModel):
             err)) - (T - 1) / 2.0 * \
             np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
             np.sum(meas_err/np.var(meas_err, axis=1))
-        
 
     def gen_pred_coef(self, lam_0_ab, lam_1_ab, delta_1, phi, sig):
         """
@@ -246,7 +248,7 @@ class affine(LikelihoodModel):
             b[x] = np.multiply(-B[x], n_inv[x])
         return a, b
 
-    def _affine_nsum_errs(self, lam):
+    def _affine_nsum_errs(self, lam, X_t):
         """
         This function generates the sum of the prediction errors
         """
@@ -256,7 +258,6 @@ class affine(LikelihoodModel):
         k_ar = self.k_ar
         mths = self.mths
         mth_only = self.mth_only
-        X_t = self.var_data
 
         lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam)
 
@@ -268,7 +269,7 @@ class affine(LikelihoodModel):
             X_t = self._solve_X_t_unkn(a, b, X_t)
 
         errs = []
-
+        
         for i in mths:
             act = np.flipud(mth_only['l_tr_m' + str(i)].values)
             pred = a[i-1] + np.dot(b[i-1].T, np.fliplr(X_t.T))[0]
@@ -440,3 +441,25 @@ def flatten(array):
         for x in range(np.shape(rshape)[0]):
             a_list.append(rshape[x])
         return a_list
+    
+def _affine_pred(lam, X_t):
+    """
+    Function based on lambda and X_t that generates predicted yields
+    """
+    lat = self.latent
+    no_err = self.no_err
+    neqs = self.neqs
+    k_ar = self.k_ar
+    mths = self.mths
+    mth_only = self.mth_only
+
+    lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam)
+
+    a, b = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
+
+    pred = px.DataFrame(index=mth_only.index)
+    for i in mths:
+        pred["l_tr_m" + str(i)] = a[i-1] + np.dot(b[i-1].T, X_t.T).T
+
+    return pred
+

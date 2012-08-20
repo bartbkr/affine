@@ -8,3 +8,4 @@ see:
 http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.leastsq.html#scipy.optimize.leastsq
 http://www.mathworks.com/help/toolbox/stats/nlparci.html
 http://en.wikipedia.org/wiki/Gradient
+http://semenovchemicalphysicsicpras.academia.edu/AlexeyPomerantsev/Papers/558577/Confidence_intervals_for_nonlinear_regression_extrapolation
