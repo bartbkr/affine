@@ -64,29 +64,10 @@ mthdata = px.read_csv(path_pre + "/Documents/Econ_630/data/VARbernankedata.csv",
 #                      na_values="M", index_col = 0, parse_dates=True)
 
 ########################################
-# Investigate Prices                   #
-########################################
-
-#pdata_new = pdata.diff(periods=12)/pdata
-#pdata_new = pdata_new.dropna(axis=0)
-#pdata_new['PCE no'] = pdata_new['PCE no']*100
-#pdata_new['Food'] = pdata_new['Food']*100
-#pdata_new['Energy'] = pdata_new['Energy']*10
-#pdata_new.plot()
-#plt.legend(loc='best')
-#plt.show()
-
-########################################
 # Test that HP filter/empl gap correct #
 ########################################
 mthdata['tr_empl_gap'], mthdata['hp_ch'] = hpfilter(mthdata['Total_Nonfarm_employment'], lamb=129600)
 mthdata['tr_empl_gap_perc'] = mthdata['tr_empl_gap']/mthdata['hp_ch']
-
-#may have used wrong lambda before
-#going to stick with new estimate
-#plt.figure()
-#mthdata['tr_empl_gap'].plot()
-#plt.show()
 
 ########################################
 # Test that inflation                  #
@@ -126,20 +107,6 @@ irsf = vreg.irf(periods=50)
 #irsf.plot(orth=True, stderr_type='mc', impulse='tr_empl_gap_perc',repl=1000)
 #plt.savefig("../output/VAR_empl_shk.png")
 #plt.show()
-
-
-########################################
-# Opt lag tests                        #
-########################################
-
-#print 'AIC'
-#print VAR(data).fit(maxlags=12, ic='aic').k_ar
-#print 'FPE'
-#print VAR(data).fit(maxlags=12, ic='fpe').k_ar
-#print 'HQIC'
-#print VAR(data).fit(maxlags=12, ic='hqic').k_ar
-#print 'BIC'
-#print VAR(data).fit(maxlags=12, ic='bic').k_ar
 
 #########################################
 # Set up affine affine model               #
@@ -239,6 +206,8 @@ for a in range(atts2):
             lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1])
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]
+
+#These estimates are getting closer to each other throughout the entire span 
 
 for q in quant:
     collect_0_ref.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
