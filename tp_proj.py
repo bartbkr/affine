@@ -39,14 +39,13 @@ comp = socket.gethostname()
 global path_pre
 if comp == "BBAKER":
     path_pre = "C:\\Documents and Settings\\bbaker"
+    text = open("test.txt")
+    passwd = text.readline()[:-1]
 if comp == "bart-Inspiron-1525":
     path_pre = "/home/bart"
+    #passwd = getpass.getpass(prompt="Please enter email passwd: ")
 if comp == "linux-econ6":
     path_pre = "/home/labuser"
-
-text = open("test.txt")
-passwd = text.readline()[:-1]
-#passwd = getpass.getpass(prompt="Please enter email passwd: ")
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -59,7 +58,13 @@ print "Model 1 running"
 ########################################
 
 mthdata = px.read_csv(path_pre + "/Documents/Econ_630/data/VARbernankedata.csv",
-                      na_values="M", index_col = 0, parse_dates=True)
+                      na_values="M", index_col = 0)
+new_index = []
+for x in mthdata.index.tolist():
+    print x
+    new_index.append(dt.datetime.strptime(x, "%m/%d/%Y")) 
+
+mthdata.index = new_index
 #pdata = px.read_csv(path_pre + "/Documents/Econ_630/data/prices.txt",
 #                      na_values="M", index_col = 0, parse_dates=True)
 
@@ -128,7 +133,11 @@ X_t = x_t_na.dropna(axis=0)
 #############################################
 
 ycdata = px.read_csv(path_pre + "/Documents/Econ_630/data/yield_curve.csv",
-                     na_values = "M", index_col=0, parse_dates=True)
+                     na_values = "M", index_col=0)
+new_index = []
+for x in ycdata.index.tolist():
+    new_index.append(dt.datetime.strptime(x, "%m/%d/%Y")) 
+ycdata.index = new_index
 
 mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',
                                       'l_tr_y1', 'l_tr_y2',

@@ -165,7 +165,7 @@ class affine(LikelihoodModel):
 
         #this should be specified in function call
         #func = self._affine_nsum_errs
-        func = _affine_pred
+        func = self._affine_pred
 
         #run optmization
         reslt = optimize.curve_fit(func, X_t, mth_only, p0=lam)
@@ -342,7 +342,7 @@ class affine(LikelihoodModel):
     #    likl = -(T-1)*np.logdet(J) - (T-1)*1.0/2*np.logdet(np.dot(sig,\
     #            sig.T)) - 1.0/2*
 
-    def _proc_lam(self, lam):
+    def _proc_lam(self, *lam):
         """
         Process lam input into appropriate parameters
         """
@@ -427,6 +427,30 @@ class affine(LikelihoodModel):
                 for i,x in enumerate(rows[1:]):
                     new_array = np.append(array[rows[i+1],:], axis=0)
         return new_array
+
+    def _affine_pred(self, X_t, *lam):
+        """
+        Function based on lambda and X_t that generates predicted yields
+        X_t : X_inforionat
+        """
+        lat = self.latent
+        no_err = self.no_err
+        neqs = self.neqs
+        k_ar = self.k_ar
+        mths = self.mths
+        mth_only = self.mth_only
+
+        lam_0, lam_1, delta_1, phi, sig = self._proc_lam(*lam)
+
+        a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
+
+        pred = px.DataFrame(index=mth_only.index)
+
+        for i in mths:
+            pred["l_tr_m" + str(i)] = a_test[i-1] + np.dot(b_test[i-1].T, X_t.T).T
+
+        return pred
+
 def flatten(array):
     """
     Flattens array to list values
@@ -442,24 +466,4 @@ def flatten(array):
             a_list.append(rshape[x])
         return a_list
     
-def _affine_pred(lam, X_t):
-    """
-    Function based on lambda and X_t that generates predicted yields
-    """
-    lat = self.latent
-    no_err = self.no_err
-    neqs = self.neqs
-    k_ar = self.k_ar
-    mths = self.mths
-    mth_only = self.mth_only
-
-    lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam)
-
-    a, b = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
-
-    pred = px.DataFrame(index=mth_only.index)
-    for i in mths:
-        pred["l_tr_m" + str(i)] = a[i-1] + np.dot(b[i-1].T, X_t.T).T
-
-    return pred
 
