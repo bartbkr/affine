@@ -10,9 +10,11 @@ def pickl_file(obj=None, name=None):
     pickle.dump(obj, pkl_file)
     pkl_file.close()
 
-def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
+def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None):
     """
     Function to run model with guesses, also generating 
+    method : string
+        method to pass to affine.solve()
     mod_data : pandas DataFrame 
         model data
     mod_yc_data : pandas DataFrame
@@ -53,8 +55,8 @@ def robust(mod_data, mod_yc_data, lam_0_g=None, lam_1_g=None):
     #a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
                     #bsr.phi, bsr.sig)
 
-    out_bsr = bsr.solve(lam_0_g, lam_1_g, ftol=1e-950, xtol=1e-950,
-                        maxfev=1000000000, full_output=False)
+    out_bsr = bsr.solve(lam_0_g, lam_1_g, method=method, ftol=1e-950,
+                        xtol=1e-950, maxfev=1000000000, full_output=False)
 
     lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, lam_cov= out_bsr
     return lam_0_n, lam_1_n, lam_cov

@@ -57,14 +57,15 @@ print "Model 1 running"
 # Get data                             #
 ########################################
 
-mthdata = px.read_csv(path_pre + "/Documents/Econ_630/data/VARbernankedata.csv",
-                      na_values="M", index_col = 0)
-new_index = []
-for x in mthdata.index.tolist():
-    print x
-    new_index.append(dt.datetime.strptime(x, "%m/%d/%Y")) 
-
-mthdata.index = new_index
+mthdata = px.read_csv(path_pre
+        + "/Documents/Econ_630/data/VARbernankedata.csv", na_values="M",
+        index_col = 0, parse_dates=True)
+# new_index = []
+# for x in mthdata.index.tolist():
+#     print x
+#     new_index.append(dt.datetime.strptime(x, "%m/%d/%Y")) 
+# 
+# mthdata.index = new_index
 #pdata = px.read_csv(path_pre + "/Documents/Econ_630/data/prices.txt",
 #                      na_values="M", index_col = 0, parse_dates=True)
 
@@ -133,11 +134,11 @@ X_t = x_t_na.dropna(axis=0)
 #############################################
 
 ycdata = px.read_csv(path_pre + "/Documents/Econ_630/data/yield_curve.csv",
-                     na_values = "M", index_col=0)
-new_index = []
-for x in ycdata.index.tolist():
-    new_index.append(dt.datetime.strptime(x, "%m/%d/%Y")) 
-ycdata.index = new_index
+                     na_values = "M", index_col=0, parse_dates=True)
+# new_index = []
+# for x in ycdata.index.tolist():
+#     new_index.append(dt.datetime.strptime(x, "%m/%d/%Y")) 
+# ycdata.index = new_index
 
 mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',
                                       'l_tr_y1', 'l_tr_y2',
@@ -185,12 +186,14 @@ np.random.seed(101)
 collect_0 = []
 collect_1 = []
 
+meth = "cf"
+
 #generate decent guesses
 lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
 for a in range(atts):
     print str(a)
-    sim_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data)
+    sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data)
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]
 
@@ -211,7 +214,7 @@ collect_1_ref = []
 for a in range(atts2):
     print str(a)
     #third element is median
-    sim_run = robust(mod_data=mod_data, mod_yc_data=mod_yc_data,
+    sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data,
             lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1])
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]

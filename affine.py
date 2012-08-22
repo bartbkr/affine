@@ -115,11 +115,15 @@ class affine(LikelihoodModel):
         super(affine, self).__init__(var_data)
 
 
-    def solve(self, lam_0_g, lam_1_g, delt_1_g=None, phi_g=None, sig_g=None,
-              maxfev=10000, ftol=1e-100, xtol=1e-100, full_output=False):
+    def solve(self, lam_0_g, lam_1_g, method="ls", delt_1_g=None, phi_g=None,
+            sig_g=None, maxfev=10000, ftol=1e-100, xtol=1e-100,
+            full_output=False):
         """
         Attempt to solve affine model
 
+        method : string
+            ls = linear least squares
+            cf = nonlinear least squares
         lam_0_g : array (n x 1),
             guess for elements of lam_0
         lam_1_g : array (n x n),
@@ -164,13 +168,21 @@ class affine(LikelihoodModel):
                 lam.append(lam_1_list[x])
 
         #this should be specified in function call
-        #func = self._affine_nsum_errs
-        func = self._affine_pred
-
-        #run optmization
-        reslt = optimize.curve_fit(func, X_t, mth_only, p0=lam)
-        lam_solv = reslt[0]
-        lam_cov = reslt[1]
+        if method == "ls":
+            func = self._affine_nsum_errs
+            reslt = optimize.leastsq(func, lam, maxfev=maxfev,
+                                xtol=xtol, full_output=full_output)
+            lam_solv = reslt[0]
+            output = reslt[1:]
+            func = self._affine_pred
+        elif method == "cf":
+            func = self._affine_pred
+            #need to stack
+            yield_stack = self._stack_yields(mth_only)
+            #run optmization
+            reslt = optimize.curve_fit(func, X_t, yield_stack, p0=lam)
+            lam_solv = reslt[0]
+            lam_cov = reslt[1]
 
         lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam_solv)
 
@@ -447,9 +459,23 @@ class affine(LikelihoodModel):
         pred = px.DataFrame(index=mth_only.index)
 
         for i in mths:
-            pred["l_tr_m" + str(i)] = a_test[i-1] + np.dot(b_test[i-1].T, X_t.T).T
+            pred["l_tr_m" + str(i)] = a_test[i-1] + np.dot(b_test[i-1].T,
+                                      X_t.T).T[:,0]
+
+        pred = self._stack_yields(pred)
 
         return pred
+
+    def _stack_yields(self, orig):
+        """
+        Stacks yields into single column ndarray
+        """
+        mths = self.mths
+        obs = len(orig)
+        new = np.zeros((len(mths)*obs))
+        for col, mth in enumerate(orig.columns):
+            new[col*obs:(col+1)*obs] = orig.icol(col).values
+        return new
 
 def flatten(array):
     """
