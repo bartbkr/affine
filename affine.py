@@ -183,6 +183,9 @@ class affine(LikelihoodModel):
             reslt = optimize.curve_fit(func, X_t, yield_stack, p0=lam,
                                        maxfev=maxfev, xtol=xtol,
                                        full_output=full_output)
+
+            pdb.set_trace()
+
             lam_solv = reslt[0]
             lam_cov = reslt[1]
 
