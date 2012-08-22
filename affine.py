@@ -180,7 +180,9 @@ class affine(LikelihoodModel):
             #need to stack
             yield_stack = self._stack_yields(mth_only)
             #run optmization
-            reslt = optimize.curve_fit(func, X_t, yield_stack, p0=lam)
+            reslt = optimize.curve_fit(func, X_t, yield_stack, p0=lam,
+                                       maxfev=maxfev, xtol=xtol,
+                                       full_output=full_output)
             lam_solv = reslt[0]
             lam_cov = reslt[1]
 
