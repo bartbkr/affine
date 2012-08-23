@@ -184,12 +184,10 @@ class affine(LikelihoodModel):
                                        maxfev=maxfev, xtol=xtol,
                                        full_output=full_output)
 
-            pdb.set_trace()
-
             lam_solv = reslt[0]
             lam_cov = reslt[1]
 
-        lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam_solv)
+        lam_0, lam_1, delta_1, phi, sig = self._proc_lam(*lam_solv)
 
         a, b = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
 
