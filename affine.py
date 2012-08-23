@@ -191,10 +191,12 @@ class affine(LikelihoodModel):
 
         a, b = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
 
-        if full_output:
-            return lam_0, lam_1, delta_1, phi, sig, a, b, output
-        else:
+        #if full_output:
+            #return lam_0, lam_1, delta_1, phi, sig, a, b, output 
+        if method == "cf":
             return lam_0, lam_1, delta_1, phi, sig, a, b, lam_cov
+        elif method == "ls":
+            return lam_0, lam_1, delta_1, phi, sig, a, b, output
 
     def score(self, lam):
         """
@@ -263,7 +265,7 @@ class affine(LikelihoodModel):
             b[x] = np.multiply(-B[x], n_inv[x])
         return a, b
 
-    def _affine_nsum_errs(self, lam, X_t):
+    def _affine_nsum_errs(self, lam):
         """
         This function generates the sum of the prediction errors
         """
@@ -273,8 +275,9 @@ class affine(LikelihoodModel):
         k_ar = self.k_ar
         mths = self.mths
         mth_only = self.mth_only
+        X_t = self.var_data
 
-        lam_0, lam_1, delta_1, phi, sig = self._proc_lam(lam)
+        lam_0, lam_1, delta_1, phi, sig = self._proc_lam(*lam)
 
         a, b = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
 
