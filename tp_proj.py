@@ -145,11 +145,11 @@ avg_12 = []
 for t in range(k_ar, len(mod_data)):
     s_data = mod_data[t-k_ar:t].values
     for i in range(120):
-        new_dat = np.zeros((1,neqs))
+        new_dat = np.zeros((1, neqs))
         for p in range(neqs):
-            new_dat[0,p] = params[0,p] + np.dot(np.flipud(s_data)[:k_ar].flatten()[None], params[1:,p,None])[0]
+            new_dat[0, p] = params[0, p] + np.dot(np.flipud(s_data)[:k_ar].flatten()[None], params[1:,p,None])[0]
         s_data = np.append(s_data, new_dat, axis=0)
-    avg_12.append(np.mean(s_data[:,3]))
+    avg_12.append(np.mean(s_data[:, 3]))
 
 #implied term premium
 var_tp = px.DataFrame(index=mod_yc_data.index[1:], data=np.asarray(avg_12), columns=["pred_12"])
