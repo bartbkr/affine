@@ -1,7 +1,8 @@
 import numpy as np
 import pickle
 import smtplib
-import dt
+
+import datetime as dt
 
 from affine import Affine
 
