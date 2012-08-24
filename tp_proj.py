@@ -1,18 +1,17 @@
 import numpy as np
+import pandas as px
+import datetime as dt
+
 import socket
+import atexit
+import keyring
+
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
-
-import pandas as px
 from scipy import stats
+from util import robust, pickle_file, success_mail, fail_mail
 
-#for sending email
-import smtplib
-
-from util import robust, pickle_file
-#send email when done
-import datetime as dt
-d1 = dt.datetime.now()
+start_date = dt.datetime.now()
 
 #identify computer
 #identify computer
@@ -20,13 +19,13 @@ comp = socket.gethostname()
 global path_pre
 if comp == "BBAKER":
     path_pre = "C:\\Documents and Settings\\bbaker"
-    text = open("test.txt")
-    passwd = text.readline()[:-1]
 if comp == "bart-Inspiron-1525":
     path_pre = "/home/bart"
-    #passwd = getpass.getpass(prompt="Please enter email passwd: ")
 if comp == "linux-econ6":
     path_pre = "/home/labuser"
+
+#get passwd from keyring
+passwd = keyring.get_password("email_auth", "bartbkr") 
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -157,6 +156,11 @@ var_tp = px.DataFrame(index=mod_yc_data.index[1:], data=np.asarray(avg_12), colu
 var_tp['act_12'] = mod_yc_data['l_tr_y10']
 var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 
+##################################################
+# Define exit message to send to email upon fail #
+##################################################
+atexit.register(fail_mail, start_date, passwd)
+
 #############################################
 # Testing                                   #
 #############################################
@@ -214,22 +218,5 @@ pickle_file(collect_0_ref, "collect_0_ref_curve")
 pickle_file(collect_1_ref, "collect_1_ref_curve")
 pickle_file(collect_cov_ref, "collect_cov_ref")
 
-# Initialize SMTP server
-
-print "Trying to send email"
-server=smtplib.SMTP('smtp.gmail.com:587')
-server.starttls()
-server.login("bartbkr",passwd)
-
-# Send email
-senddate=dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d')
-subject="Your job has completed"
-m="Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer: My-Mail\r\n\r\n"\
-% (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
-msg='''
-Job has completed '''
-
-server.sendmail("bartbkr@gmail.com", "bartbkr@gmail.com", m+msg)
-server.quit()
-
-print "Send mail: woohoo!"
+#send success email
+success_mail(passwd)

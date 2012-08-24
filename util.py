@@ -1,6 +1,7 @@
 from affine import Affine
 import numpy as np
 import pickle
+import smtplib
 
 def pickle_file(obj=None, name=None):
     """
@@ -60,3 +61,43 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None):
 
     lam_0_n, lam_1_n, delta_1_n, phi_n, sig_n, a, b, lam_cov= out_bsr
     return lam_0_n, lam_1_n, lam_cov
+
+def success_mail(passwd):
+    print "Trying to send email"
+    server=smtplib.SMTP('smtp.gmail.com:587')
+    server.starttls()
+    server.login("bartbkr", passwd)
+
+    # Send email
+    senddate=dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d')
+    subject="Your job has completed"
+    m="Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer: My-Mail\r\n\r\n"\
+    % (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
+    msg='''
+    Job has completed '''
+
+    server.sendmail("bartbkr@gmail.com", "bartbkr@gmail.com", m+msg)
+    server.quit()
+
+    print "Send mail: woohoo!"
+
+def fail_mail(date, passwd):
+    print "Trying to send email"
+    server=smtplib.SMTP('smtp.gmail.com:587')
+    server.starttls()
+    server.login("bartbkr", passwd)
+
+    # Send email
+    date = dt.datetime.strftime(date, '%m/%d/%Y %I:%M:%S %p')
+    senddate=dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d')
+    subject="This run failed"
+    m="Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer: My-Mail\r\n\r\n"\
+    % (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
+    msg='''
+    Hey buddy, the run you started %s failed '''\
+    % (date)
+
+    server.sendmail("bartbkr@gmail.com", "bartbkr@gmail.com", m+msg)
+    server.quit()
+
+    print "Send mail: woohoo!"
