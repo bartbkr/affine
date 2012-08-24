@@ -1,26 +1,31 @@
+"""
+This defines the class objection Affine, intended to solve affine models of the
+term structure
+This class inherits from statsmodels LikelihoodModel class
+"""
+
 import numpy as np
 import statsmodels.api as sm
-from statsmodels.tsa.api import VAR
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.base.model import LikelihoodModel
-from statsmodels.tools.numdiff import (approx_hess, approx_fprime)
-
 import pandas as px
-import pandas.core.datetools as dt
-from operator import itemgetter
-from scipy import optimize
 import scipy.linalg as la
 
-import matplotlib.pyplot as plt
+from statsmodels.tsa.api import VAR
+from statsmodels.base.model import LikelihoodModel
+from statsmodels.tools.numdiff import (approx_hess, approx_fprime)
+from operator import itemgetter
+from scipy import optimize
 
 #debugging
-import pdb
+#import pdb
 
 #############################################
 # Create affine class system                   #
 #############################################
 
-class affine(LikelihoodModel):
+class Affine(LikelihoodModel):
+    """
+    This class defines an affine model of the term structure
+    """
     def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4,
                  freq='M', latent=0, no_err=None):
         """
@@ -36,11 +41,6 @@ class affine(LikelihoodModel):
         self.yc_data = yc_data
 
         #gen VAR instance
-        data = var_data.values
-        names = var_data.columns
-        dates = var_data.index
-
-        #mod = VAR(data, names=names, dates=dates, freq='monthly')
         mod = VAR(var_data, freq=freq)
         vreg = mod.fit(maxlags=maxlags)
 
@@ -64,21 +64,21 @@ class affine(LikelihoodModel):
             len_lst = [neqs+lat, (neqs + lat)**2, lat, lat**2, lat**2]
             pos_lst = []
             acc = 0
-            for x in len_lst:
-                pos_lst.append(x+acc)
-                acc += x
+            for lengths in len_lst:
+                pos_lst.append(lengths+acc)
+                acc += lengths
             self.pos_lst = pos_lst
             yc_data_cols = yc_data.columns.tolist()
             self.noerr_indx = list(set(yc_data_cols).intersection(no_err))
             self.err_indx = list(set(yc_data_cols).difference(no_err))
 
-        mu = np.zeros([k_ar*neqs+lat,1])
-        mu[:neqs] = params[0,None].T
+        mu = np.zeros([k_ar*neqs+lat, 1])
+        mu[:neqs] = params[0, None].T
         self.mu = mu
 
         phi = np.zeros([k_ar*neqs, k_ar*neqs])
         phi[:neqs] = params[1:].T
-        phi[neqs:,:(k_ar-1)*neqs] = np.identity((k_ar-1)*neqs)
+        phi[neqs:, :(k_ar-1)*neqs] = np.identity((k_ar-1)*neqs)
         self.phi = phi
 
         sig = np.zeros([k_ar*neqs, k_ar*neqs])
@@ -87,7 +87,7 @@ class affine(LikelihoodModel):
 
         if lat == 0:
             self.delta_0 = 0
-            delta_1 = np.zeros([neqs*k_ar,1])
+            delta_1 = np.zeros([neqs*k_ar, 1])
             #delta_1 is vector of zeros, with one grabbing fed_funds rate
             delta_1[np.argmax(var_data.columns == 'fed_funds')] = 1
             self.delta_1 = delta_1
@@ -98,21 +98,21 @@ class affine(LikelihoodModel):
             reg_data['intercept'] = 1
             par = sm.OLS(rf_rate, reg_data).fit().params
             self.delta_0 = par.values[-1]
-            delta_1 = np.zeros([neqs*k_ar+lat,1])
-            delta_1[:neqs,0] = par.values[:neqs]
+            delta_1 = np.zeros([neqs*k_ar+lat, 1])
+            delta_1[:neqs, 0] = par.values[:neqs]
             self.delta_1 = delta_1
 
         #get VAR input data ready
         x_t_na = var_data.copy()
-        for t in range(k_ar-1):
+        for lag in range(k_ar-1):
             for var in var_data.columns:
-                x_t_na[var + '_m' + str(t+1)] = px.Series(var_data[var].
-                        values[:-(t+1)], index=var_data.index[t+1:])
+                x_t_na[var + '_m' + str(lag+1)] = px.Series(var_data[var].
+                        values[:-(lag+1)], index=var_data.index[lag+1:])
 
         #check this, looks fine
         self.var_data = x_t_na.dropna(axis=0)
 
-        super(affine, self).__init__(var_data)
+        super(Affine, self).__init__(var_data)
 
 
     def solve(self, lam_0_g, lam_1_g, method="ls", delt_1_g=None, phi_g=None,
@@ -146,14 +146,13 @@ class affine(LikelihoodModel):
         """
         lat = self.latent
         neqs = self.neqs
-        k_ar = self.k_ar
         lam = []
-        X_t = self.var_data
+        x_t = self.var_data
         mth_only = self.mth_only
 
-        #this needs to be fixed
         #assert np.shape(lam_0_g) == neqs + lat, "Length of lam_0_g not correct"
         #assert len(lam_1_g) == (neqs + lat)**2, "Length of lam_1_g not correct"
+        #creates single input vector for params to solve
         if lat:
             assert len(delt_1_g) == lat, "Length of delt_1_g not correct"
             assert len(phi_g) == lat**2, "Length of phi_g not correct"
@@ -161,11 +160,11 @@ class affine(LikelihoodModel):
             lam = np.asarray(lam_0_g + lam_1_g + delt_1_g + phi_g + sig_g)
         else:
             lam_0_list = flatten(lam_0_g[:neqs])
-            lam_1_list = flatten(lam_1_g[:neqs,:neqs])
-            for x in range(len(lam_0_list)):
-                lam.append(lam_0_list[x])
-            for x in range(len(lam_1_list)):
-                lam.append(lam_1_list[x])
+            lam_1_list = flatten(lam_1_g[:neqs, :neqs])
+            for param in range(len(lam_0_list)):
+                lam.append(lam_0_list[param])
+            for param in range(len(lam_1_list)):
+                lam.append(lam_1_list[param])
 
         #this should be specified in function call
         if method == "ls":
@@ -180,8 +179,8 @@ class affine(LikelihoodModel):
             #need to stack
             yield_stack = self._stack_yields(mth_only)
             #run optmization
-            reslt = optimize.curve_fit(func, X_t, yield_stack, p0=lam,
-                                       maxfev=maxfev, xtol=xtol,
+            reslt = optimize.curve_fit(func, x_t, yield_stack, p0=lam,
+                                       maxfev=maxfev, ftol=ftol, xtol=xtol,
                                        full_output=full_output)
 
             lam_solv = reslt[0]
@@ -189,14 +188,14 @@ class affine(LikelihoodModel):
 
         lam_0, lam_1, delta_1, phi, sig = self._proc_lam(*lam_solv)
 
-        a, b = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
+        a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
 
         #if full_output:
-            #return lam_0, lam_1, delta_1, phi, sig, a, b, output 
+            #return lam_0, lam_1, delta_1, phi, sig, a_solve, b_solve, output 
         if method == "cf":
-            return lam_0, lam_1, delta_1, phi, sig, a, b, lam_cov
+            return lam_0, lam_1, delta_1, phi, sig, a_solve, b_solve, lam_cov
         elif method == "ls":
-            return lam_0, lam_1, delta_1, phi, sig, a, b, output
+            return lam_0, lam_1, delta_1, phi, sig, a_solve, b_solve, output
 
     def score(self, lam):
         """
@@ -220,19 +219,19 @@ class affine(LikelihoodModel):
         loglike = self._affine_nsum_errs
         return approx_hess(lam, loglike)[0]
 
-    def loglike(self, params):
-        """
-        Loglikelihood used in latent factor models
-        """
-        # here is the likelihood that needs to be used
-        # sig is implied VAR sig
-        # use two matrices to take the difference
-        like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
-            np.logdet(np.dot(sig, sig.T)) - 1.0 / 2 * \
-            np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sig, sig.T))),\
-            err)) - (T - 1) / 2.0 * \
-            np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
-            np.sum(meas_err/np.var(meas_err, axis=1))
+    #def loglike(self, params):
+    #    """
+    #    Loglikelihood used in latent factor models
+    #    """
+    #    # here is the likelihood that needs to be used
+    #    # sig is implied VAR sig
+    #    # use two matrices to take the difference
+    #    like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
+    #            np.logdet(np.dot(sig, sig.T)) - 1.0 / 2 * \
+    #            np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sig, sig.T))),\
+    #                          err)) - (T - 1) / 2.0 * \
+    #            np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
+    #            np.sum(meas_err/np.var(meas_err, axis=1))
 
     def gen_pred_coef(self, lam_0_ab, lam_1_ab, delta_1, phi, sig):
         """
@@ -243,110 +242,115 @@ class affine(LikelihoodModel):
         phi : array
         sig : array
         """
-        lat = self.latent
         mths = self.mths
         delta_0 = self.delta_0
         mu = self.mu
         max_mth = max(mths)
         #generate predictions
-        A = np.zeros((max_mth, 1))
-        A[0] = -delta_0
-        B = []
-        B.append(-delta_1)
-        for x in range(max_mth-1):
-            A[x+1] = (A[x] + np.dot(B[x].T, (mu - np.dot(sig,  \
-            lam_0_ab))) + (1.0/2)*np.dot(np.dot(np.dot(B[x].T, \
-            sig), sig.T), B[x]) - delta_0)[0][0]
-            B.append(np.dot((phi - np.dot(sig, lam_1_ab)).T, B[x]) - delta_1)
-        n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth,1))
-        a = -(A*n_inv)
-        b = np.zeros_like(B)
-        for x in range(max_mth):
-            b[x] = np.multiply(-B[x], n_inv[x])
-        return a, b
+        a_pre = np.zeros((max_mth, 1))
+        a_pre[0] = -delta_0
+        b_pre = []
+        b_pre.append(-delta_1)
+        for mth in range(max_mth-1):
+            a_pre[mth+1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
+                            (mu - np.dot(sig, lam_0_ab))) + \
+                            (1.0/2)*np.dot(np.dot(np.dot(b_pre[mth].T, sig), \
+                            sig.T), b_pre[mth]) - delta_0)[0][0]
+            b_pre.append(np.dot((phi - np.dot(sig, lam_1_ab)).T, \
+                                b_pre[mth]) - delta_1)
+        n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
+        a_solve = -(a_pre*n_inv)
+        b_solve = np.zeros_like(b_pre)
+        for mths in range(max_mth):
+            b_solve[mths] = np.multiply(-b_pre[mths], n_inv[mths])
+        return a_solve, b_solve
 
     def _affine_nsum_errs(self, lam):
         """
         This function generates the sum of the prediction errors
         """
         lat = self.latent
-        no_err = self.no_err
-        neqs = self.neqs
-        k_ar = self.k_ar
         mths = self.mths
         mth_only = self.mth_only
-        X_t = self.var_data
+        x_t = self.var_data
 
         lam_0, lam_1, delta_1, phi, sig = self._proc_lam(*lam)
 
-        a, b = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
+        a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sig)
 
         #this is explosive
 
         if lat:
-            X_t = self._solve_X_t_unkn(a, b, X_t)
+            x_t = self._solve_x_t_unkn(a_solve, b_solve)
 
         errs = []
         
         for i in mths:
             act = np.flipud(mth_only['l_tr_m' + str(i)].values)
-            pred = a[i-1] + np.dot(b[i-1].T, np.fliplr(X_t.T))[0]
+            pred = a_solve[i-1] + np.dot(b_solve[i-1].T, np.fliplr(x_t.T))[0]
             errs = errs + (act-pred).tolist()
         return errs
 
-    def _solve_X_t_unkn(self, a, b):
+    def _solve_x_t_unkn(self, a_in, b_in, x_t = None):
+        """
+        This is still under development
+        It should solve for the unobserved factors in the x_t VAR data
+        """
         lat = self.latent
         no_err = self.no_err
         mth_only = self.mth_only
         yc_data = self.yc_data
-        X_t_new = np.append(X_t, np.zeros((X_t.shape[0],lat)), axis=1)
-        errors = X_t[1:] - mu - np.dot(phi,X_t[:-1])
-        X_t = self.var_data
-        T = X_t.shape[0]
+        x_t_new = np.append(x_t, np.zeros((x_t.shape[0], lat)), axis=1)
+        errors = x_t[1:] - mu - np.dot(phi, x_t[:-1])
+        if x_t is None:
+            x_t = self.var_data
+        T = x_t.shape[0]
 
         # solve for unknown factors
         noerr_indx = self.noerr_indx
-        A_noerr = select_rows(noerr_indx, A)
-        B_0_noerr = select_rows(noerr_indx, B_0)
+        a_noerr = select_rows(noerr_indx, a_in)
+        b_0_noerr = select_rows(noerr_indx, b_in)
         # this is the right hand for solving for the unobserved latent 
         # factors
-        r_hs = yc_data[no_err] - A_noerr[None].T - np.dot(B_0_noerr,X_t)
-        lat = la.solve(B_u, r_hs)
+        r_hs = yc_data[no_err] - a_noerr[None].T - np.dot(b_0_noerr, x_t)
+        lat = la.solve(b_u, r_hs)
 
         #solve for pricing error on other yields
         err_indx = self.err_indx
-        A_err = select_rows(err_indx, A)
-        B_0_err = select_rows(err_indx, B_0)
-        r_hs = yc_data[no_err] - A_noerr[None].T - np.dot(B_0_noerr,X_t)
-        meas_err = la.solve(B_m,r_hs)
+        a_err = select_rows(err_indx, a_in)
+        b_0_err = select_rows(err_indx, b_in)
+        r_hs = yc_data[no_err] - a_noerr[None].T - np.dot(b_0_noerr, x_t)
+        meas_err = la.solve(b_m, r_hs)
 
         #create Jacobian (J) here
         
         #this taken out for test run, need to be added back in
         #J = 
 
-
-
     def _proc_to_mth(self):
+        """
+        This function transforms the yield curve data so that the names are all
+        in months
+        (not sure if this is necessary)
+        """
         frame = self.yc_data
         mths = []
         fnd = 0
         n_cols = len(frame.columns)
-        for x in frame.columns:
-            srt_ord = []
-            if 'm' in x:
-                mths.append(int(x[6]))
+        for col in frame.columns:
+            if 'm' in col:
+                mths.append(int(col[6]))
                 if fnd == 0:
-                    mth_only = px.DataFrame(frame[x],
-                            columns = [x],
+                    mth_only = px.DataFrame(frame[col],
+                            columns = [col],
                             index=frame.index)
                     fnd = 1
                 else:
-                    mth_only[x] = frame[x]
-            elif 'y' in x:
-                mth = int(x[6:])*12
+                    mth_only[col] = frame[col]
+            elif 'y' in col:
+                mth = int(col[6:])*12
                 mths.append(mth)
-                mth_only[('l_tr_m' + str(mth))] = frame[x]
+                mth_only[('l_tr_m' + str(mth))] = frame[col]
         col_dict = dict([( mth_only.columns[x], mths[x]) for x in
                     range(n_cols)])
         cols = np.asarray(sorted(col_dict.iteritems(),
@@ -378,12 +382,12 @@ class affine(LikelihoodModel):
             phi_g = lam[pos_lst[2]:pos_lst[3]]
             sig_g = lam[pos_lst[3]:]
 
-            lam_0 = np.zeros([k_ar*neqs+lat,1])
-            lam_0[:neqs,0] = np.asarray(lam_0_est[:neqs]).T
-            lam_0[-lat:,0] = np.asarray(lam_0_est[-lat:]).T
+            lam_0 = np.zeros([k_ar*neqs+lat, 1])
+            lam_0[:neqs, 0] = np.asarray(lam_0_est[:neqs]).T
+            lam_0[-lat:, 0] = np.asarray(lam_0_est[-lat:]).T
 
             lam_1 = np.zeros([k_ar*neqs+lat, k_ar*neqs+lat])
-            lam_1[:neqs,:neqs] = np.reshape(lam_1_est[:neqs**2], (neqs,neqs))
+            lam_1[:neqs, :neqs] = np.reshape(lam_1_est[:neqs**2], (neqs, neqs))
             nxt = neqs*lat
             lam_1[:neqs, -lat:] = np.reshape(lam_1_est[neqs**2:\
                                             neqs**2 + nxt],(neqs,lat))
@@ -394,7 +398,7 @@ class affine(LikelihoodModel):
             lam_1[-lat:, -lat:] = np.reshape(lam_1_est[nxt: \
                                             nxt + lat**2], (lat, lat))
             delta_1 = self.delta_1.copy()
-            delta_1[-lat:,0] = np.asarray(delt_1_g)
+            delta_1[-lat:, 0] = np.asarray(delt_1_g)
 
             #add rows/columns for unk params
             phi_n = self.phi.copy()
@@ -403,7 +407,7 @@ class affine(LikelihoodModel):
             add = np.zeros([np.shape(phi_n)[0], lat])
             phi = np.append(phi_n, add, axis=1)
             #fill in parm guesses
-            phi[-lat:, -lat:] = np.reshape(phi_g, (lat,lat))
+            phi[-lat:, -lat:] = np.reshape(phi_g, (lat, lat))
 
             #add rows/columns for unk params
             sig_n = self.sig.copy()
@@ -411,17 +415,17 @@ class affine(LikelihoodModel):
             sig_n = np.append(sig_n, add, axis=0)
             add = np.zeros([np.shape(sig_n)[0], lat])
             sig = np.append(sig_n, add, axis=1)
-            sig[-lat:, -lat:] = np.reshape(sig_g, (lat,lat))
+            sig[-lat:, -lat:] = np.reshape(sig_g, (lat, lat))
 
         else:
             lam_0_est = lam[:neqs]
             lam_1_est = lam[neqs:]
 
-            lam_0 = np.zeros([k_ar*neqs,1])
+            lam_0 = np.zeros([k_ar*neqs, 1])
             lam_0[:neqs] = np.asarray([lam_0_est]).T
 
             lam_1 = np.zeros([k_ar*neqs, k_ar*neqs])
-            lam_1[:neqs,:neqs] = np.reshape(lam_1_est, (neqs,neqs))
+            lam_1[:neqs, :neqs] = np.reshape(lam_1_est, (neqs, neqs))
 
             delta_1 = self.delta_1
             phi = self.phi
@@ -429,32 +433,11 @@ class affine(LikelihoodModel):
 
         return lam_0, lam_1, delta_1, phi, sig
 
-    def select_rows(rows, array):
+    def _affine_pred(self, x_t, *lam):
         """
-        Creates 2-dim submatrix only of rows from list rows
-        array must be 2-dim
+        Function based on lambda and x_t that generates predicted yields
+        x_t : X_inforionat
         """
-        if array.ndim == 1:
-            new_array = array[rows[0]]
-            if len(rows) > 1:
-                for i,x in enumerate(rows[1:]):
-                    new_array = np.append(array[rows[i+1]])
-        elif array.ndim == 2:
-            new_array = array[rows[0],:]
-            if len(rows) > 1:
-                for i,x in enumerate(rows[1:]):
-                    new_array = np.append(array[rows[i+1],:], axis=0)
-        return new_array
-
-    def _affine_pred(self, X_t, *lam):
-        """
-        Function based on lambda and X_t that generates predicted yields
-        X_t : X_inforionat
-        """
-        lat = self.latent
-        no_err = self.no_err
-        neqs = self.neqs
-        k_ar = self.k_ar
         mths = self.mths
         mth_only = self.mth_only
 
@@ -466,7 +449,7 @@ class affine(LikelihoodModel):
 
         for i in mths:
             pred["l_tr_m" + str(i)] = a_test[i-1] + np.dot(b_test[i-1].T,
-                                      X_t.T).T[:,0]
+                                      x_t.T).T[:,0]
 
         pred = self._stack_yields(pred)
 
@@ -480,7 +463,7 @@ class affine(LikelihoodModel):
         obs = len(orig)
         new = np.zeros((len(mths)*obs))
         for col, mth in enumerate(orig.columns):
-            new[col*obs:(col+1)*obs] = orig.icol(col).values
+            new[col*obs:(col+1)*obs] = orig[mth].values
         return new
 
 def flatten(array):
@@ -489,13 +472,29 @@ def flatten(array):
     """
     a_list = []
     if array.ndim == 1:
-        for x in range(np.shape(array)[0]):
-            a_list.append(array[x])
+        for index in range(np.shape(array)[0]):
+            a_list.append(array[index])
         return a_list
     elif array.ndim == 2:
         rshape = np.reshape(array, np.size(array))
-        for x in range(np.shape(rshape)[0]):
-            a_list.append(rshape[x])
+        for index in range(np.shape(rshape)[0]):
+            a_list.append(rshape[index])
         return a_list
     
+def select_rows(rows, array):
+    """
+    Creates 2-dim submatrix only of rows from list rows
+    array must be 2-dim
+    """
+    if array.ndim == 1:
+        new_array = array[rows[0]]
+        if len(rows) > 1:
+            for row in rows[1:]:
+                new_array = np.append(new_array, array[row])
+    elif array.ndim == 2:
+        new_array = array[rows[0], :]
+        if len(rows) > 1:
+            for row in enumerate(rows[1:]):
+                new_array = np.append(new_array, array[row, :], axis=0)
+    return new_array
 

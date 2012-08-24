@@ -1,8 +1,8 @@
-from affine import affine
+from affine import Affine
 import numpy as np
 import pickle
 
-def pickl_file(obj=None, name=None):
+def pickle_file(obj=None, name=None):
     """
     Pass name without .pkl extension
     """
@@ -14,7 +14,7 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None):
     """
     Function to run model with guesses, also generating 
     method : string
-        method to pass to affine.solve()
+        method to pass to Affine.solve()
     mod_data : pandas DataFrame 
         model data
     mod_yc_data : pandas DataFrame
@@ -30,7 +30,7 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None):
     mod_yc_data = mod_yc_data[:214]
 
     #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
-    bsr = affine(yc_data = mod_yc_data, var_data = mod_data)
+    bsr = Affine(yc_data = mod_yc_data, var_data = mod_data)
     neqs = bsr.neqs
     k_ar = bsr.k_ar
 

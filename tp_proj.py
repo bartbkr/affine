@@ -1,37 +1,18 @@
 import numpy as np
 import socket
-import pickle
-import os
-import statsmodels.api as sm
 from statsmodels.tsa.api import VAR
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.base.model import LikelihoodModel
-from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from statsmodels.tsa.filters import hpfilter
 
 import pandas as px
-from operator import itemgetter
-from scipy import optimize, stats
-import scipy.linalg as la
+from scipy import stats
 
 #for sending email
 import smtplib
-import string
 
-import matplotlib.pyplot as plt
-
-import itertools as it
-
-from affine import affine
-from util import robust, pickl_file
+from util import robust, pickle_file
 #send email when done
 import datetime as dt
 d1 = dt.datetime.now()
-import getpass
-
-#attempt multi-threading
-import time
-import multiprocessing
 
 #identify computer
 #identify computer
@@ -119,14 +100,14 @@ irsf = vreg.irf(periods=50)
 #########################################
 k_ar = vreg.k_ar
 
-#create BSR X_t
+#create BSR x_t
 x_t_na = mod_data.copy()
 for t in range(k_ar-1):
     for var in mod_data.columns:
         x_t_na[var + '_m' + str(t+1)] = px.Series(mod_data[var].values[:-(t+1)],
                                             index=mod_data.index[t+1:])
 #remove missing values
-X_t = x_t_na.dropna(axis=0)
+x_t = x_t_na.dropna(axis=0)
 
 
 #############################################
@@ -145,7 +126,7 @@ mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',
                                       'l_tr_y3', 'l_tr_y5',
                                       'l_tr_y7', 'l_tr_y10'])
 mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
-mod_yc_data = mod_yc_data.join(X_t['fed_funds'], how='right')
+mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
 mod_yc_data = mod_yc_data.rename(columns = {'fed_funds' : 'l_tr_m1'})
 mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1)
 
@@ -202,15 +183,17 @@ for q in quant:
     collect_0.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
     collect_1.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
 
-pickl_file(collect_0, "collect_0_curve")
-pickl_file(collect_1, "collect_1_curve")
+pickle_file(collect_0, "collect_0_curve")
+pickle_file(collect_1, "collect_1_curve")
 
 #use medians to guess for next 50 sims
 atts2 = 50
 lam_0_coll = np.zeros((atts2, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
+cov_coll = np.zeros((att2, neqs + neqs*k_ar, neqs + neqs*k_ar))
 collect_0_ref = []
 collect_1_ref = []
+collect_cov_ref = []
 for a in range(atts2):
     print str(a)
     #third element is median
@@ -218,15 +201,18 @@ for a in range(atts2):
             lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1])
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]
+    cov_coll[a] = sim_run[2]
 
 #These estimates are getting closer to each other throughout the entire span 
 
 for q in quant:
     collect_0_ref.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
     collect_1_ref.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
+    collect_cov_ref.append((str(q), stats.scoreatpercentile(cov_coll[:], q)))
 
-pickl_file(collect_0_ref, "collect_0_ref_curve")
-pickl_file(collect_1_ref, "collect_1_ref_curve")
+pickle_file(collect_0_ref, "collect_0_ref_curve")
+pickle_file(collect_1_ref, "collect_1_ref_curve")
+pickle_file(collect_cov_ref, "collect_cov_ref")
 
 # Initialize SMTP server
 
