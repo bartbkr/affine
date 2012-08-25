@@ -194,7 +194,7 @@ pickle_file(collect_1, "collect_1_curve")
 atts2 = 50
 lam_0_coll = np.zeros((atts2, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
-cov_coll = np.zeros((att2, neqs + neqs*k_ar, neqs + neqs*k_ar))
+cov_coll = np.zeros((atts2, neqs + neqs*k_ar, neqs + neqs*k_ar))
 collect_0_ref = []
 collect_1_ref = []
 collect_cov_ref = []
