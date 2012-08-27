@@ -1,0 +1,45 @@
+Aug 27, 2012
+5:56: Finally prepare for params and std errs, plan out next
+
+Aug 24, 2012
+12:11: Put model results into table
+12:44: Try and send email upon exit code
+1:13: Finish sending email code, launch new runs
+
+Aug 22, 2012
+7:31: Try and debug broadcast error
+
+Aug 20, 2012
+4:48: Update scipy and plan out week
+5:20: Debug new curve_fit method
+5:51: Keep debugging curve_fit method
+
+Aug 16, 2012
+5:21: Try to find decent measure of aggregate CDS prices
+
+Aug 14, 2012
+5:22: Examine iterations from previous run
+
+Aug 13, 2012
+6:26: Check on iterations and check to see if there is another version of BSR
+7:01: Look to see if there are more results in working paper than 
+7:31: Look for how to generate an aggregate CDS price
+
+Aug 9, 2012
+5:17: Develop code to examine quantiles of different runs
+
+Aug 8, 2012
+5:29: Fix figures and plan out where to go next
+6:02: Continue to fix figures and begin to plan out next steps
+6:19: Update software and begin to plan
+6:50: Work on trying to get more consistent results for least squares
+estimation
+7:35: Try to merge in changes from list_to_arrays into primary development
+branch that will probably have cpp extension
+
+Aug 7, 2012
+5:09: FInish a few pages of edits in field_sketch
+
+6:40: Try to finish equations for duffiekan1996.
+Aug 6, 2012
+4:48: Add more to description of BSR paper
