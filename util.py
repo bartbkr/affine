@@ -81,7 +81,7 @@ def success_mail(passwd):
     # Send email
     senddate = dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d')
     subject = "Your job has completed"
-    head = "Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer:" + \
+    head = "Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer:" \
         "My-Mail\r\n\r\n"\
     % (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
     msg = '''
@@ -105,7 +105,7 @@ def fail_mail(date, passwd):
     date = dt.datetime.strftime(date, '%m/%d/%Y %I:%M:%S %p')
     senddate = dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d')
     subject = "This run failed"
-    head = "Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer:" + \
+    head = "Date: %s\r\nFrom: %s\r\nTo: %s\r\nSubject: %s\r\nX-Mailer:" \
         "My-Mail\r\n\r\n"\
     % (senddate, "bartbkr@gmail.com", "barbkr@gmail.com", subject)
     msg = '''
