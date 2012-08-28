@@ -1,6 +1,9 @@
+"""
+This script imports the data, gets the appropriate values, and executes the
+solution algorithm
+"""
 import numpy as np
 import pandas as px
-import datetime as dt
 
 import socket
 import atexit
@@ -10,8 +13,6 @@ from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
 from util import robust, pickle_file, success_mail, fail_mail
-
-start_date = dt.datetime.now()
 
 #identify computer
 #identify computer
@@ -24,8 +25,6 @@ if comp == "bart-Inspiron-1525":
 if comp == "linux-econ6":
     path_pre = "/home/labuser"
 
-#get passwd from keyring
-passwd = keyring.get_password("email_auth", "bartbkr") 
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -187,7 +186,8 @@ for a in range(atts2):
     print str(a)
     #third element is median
     sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data,
-            lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1])
+            lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1],
+            start_date=start_date, passwd=passwd)
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]
     cov_coll[a] = sim_run[2]

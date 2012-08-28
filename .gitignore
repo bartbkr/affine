@@ -22,3 +22,5 @@
 *.out
 *.synctex.gz
 
+#ignore
+*.cfg

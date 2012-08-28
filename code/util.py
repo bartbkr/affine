@@ -18,7 +18,8 @@ def pickle_file(obj=None, name=None):
     pickle.dump(obj, pkl_file)
     pkl_file.close()
 
-def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None):
+def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
+        start_date=None, passwd=None):
     """
     Function to run model with guesses, also generating 
     method : string
