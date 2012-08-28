@@ -37,17 +37,8 @@ print "Model 1 running"
 # Get data                             #
 ########################################
 
-mthdata = px.read_csv(path_pre
-        + "/Documents/Econ_630/data/VARbernankedata.csv", na_values="M",
-        index_col = 0, parse_dates=True)
-# new_index = []
-# for x in mthdata.index.tolist():
-#     print x
-#     new_index.append(dt.datetime.strptime(x, "%m/%d/%Y")) 
-# 
-# mthdata.index = new_index
-#pdata = px.read_csv(path_pre + "/Documents/Econ_630/data/prices.txt",
-#                      na_values="M", index_col = 0, parse_dates=True)
+mthdata = px.read_csv(path_pre + "/data/VARbernankedata.csv", na_values="M",
+                        index_col = 0, parse_dates=True)
 
 ########################################
 # Test that HP filter/empl gap correct #
@@ -113,12 +104,8 @@ x_t = x_t_na.dropna(axis=0)
 # Grab yield curve data                     #
 #############################################
 
-ycdata = px.read_csv(path_pre + "/Documents/Econ_630/data/yield_curve.csv",
+ycdata = px.read_csv(path_pre + "/data/yield_curve.csv",
                      na_values = "M", index_col=0, parse_dates=True)
-# new_index = []
-# for x in ycdata.index.tolist():
-#     new_index.append(dt.datetime.strptime(x, "%m/%d/%Y")) 
-# ycdata.index = new_index
 
 mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',
                                       'l_tr_y1', 'l_tr_y2',
@@ -128,8 +115,6 @@ mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
 mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
 mod_yc_data = mod_yc_data.rename(columns = {'fed_funds' : 'l_tr_m1'})
 mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1)
-
-#drop those obsevations not needed
 
 ################################################
 # Generate predictions of cumulative shortrate #
