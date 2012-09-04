@@ -21,6 +21,7 @@
 *.mtc1
 *.out
 *.synctex.gz
+*.pdf
 
 #ignore
 *.cfg
