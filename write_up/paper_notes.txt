@@ -125,6 +125,10 @@ Duffie and Kan, 1996. "A yield-factor model of interest rates".
 
 Full derivation of assumptions needed for unique solution to affine model of term structure (383-386). Ricatti equation (385). Gauss-Markov process (387). Need sufficient positive drift in order for weights on shock process to never be zerio (388). This leads to theorem where there is a unique (strong) solution X in D to the stochastic differential equation governing the process that governs the yields (388). Definitions of different types of term structure models (388-389). "In practice, however, we have encountered no problem in fixing the coefficients in \sigma and then adjusting the drift coefficients so as to obtain consistency, at least in two-factor implementations" (389). Equivalent martingale measure is also known as risk-neutral measure (392, from wiki). Solution method (394). Use a combination of Newton-Raphsoin and the ADI alogrithm to attempt to solve the system (395). Jump-diffusion state process (397).
 
+Bauer, Rudebusch, and Wu, 2012. "Correcting Estimation Bias in Dynamic Term Structure Models".
+
+References many local optima found in ML estimated solutions to dynamic term structure models (DTSM) (454). Use Joslin, Singleton, and Zhu (2011) as a reference model (455). They are essentially trying to overcome the small sample bias found in estimation of DTSM that results in underestimation of the persistence of the data generating process (455). Define affine model setup and general solution approach (456).
+
 ABM papers
 
 Goldstein, Jon. "An Agent-Based Model of the Interaction between the Housing and RMBS Markets".
