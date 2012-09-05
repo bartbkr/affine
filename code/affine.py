@@ -16,7 +16,7 @@ from operator import itemgetter
 from scipy import optimize
 
 #debugging
-#import pdb
+import pdb
 
 #############################################
 # Create affine class system                   #
@@ -39,6 +39,7 @@ class Affine(LikelihoodModel):
         no_err : list of the yields that are estimated without error
         """
         self.yc_data = yc_data
+        self.k_ar = max_lags
 
         #gen VAR instance
         mod = VAR(var_data, freq=freq)
@@ -50,6 +51,8 @@ class Affine(LikelihoodModel):
         #number of latent variables to include
         lat = self.latent = latent
         self.no_err = no_err
+
+        self.
 
         self.k_ar = k_ar = vreg.k_ar
         self.neqs = neqs = vreg.neqs
@@ -71,35 +74,29 @@ class Affine(LikelihoodModel):
             yc_data_cols = yc_data.columns.tolist()
             self.noerr_indx = list(set(yc_data_cols).intersection(no_err))
             self.err_indx = list(set(yc_data_cols).difference(no_err))
+            pdb.set_trace()
 
-        mu = np.zeros([k_ar*neqs+lat, 1])
-        mu[:neqs] = params[0, None].T
-        self.mu = mu
+        #in the case of all observed factors, mu, phi, and sig are directly
+        #generated from OLS VAR one step estimation
+        else:
 
-        phi = np.zeros([k_ar*neqs, k_ar*neqs])
-        phi[:neqs] = params[1:].T
-        phi[neqs:, :(k_ar-1)*neqs] = np.identity((k_ar-1)*neqs)
-        self.phi = phi
+            mu = np.zeros([k_ar*neqs+lat, 1])
+            mu[:neqs] = params[0, None].T
+            self.mu = mu
 
-        sig = np.zeros([k_ar*neqs, k_ar*neqs])
-        sig[:neqs, :neqs] = sigma_u
-        self.sig = sig
+            phi = np.zeros([k_ar*neqs, k_ar*neqs])
+            phi[:neqs] = params[1:].T
+            phi[neqs:, :(k_ar-1)*neqs] = np.identity((k_ar-1)*neqs)
+            self.phi = phi
 
-        if lat == 0:
+            sig = np.zeros([k_ar*neqs, k_ar*neqs])
+            sig[:neqs, :neqs] = sigma_u
+            self.sig = sig
+
             self.delta_0 = 0
             delta_1 = np.zeros([neqs*k_ar, 1])
             #delta_1 is vector of zeros, with one grabbing fed_funds rate
             delta_1[np.argmax(var_data.columns == 'fed_funds')] = 1
-            self.delta_1 = delta_1
-
-        else:
-            #this is the method outlined by Ang and Piazzesi (2003)
-            reg_data = var_data.copy()
-            reg_data['intercept'] = 1
-            par = sm.OLS(rf_rate, reg_data).fit().params
-            self.delta_0 = par.values[-1]
-            delta_1 = np.zeros([neqs*k_ar+lat, 1])
-            delta_1[:neqs, 0] = par.values[:neqs]
             self.delta_1 = delta_1
 
         #get VAR input data ready
