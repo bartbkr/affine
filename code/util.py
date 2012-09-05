@@ -117,3 +117,36 @@ def fail_mail(date, passwd):
     server.quit()
 
     print "Send mail: woohoo!"
+
+def flatten(array):
+    """
+    Flattens array to list values
+    """
+    a_list = []
+    if array.ndim == 1:
+        for index in range(np.shape(array)[0]):
+            a_list.append(array[index])
+        return a_list
+    elif array.ndim == 2:
+        rshape = np.reshape(array, np.size(array))
+        for index in range(np.shape(rshape)[0]):
+            a_list.append(rshape[index])
+        return a_list
+    
+def select_rows(rows, array):
+    """
+    Creates 2-dim submatrix only of rows from list rows
+    array must be 2-dim
+    """
+    if array.ndim == 1:
+        new_array = array[rows[0]]
+        if len(rows) > 1:
+            for row in rows[1:]:
+                new_array = np.append(new_array, array[row])
+    elif array.ndim == 2:
+        new_array = array[rows[0], :]
+        if len(rows) > 1:
+            for row in enumerate(rows[1:]):
+                new_array = np.append(new_array, array[row, :], axis=0)
+    return new_array
+

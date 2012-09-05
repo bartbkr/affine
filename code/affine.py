@@ -14,6 +14,7 @@ from statsmodels.base.model import LikelihoodModel
 from statsmodels.tools.numdiff import (approx_hess, approx_fprime)
 from operator import itemgetter
 from scipy import optimize
+from util import flatten, select_rows
 
 #debugging
 import pdb
@@ -30,55 +31,59 @@ class Affine(LikelihoodModel):
                  freq='M', latent=0, no_err=None):
         """
         Attempts to solve affine model
-        yc_data : yield curve data
-        var_data : data for var model
-        rf_rate : rf_rate for short_rate, used in latent factor case
-        max_lags: number of lags for VAR system
-        freq : frequency of data
-        latent : # number of latent variables
-        no_err : list of the yields that are estimated without error
+        yc_data : DataFrame 
+            yield curve data
+        var_data : DataFrame
+            data for var model
+        rf_rate : DataFrame
+            rf_rate for short_rate, used in latent factor case
+        max_lags: int
+            number of lags for VAR system
+        freq : string
+            frequency of data
+        latent : int
+            # number of latent variables
+        no_err : list of strings
+            list of the yields that are estimated without error
         """
         self.yc_data = yc_data
         self.k_ar = max_lags
-
-        #gen VAR instance
-        mod = VAR(var_data, freq=freq)
-        vreg = mod.fit(maxlags=maxlags)
+        self.neqs = len(var_data.columns)
+        self.no_err = no_err
+        self.freq = freq
+        lat = self.latent = latent
 
         #generates mths and mth_only
         self._proc_to_mth()
 
-        #number of latent variables to include
-        lat = self.latent = latent
-        self.no_err = no_err
-
-        self.
-
-        self.k_ar = k_ar = vreg.k_ar
-        self.neqs = neqs = vreg.neqs
-        self.params = params = vreg.params.values
-        sigma_u = vreg.sigma_u
-
         if lat:
-            assert len(no_err) >= lat, "One yield estimated with no err"\
+            assert len(no_err) >= lat, "One yield estimated with no err" \
                                         + "for each latent variable"
 
-            #order is lam_0, lam_1, delt_1, phi, sig
-            len_lst = [neqs+lat, (neqs + lat)**2, lat, lat**2, lat**2]
-            pos_lst = []
-            acc = 0
-            for lengths in len_lst:
-                pos_lst.append(lengths+acc)
-                acc += lengths
-            self.pos_lst = pos_lst
+            #order is lam_0, lam_1, delta_0, delta_1, mu, phi, sig
+            # len_lst = [neqs+lat, (neqs + lat)**2, lat, lat**2, lat**2]
+            # pos_lst = []
+            # acc = 0
+            # for lengths in len_lst:
+            #     pos_lst.append(lengths+acc)
+            #     acc += lengths
+            # self.pos_lst = pos_lst
             yc_data_cols = yc_data.columns.tolist()
             self.noerr_indx = list(set(yc_data_cols).intersection(no_err))
             self.err_indx = list(set(yc_data_cols).difference(no_err))
-            pdb.set_trace()
+            #set to unconditional mean of short_rate
+            self.delta_0 = np.mean(rf_rate)
 
         #in the case of all observed factors, mu, phi, and sig are directly
         #generated from OLS VAR one step estimation
         else:
+            #gen VAR instance to get mu, phi, and sigma
+            mod = VAR(var_data, freq=freq)
+            vreg = mod.fit(maxlags=maxlags)
+
+            #number of latent variables to include
+            self.params = params = vreg.params.values
+            sigma_u = vreg.sigma_u
 
             mu = np.zeros([k_ar*neqs+lat, 1])
             mu[:neqs] = params[0, None].T
@@ -112,25 +117,29 @@ class Affine(LikelihoodModel):
         super(Affine, self).__init__(var_data)
 
 
-    def solve(self, lam_0_g, lam_1_g, method="ls", delt_1_g=None, phi_g=None,
-            sig_g=None, maxfev=10000, ftol=1e-100, xtol=1e-100,
-            full_output=False):
+    def solve(self, lam_0_g=None, lam_1_g=None, delta_1_g=None, mu_g=None,
+            phi_g=None, sigma_g=None, method="ls", maxfev=10000, ftol=1e-100,
+            xtol=1e-100, full_output=False):
         """
         Attempt to solve affine model
 
         method : string
             ls = linear least squares
             cf = nonlinear least squares
-        lam_0_g : array (n x 1),
-            guess for elements of lam_0
-        lam_1_g : array (n x n),
-            guess for elements of lam_1
-        delt_1_g : array 
-            guess for elements of delt_1
-        phi_g : array
+            ml = maximum likelihood
+        lam_0_g : array (neqs * k_ar + lat, 1)
+            guess for elements of lambda_0
+        lam_1_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
+            guess for elements of lambda_1
+        delta_1_g : array (neqs * k_ar + lat, 1)
+            guess for elements of delta_1
+        mu_g : array (neqs * k_ar + lat, 1)
+            guess for elements of mu
+        phi_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of phi
-        sig_g : array
+        sig_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of sigma
+
         scipy.optimize.leastsq params
         maxfev : int
             maximum number of calls to the function for solution alg
@@ -141,27 +150,44 @@ class Affine(LikelihoodModel):
         full_output : bool
             non_zero to return all optional outputs
         """
-        lat = self.latent
+        #Notes for you Bart:
+        #remember that Ang and Piazzesi treat observed and unobserved factors
+        #as orthogonal
+        #observed factor parameters can thus be estimated using OLS
+        k_ar = self.k_ar
         neqs = self.neqs
-        lam = []
-        x_t = self.var_data
+        lat = self.latent
+        var_data= self.var_data
+        freq = self.freq
         mth_only = self.mth_only
 
-        #assert np.shape(lam_0_g) == neqs + lat, "Length of lam_0_g not correct"
-        #assert len(lam_1_g) == (neqs + lat)**2, "Length of lam_1_g not correct"
+        dim = neqs * k_ar + lat
+
         #creates single input vector for params to solve
+        assert np.shape(lam_0_g) == (dim, 1), "Shape of lam_0_g incorrect"
+        assert np.shape(lam_1_g) == (dim, dim), "Shape of lam_1_g incorrect"
         if lat:
-            assert len(delt_1_g) == lat, "Length of delt_1_g not correct"
-            assert len(phi_g) == lat**2, "Length of phi_g not correct"
-            assert len(sig_g) == lat**2, "Length of sig_g not correct"
-            lam = np.asarray(lam_0_g + lam_1_g + delt_1_g + phi_g + sig_g)
+            assert np.shape(delta_1_g) == (dim, 1), "Shape of delta_1_g" \
+                "incorrect"
+            assert np.shape(mu_g) == (dim, 1), "Shape of mu incorrect"
+            assert np.shape(phi_g) == (dim, dim), "Shape of phi_g incorrect"
+            assert np.shape(sig_g) == (dim, dim), "Shape of sig_g incorrect"
+            #!!!Here is where params need to be passed in as a single list
+            lam = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g,
+                    delta_1=delta_1_g, mu=mu_g, phi=phi_g, sig=sig_g)
+
         else:
+            lam = []
+            self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g)
             lam_0_list = flatten(lam_0_g[:neqs])
             lam_1_list = flatten(lam_1_g[:neqs, :neqs])
-            for param in range(len(lam_0_list)):
-                lam.append(lam_0_list[param])
-            for param in range(len(lam_1_list)):
-                lam.append(lam_1_list[param])
+            for param in lam_0_list:
+                lam.append(param)
+            for param in lam_1_list:
+                lam.append(param)
+
+        #run VAR to generate parameters for known 
+        var = VAR(var_data, freq=freq)
 
         #this should be specified in function call
         if method == "ls":
@@ -176,12 +202,14 @@ class Affine(LikelihoodModel):
             #need to stack
             yield_stack = self._stack_yields(mth_only)
             #run optmization
-            reslt = optimize.curve_fit(func, x_t, yield_stack, p0=lam,
+            reslt = optimize.curve_fit(func, var_data, yield_stack, p0=lam,
                                        maxfev=maxfev, xtol=xtol,
                                        full_output=full_output)
 
             lam_solv = reslt[0]
             lam_cov = reslt[1]
+        elif method = "ml":
+            funct = self.
 
         lam_0, lam_1, delta_1, phi, sig = self._proc_lam(*lam_solv)
 
@@ -462,36 +490,47 @@ class Affine(LikelihoodModel):
         for col, mth in enumerate(orig.columns):
             new[col*obs:(col+1)*obs] = orig[mth].values
         return new
-
-def flatten(array):
-    """
-    Flattens array to list values
-    """
-    a_list = []
-    if array.ndim == 1:
-        for index in range(np.shape(array)[0]):
-            a_list.append(array[index])
-        return a_list
-    elif array.ndim == 2:
-        rshape = np.reshape(array, np.size(array))
-        for index in range(np.shape(rshape)[0]):
-            a_list.append(rshape[index])
-        return a_list
     
-def select_rows(rows, array):
-    """
-    Creates 2-dim submatrix only of rows from list rows
-    array must be 2-dim
-    """
-    if array.ndim == 1:
-        new_array = array[rows[0]]
-        if len(rows) > 1:
-            for row in rows[1:]:
-                new_array = np.append(new_array, array[row])
-    elif array.ndim == 2:
-        new_array = array[rows[0], :]
-        if len(rows) > 1:
-            for row in enumerate(rows[1:]):
-                new_array = np.append(new_array, array[row, :], axis=0)
-    return new_array
+    def _params_to_list(lam_0=None, lam_1=None, delta_1=None, mu=None,
+            phi=None, sig=None):
+        """
+        Creates a single list of params from guess arrays that is passed into
+        solver
+        lam_0 : array (neqs * k_ar + lat, 1)
+            guess for elements of lambda_0
+        lam_1 : array (neqs * k_ar + lat, neqs * k_ar + lat)
+            guess for elements of lambda_1
+        delta_1 : array (neqs * k_ar + lat, 1)
+            guess for elements of delta_1
+        mu : array (neqs * k_ar + lat, 1)
+            guess for elements of mu
+        phi : array (neqs * k_ar + lat, neqs * k_ar + lat)
+            guess for elements of phi
+        sig : array (neqs * k_ar + lat, neqs * k_ar + lat)
+            guess for elements of sigma
+        """
+        #we will integrate standard assumptions
+        #these could be changed later, but need to think of a standard way of
+        #bring them in
+        #see _proc_lam
+
+        #!!!LEFT off here, look into **kwargs passing
+
+        lat = self.latent
+        neqs = self.neqs
+        guess_list = []
+        for key, value in guesses.iteritems():
+            if key
+        lam_0_list = flatten(lam_0)
+        lam_1_list = flatten(lam_1)
+        #delta_1_list_t will be estimated using OLS
+        delta_1_list_t = flatten(delta_1[:neqs, 0])
+        delta_1_list_b = flatten(delta_1[:-lat, 0])
+        mu_list = flatten(mu) 
+        phi = flatten(phi)
+        j
+
+
+
+
 

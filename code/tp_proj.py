@@ -19,7 +19,7 @@ from util import robust, pickle_file, success_mail, fail_mail
 comp = socket.gethostname()
 global path_pre
 if comp == "BBAKER":
-    path_pre = "C:\\Documents and Settings\\bbaker"
+    path_pre = "C:/code/my_projs/diss/"
 if comp == "bart-Inspiron-1525":
     path_pre = "/home/bart"
 if comp == "linux-econ6":
