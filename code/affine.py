@@ -11,6 +11,7 @@ import scipy.linalg as la
 
 from statsmodels.tsa.api import VAR
 from statsmodels.base.model import LikelihoodModel
+from statsmodels.regression.linear_model import OLS
 from statsmodels.tools.numdiff import (approx_hess, approx_fprime)
 from operator import itemgetter
 from scipy import optimize
@@ -57,7 +58,7 @@ class Affine(LikelihoodModel):
         #generates mths and mth_only
         self._proc_to_mth()
 
-        self.mu, self.phi, self.sigma = self._gen_OLS_res()
+        self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
 
         if lat:
             assert len(no_err) >= lat, "One yield estimated with no err" \
@@ -178,8 +179,10 @@ class Affine(LikelihoodModel):
 
             lam_solv = reslt[0]
             lam_cov = reslt[1]
+        #!!! LEFT off here, need to define solution process
+        #maybe mlangpiaz for meth??
         elif method = "ml":
-            funct = self.
+            func = self.
 
         lam_0, lam_1, delta_1, phi, sigma = self._proc_lam(*lam_solv)
 
@@ -485,8 +488,6 @@ class Affine(LikelihoodModel):
         #bring them in
         #see _proc_lam
 
-        #!!!LEFT off here, look into **kwargs passing
-
         lat = self.latent
         neqs = self.neqs
         guess_list = []
@@ -523,6 +524,7 @@ class Affine(LikelihoodModel):
         sigma[:neqs, :neqs] = sigma_u
         
         return mu, phi, sigma
+
     def _pass_ols(self, delta_1, mu, phi, sigma):
         """
         Inserts estimated OLS parameters into appropriate matrices
@@ -536,7 +538,12 @@ class Affine(LikelihoodModel):
         sig : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of sigma
         """
-        delta_1[:neqs] = OLS(
+        macro = self.var_data
+        macro["constant"] = 1
+        delta_1[:neqs] = OLS(self.rf_rate, macro).fit().params[1:].values
+        mu[:neqs*k_ar, 0] = self.mu_ols
+        phi[:neqs*k_ar, :neqs] = self.phi_ols
+        sigma[:neqs, :neqs] = self.sigma_ols
 
-
-
+        return delta_1, mu, phi, sigma
+        
