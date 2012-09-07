@@ -63,6 +63,8 @@ class Affine(LikelihoodModel):
         if lat:
             assert len(no_err) >= lat, "One yield estimated with no err" \
                                         + "for each latent variable"
+            #gen position list for processing list input to solver
+            self.pos_list = self._gen_pos_list()
             yc_data_cols = yc_data.columns.tolist()
             self.noerr_indx = list(set(yc_data_cols).intersection(no_err))
             self.err_indx = list(set(yc_data_cols).difference(no_err))
@@ -147,23 +149,17 @@ class Affine(LikelihoodModel):
                     self._pass_ols(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
                                    sigma=sigma_g)
 
-            lam = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g, \
+            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g, \
                     delta_1=delta_1_g, mu=mu_g, phi=phi_g, sigma=sig_g)
 
         else:
-            lam = []
-            self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g)
-            lam_0_list = flatten(lam_0_g[:neqs])
-            lam_1_list = flatten(lam_1_g[:neqs, :neqs])
-            for param in lam_0_list:
-                lam.append(param)
-            for param in lam_1_list:
-                lam.append(param)
+            params = []
+            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g)
 
         #this should be specified in function call
         if method == "ls":
             func = self._affine_nsum_errs
-            reslt = optimize.leastsq(func, lam, maxfev=maxfev,
+            reslt = optimize.leastsq(func, params, maxfev=maxfev,
                                 xtol=xtol, full_output=full_output)
             lam_solv = reslt[0]
             output = reslt[1:]
@@ -173,20 +169,24 @@ class Affine(LikelihoodModel):
             #need to stack
             yield_stack = self._stack_yields(mth_only)
             #run optmization
-            reslt = optimize.curve_fit(func, var_data, yield_stack, p0=lam,
+            reslt = optimize.curve_fit(func, var_data, yield_stack, p0=params,
                                        maxfev=maxfev, xtol=xtol,
                                        full_output=full_output)
-
             lam_solv = reslt[0]
             lam_cov = reslt[1]
-        #!!! LEFT off here, need to define solution process
-        #maybe mlangpiaz for meth??
+
         elif method = "ml":
-            func = self.
+            #reslt = optmize.ne(func, var_data, yi)
+            something
 
-        lam_0, lam_1, delta_1, phi, sigma = self._proc_lam(*lam_solv)
+        # elif method = "mlangpiz":
+        #     func = self.something
 
-        a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sigma)
+        lam_0, lam_1, delta_1, phi, sigma = self._params_to_array(*lam_solv)
+
+        a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
+                                              delta_1=delta_1, mu=mu, phi=phi,
+                                              sigma=sigma)
 
         #if full_output:
             #return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output 
@@ -195,54 +195,66 @@ class Affine(LikelihoodModel):
         elif method == "ls":
             return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output
 
-    def score(self, lam):
+    def score(self, params):
         """
-        Return the gradient of the loglike at AB_mask.
+        Return the gradient of the loglike at params
 
         Parameters
         ----------
-        AB_mask : unknown values of A and B matrix concatenated
+        params : list
 
         Notes
         -----
         Return numerical gradient
         """
-        loglike = self._affine_nsum_errs
-        return approx_fprime(lam, loglike, epsilon=1e-8)
+        #would be nice to have additional arguments here
+        loglike = self.loglike
+        return approx_fprime(params, loglike, epsilon=1e-8)
 
-    def hessian(self, lam):
+    def hessian(self, params):
         """
         Returns numerical hessian.
         """
+        #would be nice to have additional arguments here
         loglike = self._affine_nsum_errs
-        return approx_hess(lam, loglike)[0]
+        return approx_hess(params, loglike)[0]
 
-    #def loglike(self, params):
-    #    """
-    #    Loglikelihood used in latent factor models
-    #    """
-    #    # here is the likelihood that needs to be used
-    #    # sigma is implied VAR sigma
-    #    # use two matrices to take the difference
-    #    like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
-    #            np.logdet(np.dot(sigma, sigma.T)) - 1.0 / 2 * \
-    #            np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sigma, sigma.T))),\
-    #                          err)) - (T - 1) / 2.0 * \
-    #            np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
-    #            np.sum(meas_err/np.var(meas_err, axis=1))
+    def loglike(self, params, lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g):
+        """
+        Loglikelihood used in latent factor models
+        """
+        lat = self.latent
 
-    def gen_pred_coef(self, lam_0_ab, lam_1_ab, delta_1, phi, sigma):
+        solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0_g, lam_1=lam_1_g,
+                                              delta_1=delta_1_g, mu=mu_g,
+                                              phi=phi_g, sigma=sigma_g)
+        #first solve for unknown part of information vector
+        var_data_comp = self._solve_unobs(params, solve_a=solve_a,
+                                          solve_b=solve_b)
+
+        # here is the likelihood that needs to be used
+        # sigma is implied VAR sigma
+        # use two matrices to take the difference
+        J =  
+
+        like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
+               np.logdet(np.dot(sigma, sigma.T)) - 1.0 / 2 * \
+               np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sigma, sigma.T))),\
+                             err)) - (T - 1) / 2.0 * \
+               np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
+               np.sum(meas_err/np.var(meas_err, axis=1))
+
+    def gen_pred_coef(self, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
         Generates prediction coefficient vectors A and B
-        lam_0_ab : array
-        lam_1_ab : array
+        lam_0 : array
+        lam_1 : array
         delta_1 : array
         phi : array
         sigma : array
         """
         mths = self.mths
         delta_0 = self.delta_0
-        mu = self.mu
         max_mth = max(mths)
         #generate predictions
         a_pre = np.zeros((max_mth, 1))
@@ -251,10 +263,10 @@ class Affine(LikelihoodModel):
         b_pre.append(-delta_1)
         for mth in range(max_mth-1):
             a_pre[mth+1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
-                            (mu - np.dot(sigma, lam_0_ab))) + \
+                            (mu - np.dot(sigma, lam_0))) + \
                             (1.0/2)*np.dot(np.dot(np.dot(b_pre[mth].T, sigma), \
                             sigma.T), b_pre[mth]) - delta_0)[0][0]
-            b_pre.append(np.dot((phi - np.dot(sigma, lam_1_ab)).T, \
+            b_pre.append(np.dot((phi - np.dot(sigma, lam_1)).T, \
                                 b_pre[mth]) - delta_1)
         n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
         a_solve = -(a_pre*n_inv)
@@ -263,7 +275,7 @@ class Affine(LikelihoodModel):
             b_solve[mths] = np.multiply(-b_pre[mths], n_inv[mths])
         return a_solve, b_solve
 
-    def _affine_nsum_errs(self, lam):
+    def _affine_nsum_errs(self, params):
         """
         This function generates the sum of the prediction errors
         """
@@ -272,14 +284,9 @@ class Affine(LikelihoodModel):
         mth_only = self.mth_only
         x_t = self.var_data
 
-        lam_0, lam_1, delta_1, phi, sigma = self._proc_lam(*lam)
+        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(*params)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sigma)
-
-        #this is explosive
-
-        if lat:
-            x_t = self._solve_x_t_unkn(a_solve, b_solve)
 
         errs = []
         
@@ -289,10 +296,11 @@ class Affine(LikelihoodModel):
             errs = errs + (act-pred).tolist()
         return errs
 
-    def _solve_x_t_unkn(self, a_in, b_in, x_t = None):
+    def _solve_unobs(self, a_in, b_in, x_t = None):
         """
         This is still under development
         It should solve for the unobserved factors in the x_t VAR data
+        LEFT OFF HERE
         """
         lat = self.latent
         no_err = self.no_err
@@ -362,9 +370,9 @@ class Affine(LikelihoodModel):
     #    likl = -(T-1)*np.logdet(J) - (T-1)*1.0/2*np.logdet(np.dot(sigma,\
     #            sigma.T)) - 1.0/2*
 
-    def _proc_lam(self, *lam):
+    def _params_to_array(self, *params):
         """
-        Process lam input into appropriate parameters
+        Process params input into appropriate arrays
         """
         lat = self.latent
         neqs = self.neqs
@@ -374,11 +382,11 @@ class Affine(LikelihoodModel):
 
             pos_lst = self.pos_lst
 
-            lam_0_est = lam[:pos_lst[0]]
-            lam_1_est = lam[pos_lst[0]:pos_lst[1]]
-            delt_1_g = lam[pos_lst[1]:pos_lst[2]]
-            phi_g = lam[pos_lst[2]:pos_lst[3]]
-            sig_g = lam[pos_lst[3]:]
+            lam_0_est = params[:pos_lst[0]]
+            lam_1_est = params[pos_lst[0]:pos_lst[1]]
+            delt_1_g = params[pos_lst[1]:pos_lst[2]]
+            phi_g = params[pos_lst[2]:pos_lst[3]]
+            sig_g = params[pos_lst[3]:]
 
             lam_0 = np.zeros([k_ar*neqs+lat, 1])
             lam_0[:neqs, 0] = np.asarray(lam_0_est[:neqs]).T
@@ -416,8 +424,8 @@ class Affine(LikelihoodModel):
             sigma[-lat:, -lat:] = np.reshape(sig_g, (lat, lat))
 
         else:
-            lam_0_est = lam[:neqs]
-            lam_1_est = lam[neqs:]
+            lam_0_est = params[:neqs]
+            lam_1_est = params[neqs:]
 
             lam_0 = np.zeros([k_ar*neqs, 1])
             lam_0[:neqs] = np.asarray([lam_0_est]).T
@@ -426,12 +434,13 @@ class Affine(LikelihoodModel):
             lam_1[:neqs, :neqs] = np.reshape(lam_1_est, (neqs, neqs))
 
             delta_1 = self.delta_1_nolat
+            mu = self.mu_ols
             phi = self.phi_ols
             sigma = self.sigma_ols
 
-        return lam_0, lam_1, delta_1, phi, sigma
+        return lam_0, lam_1, delta_1, mu, phi, sigma
 
-    def _affine_pred(self, x_t, *lam):
+    def _affine_pred(self, x_t, *params):
         """
         Function based on lambda and x_t that generates predicted yields
         x_t : X_inforionat
@@ -439,8 +448,7 @@ class Affine(LikelihoodModel):
         mths = self.mths
         mth_only = self.mth_only
 
-        lam_0, lam_1, delta_1, phi, sigma = self._proc_lam(*lam)
-        delta_1, phi, sigma = 
+        lam_0, lam_1, delta_1, phi, sigma = self._params_to_array(*params)
 
         a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sigma)
 
@@ -486,19 +494,23 @@ class Affine(LikelihoodModel):
         #we will integrate standard assumptions
         #these could be changed later, but need to think of a standard way of
         #bring them in
-        #see _proc_lam
+        #see _params_to_array
 
         lat = self.latent
         neqs = self.neqs
         guess_list = []
-        lam_0_list = flatten(lam_0)
-        lam_1_list = flatten(lam_1)
+        guess_list.append(flatten(lam_0))
+        guess_list.append(flatten(lam_1))
         if lat >= 1:
-        #delta_1_list_t will be estimated using OLS
-            delta_1_list_t = flatten(delta_1[:neqs, 0])
-            delta_1_list_b = flatten(delta_1[:-lat, 0])
-            mu_list = flatten(mu) 
-            phi = flatten(phi)
+            #we are assuming independence between macro factors and latent
+            #factors
+            guess_list.append(flatten(delta_1[-lat:, 0]))
+            guess_list.append(flatten(mu[-lat:, 0]))
+            guess_list.append(flatten(phi[-lat:, -lat:]))
+            guess_list.append(flatten(sigma[-lat:, -lat:]))
+        #flatten this list into one dimension
+        flatg_list = [item for sublist in guess_list for item in sublist]
+        return flatg_list
     
     def _gen_OLS_res(self):
         """
@@ -510,14 +522,14 @@ class Affine(LikelihoodModel):
 
         var_fit = VAR(var_data, freq=freq).fit(maxlags=maxlags)
 
-        params = var_fit.params.values
+        coefs = var_fit.params.values
         sigma_u = var_fit.sigma_u
 
         mu = np.zeros([k_ar*neqs+lat, 1])
-        mu[:neqs] = params[0, None].T
+        mu[:neqs] = coefs[0, None].T
 
         phi = np.zeros([k_ar*neqs, k_ar*neqs])
-        phi[:neqs] = params[1:].T
+        phi[:neqs] = coefs[1:].T
         phi[neqs:, :(k_ar-1)*neqs] = np.identity((k_ar-1)*neqs)
 
         sigma = np.zeros([k_ar*neqs, k_ar*neqs])
@@ -546,4 +558,37 @@ class Affine(LikelihoodModel):
         sigma[:neqs, :neqs] = self.sigma_ols
 
         return delta_1, mu, phi, sigma
-        
+
+    def _ml_meth(self, params, lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g):
+        """
+        This is a wrapper for the simple maximum likelihodd solution method
+        """
+        lam_0_g
+        #solve_a = self.gen_pred_coef(lam_0=lam_0_g, lam_1_g=lam_1_g
+
+    def _gen_pos_list(self):
+        """
+        Generates list of positions from draw parameters from list
+        Notes: this is only lengths of parameters that we are solving for using
+        numerical maximization
+        """
+        neqs = self.neqs
+        k_ar = self.k_ar
+        lat = self.latent
+
+        pos_list = []
+        pos = 0
+        len_lam_0 = neqs * k_ar + lat
+        len_lam_1 = (neqs * k_ar + lat) * (neqs * k_ar + lat)
+        len_delta_1 = lat
+        len_mu = lat
+        len_phi = lat * lat
+        len_sig = lat * lat
+        length_list = [len_lam_0, len_lam_1, len_delta_1, len_mu, len_phi,
+                       len_sig]
+
+        for length in length_list:
+            pos_list.append(length + pos)
+            pos += length
+
+        return pos_list
