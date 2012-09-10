@@ -150,3 +150,35 @@ def select_rows(rows, array):
                 new_array = np.append(new_array, array[row, :], axis=0)
     return new_array
 
+def to_mth(data):
+    """
+    This function transforms the yield curve data so that the names are all
+    in months
+    (not sure if this is necessary)
+    """
+    mths = []
+    fnd = 0
+    n_cols = len(data.columns)
+    for col in data.columns:
+        if 'm' in col:
+            mths.append(int(col[6]))
+            if fnd == 0:
+                mth_only = px.DataFrame(data[col],
+                        columns = [col],
+                        index=data.index)
+                fnd = 1
+            else:
+                mth_only[col] = data[col]
+        elif 'y' in col:
+            mth = int(col[6:])*12
+            mths.append(mth)
+            mth_only[('l_tr_m' + str(mth))] = data[col]
+    col_dict = dict([( mth_only.columns[x], mths[x]) for x in
+                range(n_cols)])
+    cols = np.asarray(sorted(col_dict.iteritems(),
+                    key=itemgetter(1)))[:,0].tolist()
+    mth_only = mth_only.reindex(columns = cols)
+    mths.sort()
+    self.mth_only = mth_only
+    return mth_only
+

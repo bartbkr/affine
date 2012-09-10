@@ -11,7 +11,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from util import robust, pickle_file, success_mail, fail_mail
+from util import robust, pickle_file, success_mail, fail_mail, to_mth
 
 from affine import Affine
 
@@ -78,7 +78,9 @@ mod_yc_data = mod_yc_data.rename(columns = {'fed_funds' : 'l_tr_m1'})
 rf_rate = mod_yc_data["l_tr_m1"]
 mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1)
 
-bsr_model = Affine(yc_data=mod_yc_data, var_data=mod_data, rf_rate=rf_rate,
+mth_only = to_mth(mod_yc_data)
+
+bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
         latent=3, no_err=["l_tr_m3", "l_tr_y3", "l_tr_y10"])
 
 

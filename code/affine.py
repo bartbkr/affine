@@ -8,6 +8,7 @@ import numpy as np
 import statsmodels.api as sm
 import pandas as px
 import scipy.linalg as la
+import re
 
 from statsmodels.tsa.api import VAR
 from statsmodels.base.model import LikelihoodModel
@@ -44,8 +45,10 @@ class Affine(LikelihoodModel):
             frequency of data
         latent : int
             # number of latent variables
-        no_err : list of strings
-            list of the yields that are estimated without error
+        no_err : list of ints
+            list of the yields by number of periods that are estimated without error
+            ex: [1, 6, 12] 
+            (1, 6, and 12 period yields measured without error)
         """
         self.yc_data = yc_data
         self.var_data = var_data
@@ -55,8 +58,8 @@ class Affine(LikelihoodModel):
         self.freq = freq
         lat = self.latent = latent
 
-        #generates mths and mth_only
-        self._proc_to_mth()
+        #generates mths: list of mths in yield curve data
+        self.mths = self._mths_list()
 
         self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
 
@@ -132,7 +135,7 @@ class Affine(LikelihoodModel):
         k_ar = self.k_ar
         neqs = self.neqs
         lat = self.latent
-        mth_only = self.mth_only
+        yc_data = self.yc_data
 
         dim = neqs * k_ar + lat
 
@@ -167,7 +170,7 @@ class Affine(LikelihoodModel):
         elif method == "cf":
             func = self._affine_pred
             #need to stack
-            yield_stack = self._stack_yields(mth_only)
+            yield_stack = self._stack_yields(yc_data)
             #run optmization
             reslt = optimize.curve_fit(func, var_data, yield_stack, p0=params,
                                        maxfev=maxfev, xtol=xtol,
@@ -281,7 +284,7 @@ class Affine(LikelihoodModel):
         """
         lat = self.latent
         mths = self.mths
-        mth_only = self.mth_only
+        yc_data = self.yc_data
         x_t = self.var_data
 
         lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(*params)
@@ -291,7 +294,7 @@ class Affine(LikelihoodModel):
         errs = []
         
         for i in mths:
-            act = np.flipud(mth_only['l_tr_m' + str(i)].values)
+            act = np.flipud(yc_data['l_tr_m' + str(i)].values)
             pred = a_solve[i-1] + np.dot(b_solve[i-1].T, np.fliplr(x_t.T))[0]
             errs = errs + (act-pred).tolist()
         return errs
@@ -300,11 +303,11 @@ class Affine(LikelihoodModel):
         """
         This is still under development
         It should solve for the unobserved factors in the x_t VAR data
-        LEFT OFF HERE
+        !!LEFT OFF HERE
         """
         lat = self.latent
         no_err = self.no_err
-        mth_only = self.mth_only
+        yc_data = self.yc_data
         yc_data = self.yc_data
         x_t_new = np.append(x_t, np.zeros((x_t.shape[0], lat)), axis=1)
         errors = x_t[1:] - mu - np.dot(phi, x_t[:-1])
@@ -333,38 +336,17 @@ class Affine(LikelihoodModel):
         #this taken out for test run, need to be added back in
         #J = 
 
-    def _proc_to_mth(self):
+    def _mths_list(self):
         """
-        This function transforms the yield curve data so that the names are all
-        in months
-        (not sure if this is necessary)
+        This function just grabs the mths of yield curve points and return list
+        of them
         """
-        frame = self.yc_data
         mths = []
-        fnd = 0
-        n_cols = len(frame.columns)
-        for col in frame.columns:
-            if 'm' in col:
-                mths.append(int(col[6]))
-                if fnd == 0:
-                    mth_only = px.DataFrame(frame[col],
-                            columns = [col],
-                            index=frame.index)
-                    fnd = 1
-                else:
-                    mth_only[col] = frame[col]
-            elif 'y' in col:
-                mth = int(col[6:])*12
-                mths.append(mth)
-                mth_only[('l_tr_m' + str(mth))] = frame[col]
-        col_dict = dict([( mth_only.columns[x], mths[x]) for x in
-                    range(n_cols)])
-        cols = np.asarray(sorted(col_dict.iteritems(),
-                        key=itemgetter(1)))[:,0].tolist()
-        mth_only = mth_only.reindex(columns = cols)
-        mths.sort()
-        self.mths = mths
-        self.mth_only = mth_only
+        columns = self.yc_data.columns()
+        matcher = re.compile(r".*(\d+)$")
+        for column in columns:
+            mths.append(re.match(matcher, column).group(1))
+        return mths
 
     #def _unk_likl(self):
     #    likl = -(T-1)*np.logdet(J) - (T-1)*1.0/2*np.logdet(np.dot(sigma,\
@@ -446,13 +428,13 @@ class Affine(LikelihoodModel):
         x_t : X_inforionat
         """
         mths = self.mths
-        mth_only = self.mth_only
+        yc_data = self.yc_data
 
         lam_0, lam_1, delta_1, phi, sigma = self._params_to_array(*params)
 
         a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sigma)
 
-        pred = px.DataFrame(index=mth_only.index)
+        pred = px.DataFrame(index=yc_data.index)
 
         for i in mths:
             pred["l_tr_m" + str(i)] = a_test[i-1] + np.dot(b_test[i-1].T,
