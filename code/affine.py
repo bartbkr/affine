@@ -59,7 +59,7 @@ class Affine(LikelihoodModel):
         lat = self.latent = latent
 
         #generates mths: list of mths in yield curve data
-        self.mths = self._mths_list()
+        mths = self.mths =  self._mths_list()
 
         self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
 
@@ -68,9 +68,8 @@ class Affine(LikelihoodModel):
                                         + "for each latent variable"
             #gen position list for processing list input to solver
             self.pos_list = self._gen_pos_list()
-            yc_data_cols = yc_data.columns.tolist()
-            self.noerr_indx = list(set(yc_data_cols).intersection(no_err))
-            self.err_indx = list(set(yc_data_cols).difference(no_err))
+            self.noerr_indx = list(set(mths).intersection(no_err))
+            self.err_indx = list(set(mths).difference(no_err))
             #set to unconditional mean of short_rate
             self.delta_0 = np.mean(rf_rate)
 
@@ -274,8 +273,8 @@ class Affine(LikelihoodModel):
         n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
         a_solve = -(a_pre*n_inv)
         b_solve = np.zeros_like(b_pre)
-        for mths in range(max_mth):
-            b_solve[mths] = np.multiply(-b_pre[mths], n_inv[mths])
+        for mth in range(max_mth):
+            b_solve[mth] = np.multiply(-b_pre[mth], n_inv[mth])
         return a_solve, b_solve
 
     def _affine_nsum_errs(self, params):
@@ -299,16 +298,35 @@ class Affine(LikelihoodModel):
             errs = errs + (act-pred).tolist()
         return errs
 
-    def _solve_unobs(self, a_in, b_in, x_t = None):
+    def _solve_unobs(self, a_in, b_in):
         """
         This is still under development
         It should solve for the unobserved factors in the x_t VAR data
-        !!LEFT OFF HERE
         """
-        lat = self.latent
+        yc_data = self.yc_data
+        neqs = self.neqs
+        k_ar = self.k_ar
         no_err = self.no_err
-        yc_data = self.yc_data
-        yc_data = self.yc_data
+        lat = self.latent
+        noerr_indx = self.noerr_indx
+        no_err_num = len(noerr_indx)
+
+        a_select = np.zeros([no_err_num, 1])
+        b_select_obs = np.zeros([no_err_num, neqs*k_ar])
+        b_select_nonobs = np.zeros([no_err_num, lat])
+        for indx, period in enumerate(no_err):
+            a_select[indx, 0] = a_in[period-1]
+            b_select_obs[indx, :] = b_in[period-1][:neqs * k_ar]
+            b_select_nonobs = b_in[period-1][neqs * k_ar:]
+        #now solve for unknown factors using long matrices
+        #LEFT OFF HERE
+        la.inv
+
+
+
+        
+
+
         x_t_new = np.append(x_t, np.zeros((x_t.shape[0], lat)), axis=1)
         errors = x_t[1:] - mu - np.dot(phi, x_t[:-1])
         if x_t is None:
@@ -338,8 +356,8 @@ class Affine(LikelihoodModel):
 
     def _mths_list(self):
         """
-        This function just grabs the mths of yield curve points and return list
-        of them
+        This function just grabs the mths of yield curve points and return
+        a list of them
         """
         mths = []
         columns = self.yc_data.columns()
