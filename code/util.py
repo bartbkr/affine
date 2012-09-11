@@ -3,12 +3,12 @@ These are utilies used by the affine model class
 """
 
 import numpy as np
+import pandas as px
 import pickle
 import smtplib
-
 import datetime as dt
 
-from affine import Affine
+from operator import itemgetter
 
 def pickle_file(obj=None, name=None):
     """
@@ -33,6 +33,7 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
     lam_1_g : array
         Guess for lambda 1
     """
+    from affine import Affine
         
     # subset to pre 2005
     mod_data = mod_data[:217]
@@ -179,6 +180,5 @@ def to_mth(data):
                     key=itemgetter(1)))[:,0].tolist()
     mth_only = mth_only.reindex(columns = cols)
     mths.sort()
-    self.mth_only = mth_only
     return mth_only
 

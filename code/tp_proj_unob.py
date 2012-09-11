@@ -11,16 +11,14 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from util import robust, pickle_file, success_mail, fail_mail, to_mth
-
-from affine import Affine
+from util import pickle_file, success_mail, fail_mail, to_mth
 
 #identify computer
 #identify computer
 comp = socket.gethostname()
 global path_pre
 if comp == "BBAKER":
-    path_pre = "C:\\Documents and Settings\\bbaker"
+    path_pre = "../"
 if comp == "bart-Inspiron-1525":
     path_pre = "/home/bart"
 if comp == "linux-econ6":
@@ -80,9 +78,12 @@ mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1)
 
 mth_only = to_mth(mod_yc_data)
 
-bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
-        latent=3, no_err=["l_tr_m3", "l_tr_y3", "l_tr_y10"])
+#from affine import Affine
+
+
+#bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
+#        latent=3, no_err=["l_tr_m3", "l_tr_y3", "l_tr_y10"])
 
 
 
-bsr_solve = bsr_model.solve()
+#bsr_solve = bsr_model.solve()

@@ -51,15 +51,17 @@ class Affine(LikelihoodModel):
             (1, 6, and 12 period yields measured without error)
         """
         self.yc_data = yc_data
-        self.var_data = var_data
+        self.num_yields = len(num_yields)
+        self.names = names = var_data.columns
         self.k_ar = max_lags
-        self.neqs = len(var_data.columns)
+        self.neqs = len(names)
         self.no_err = no_err
         self.freq = freq
         lat = self.latent = latent
 
         #generates mths: list of mths in yield curve data
-        mths = self.mths =  self._mths_list()
+        pre, mths = self._mths_list()
+        self.mths = mths
 
         self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
 
@@ -68,8 +70,9 @@ class Affine(LikelihoodModel):
                                         + "for each latent variable"
             #gen position list for processing list input to solver
             self.pos_list = self._gen_pos_list()
-            self.noerr_indx = list(set(mths).intersection(no_err))
-            self.err_indx = list(set(mths).difference(no_err))
+            self.noerr_indx = list(set(mths).intersection(no_err)).sort()
+            self.err_indx = list(set(mths).difference(no_err)).sort()
+            self.noerr_cols, self.err_cols = self._gen_col_names(pre)
             #set to unconditional mean of short_rate
             self.delta_0 = np.mean(rf_rate)
 
@@ -91,6 +94,7 @@ class Affine(LikelihoodModel):
                         values[:-(lag+1)], index=var_data.index[lag+1:])
 
         self.var_data = x_t_na.dropna(axis=0)
+        self.periods = len(self.var_data)
 
         super(Affine, self).__init__(var_data)
 
@@ -179,12 +183,17 @@ class Affine(LikelihoodModel):
 
         elif method = "ml":
             #reslt = optmize.ne(func, var_data, yi)
-            something
+            lam_solv = super(Affine).fit(start_params=params, method=solver,
+                    maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                    fargs=(lam_0=lam_0_g, lam_1=lam_1_g, delta_1=delta_1_g,
+                        mu=mu_g, phi=phi_g, sigma=sigma_g))
 
         # elif method = "mlangpiz":
         #     func = self.something
 
-        lam_0, lam_1, delta_1, phi, sigma = self._params_to_array(*lam_solv)
+        lam_0, lam_1, delta_1, phi, sigma = \
+                self._params_to_array(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
+                        sigma=sigma_g, *lam_solv)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
                                               delta_1=delta_1, mu=mu, phi=phi,
@@ -221,30 +230,39 @@ class Affine(LikelihoodModel):
         loglike = self._affine_nsum_errs
         return approx_hess(params, loglike)[0]
 
-    def loglike(self, params, lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g):
+    def loglike(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
         Loglikelihood used in latent factor models
         """
         lat = self.latent
+        per = self.periods
 
-        solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0_g, lam_1=lam_1_g,
-                                              delta_1=delta_1_g, mu=mu_g,
-                                              phi=phi_g, sigma=sigma_g)
+        delta_1, mu, phi, sigma = _params_to_array(params=params, \
+                                    delta_1=delta_1, mu=mu, phi=phi, \
+                                    sigma=sigma)
+
+        solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1, \
+                                delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)
         #first solve for unknown part of information vector
-        var_data_comp = self._solve_unobs(params, solve_a=solve_a,
-                                          solve_b=solve_b)
+        var_data_c, jacob, yield_errs  = self._solve_unobs(solve_a=solve_a,
+                                                solve_b=solve_b)
+
 
         # here is the likelihood that needs to be used
         # sigma is implied VAR sigma
         # use two matrices to take the difference
-        J =  
+        errors = var_data_c.values.T[2:] - mu - np.dot(phi,
+                var_data_c.values.T[:-1])
 
-        like = -(T - 1) * np.logdet(J) - (T - 1) * 1.0 / 2 * \
+
+        like = -(per - 1) * np.logdet(jacob) - (per - 1) * 1.0 / 2 * \
                np.logdet(np.dot(sigma, sigma.T)) - 1.0 / 2 * \
                np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sigma, sigma.T))),\
-                             err)) - (T - 1) / 2.0 * \
-               np.log(np.sum(np.var(meas_err, axis=1))) - 1.0 / 2 * \
-               np.sum(meas_err/np.var(meas_err, axis=1))
+                             errors)) - (per - 1) / 2.0 * \
+               np.log(np.sum(np.var(yield_errs, axis=1))) - 1.0 / 2 * \
+               np.sum(yield_errs**2/np.var(yield_errs, axis=1)[None].T)
+
+        return like
 
     def gen_pred_coef(self, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
@@ -300,59 +318,67 @@ class Affine(LikelihoodModel):
 
     def _solve_unobs(self, a_in, b_in):
         """
-        This is still under development
-        It should solve for the unobserved factors in the x_t VAR data
+        Solves for unknown factors
+
+        Parameters
+        ----------
+        a_in : list of floats (periods)
+            List of elements for A constant in factors -> yields relationship
+        b_in : array (periods, neqs * k_ar + lat)
+            Array of elements for B coefficients in factors -> yields
+            relationship
+
+        Returns
+        -------
+        var_data_c : DataFrame 
+            VAR data including unobserved factors
+        jacob : array (neqs * k_ar + num_yields)**2
+            Jacobian used in likelihood
+        yield_errs : array (num_yields - lat, periods)
+            The errors for the yields estimated with error
         """
         yc_data = self.yc_data
-        neqs = self.neqs
+        var_data = self.var_data
+        names = self.names
         k_ar = self.k_ar
+        neqs = self.neqs
         no_err = self.no_err
         lat = self.latent
-        noerr_indx = self.noerr_indx
-        no_err_num = len(noerr_indx)
+        noerr_cols = self.noerr_cols
+        err_cols = self.err_cols
 
-        a_select = np.zeros([no_err_num, 1])
-        b_select_obs = np.zeros([no_err_num, neqs*k_ar])
-        b_select_nonobs = np.zeros([no_err_num, lat])
+        names = var_data.columns
+        no_err_num = len(noerr_cols)
+        err_num = len(err_cols)
+
+        a_sel = np.zeros([no_err_num, 1])
+        b_sel_obs = np.zeros([no_err_num, neqs*k_ar])
+        b_sel_unobs = np.zeros([no_err_num, lat])
         for indx, period in enumerate(no_err):
-            a_select[indx, 0] = a_in[period-1]
-            b_select_obs[indx, :] = b_in[period-1][:neqs * k_ar]
-            b_select_nonobs = b_in[period-1][neqs * k_ar:]
+            a_sel[indx, 0] = a_in[period-1]
+            b_sel_obs[indx, :] = b_in[period-1][:neqs * k_ar]
+            b_sel_unobs = b_in[period-1][neqs * k_ar:]
         #now solve for unknown factors using long matrices
-        #LEFT OFF HERE
-        la.inv
+        unobs = np.dot(la.inv(b_sel_unobs), \
+                    (ycdata.filter(items=noerr_cols).values.T - a_sel - \
+                    np.dot(b_sel_obs, var_data.values.T)))
 
+        yield_errs = ycdata.filter(items=err_cols).values.T - a_sel - \
+                        np.dot(b_sel_obs, var_data.values.T) - \
+                        np.dot(b_sel_unobs, unobs)
 
+        var_data_c = var_data.copy()
+        for factor in range(lat):
+            var_data_c["latent_" + str(factor)] = unobs[factor, :]
+        meas_mat = np.zeros(neqs * k_ar + lat, err_num)
+        for col_index, col in enumerate(err_cols):
+            row_index = names.index(col)
+            meas_mat[row_index, col_index] = 1
 
+        jacob = self._construct_J(b_sel_obs=b_sel_obs, \
+                                    b_sel_unobs=b_sel_unobs, meas_mat=meas_mat)
         
-
-
-        x_t_new = np.append(x_t, np.zeros((x_t.shape[0], lat)), axis=1)
-        errors = x_t[1:] - mu - np.dot(phi, x_t[:-1])
-        if x_t is None:
-            x_t = self.var_data
-        T = x_t.shape[0]
-
-        # solve for unknown factors
-        noerr_indx = self.noerr_indx
-        a_noerr = select_rows(noerr_indx, a_in)
-        b_0_noerr = select_rows(noerr_indx, b_in)
-        # this is the right hand for solving for the unobserved latent 
-        # factors
-        r_hs = yc_data[no_err] - a_noerr[None].T - np.dot(b_0_noerr, x_t)
-        lat = la.solve(b_u, r_hs)
-
-        #solve for pricing error on other yields
-        err_indx = self.err_indx
-        a_err = select_rows(err_indx, a_in)
-        b_0_err = select_rows(err_indx, b_in)
-        r_hs = yc_data[no_err] - a_noerr[None].T - np.dot(b_0_noerr, x_t)
-        meas_err = la.solve(b_m, r_hs)
-
-        #create Jacobian (J) here
-        
-        #this taken out for test run, need to be added back in
-        #J = 
+        return var_data_c, jacob, yield_errs 
 
     def _mths_list(self):
         """
@@ -361,18 +387,28 @@ class Affine(LikelihoodModel):
         """
         mths = []
         columns = self.yc_data.columns()
-        matcher = re.compile(r".*(\d+)$")
+        matcher = re.compile(r"(.*)(\d+)$")
         for column in columns:
-            mths.append(re.match(matcher, column).group(1))
-        return mths
+            pre = re.match(matcher, column).group(1)
+            mths.append(re.match(matcher, column).group(2))
+        return pre, mths
 
-    #def _unk_likl(self):
-    #    likl = -(T-1)*np.logdet(J) - (T-1)*1.0/2*np.logdet(np.dot(sigma,\
-    #            sigma.T)) - 1.0/2*
-
-    def _params_to_array(self, *params):
+    def _params_to_array(self, params=None, delta_1=None, mu=None, phi=None,
+            sigma=None):
         """
         Process params input into appropriate arrays
+
+        Parameters
+        ----------
+        delta_1 : array (neqs * k_ar + lat, 1)
+            delta_1 prior to complete model solve
+        mu : array (neqs * k_ar + lat, 1)
+            mu prior to complete model solve
+        phi : array (neqs * k_ar + lat, neqs * k_ar + lat)
+            phi prior to complete model solve
+        sigma : array (neqs * k_ar + lat, neqs * k_ar + lat)
+            sigma prior to complete model solve
+
         """
         lat = self.latent
         neqs = self.neqs
@@ -384,15 +420,20 @@ class Affine(LikelihoodModel):
 
             lam_0_est = params[:pos_lst[0]]
             lam_1_est = params[pos_lst[0]:pos_lst[1]]
-            delt_1_g = params[pos_lst[1]:pos_lst[2]]
-            phi_g = params[pos_lst[2]:pos_lst[3]]
-            sig_g = params[pos_lst[3]:]
+            delta_1_g = params[pos_lst[1]:pos_lst[2]]
+            mu_g = params[pos_lst[2]:pos_lst[3]]
+            phi_g = params[pos_lst[3]:pos_lst[4]]
+            sigma_g = params[pos_lst[4]:]
 
-            lam_0 = np.zeros([k_ar*neqs+lat, 1])
+            #lambda_0
+
+            lam_0 = np.zeros([k_ar * neqs + lat, 1])
             lam_0[:neqs, 0] = np.asarray(lam_0_est[:neqs]).T
             lam_0[-lat:, 0] = np.asarray(lam_0_est[-lat:]).T
 
-            lam_1 = np.zeros([k_ar*neqs+lat, k_ar*neqs+lat])
+            #lambda_1
+
+            lam_1 = np.zeros([k_ar * neqs + lat, k_ar * neqs + lat])
             lam_1[:neqs, :neqs] = np.reshape(lam_1_est[:neqs**2], (neqs, neqs))
             nxt = neqs*lat
             lam_1[:neqs, -lat:] = np.reshape(lam_1_est[neqs**2:\
@@ -400,30 +441,28 @@ class Affine(LikelihoodModel):
             nxt = nxt + neqs**2
             lam_1[-lat:, :neqs] = np.reshape(lam_1_est[nxt: \
                                             nxt+lat*neqs], (lat, neqs))
-            nxt = nxt + lat*neqs
+            nxt = nxt + lat * neqs
             lam_1[-lat:, -lat:] = np.reshape(lam_1_est[nxt: \
                                             nxt + lat**2], (lat, lat))
-            delta_1 = self.delta_1.copy()
-            delta_1[-lat:, 0] = np.asarray(delt_1_g)
 
-            #add rows/columns for unk params
-            phi_n = self.phi.copy()
-            add = np.zeros([lat, np.shape(phi_n)[1]])
-            phi_n = np.append(phi_n, add, axis=0)
-            add = np.zeros([np.shape(phi_n)[0], lat])
-            phi = np.append(phi_n, add, axis=1)
-            #fill in parm guesses
+            #delta_1
+
+            delta_1[-lat:, 0] = np.asarray(delta_1_g)
+
+            #mu
+
+            mu[-lat:, 0] = np.asarray(mu_g)
+
+            #phi
+
             phi[-lat:, -lat:] = np.reshape(phi_g, (lat, lat))
 
-            #add rows/columns for unk params
-            sig_n = self.sigma.copy()
-            add = np.zeros([lat, np.shape(sig_n)[1]])
-            sig_n = np.append(sig_n, add, axis=0)
-            add = np.zeros([np.shape(sig_n)[0], lat])
-            sigma = np.append(sig_n, add, axis=1)
-            sigma[-lat:, -lat:] = np.reshape(sig_g, (lat, lat))
+            #sigma
+
+            sigma[-lat:, -lat:] = np.reshape(sigma_g, (lat, lat))
 
         else:
+
             lam_0_est = params[:neqs]
             lam_1_est = params[neqs:]
 
@@ -499,15 +538,24 @@ class Affine(LikelihoodModel):
         lat = self.latent
         neqs = self.neqs
         guess_list = []
-        guess_list.append(flatten(lam_0))
-        guess_list.append(flatten(lam_1))
+        #we assume that those params corresponding to lags are set to zero
         if lat >= 1:
             #we are assuming independence between macro factors and latent
             #factors
+            guess_list.append(flatten(lam_0[:neqs]))
+            guess_list.append(flatten(lam_0[-lat:]))
+            guess_list.append(flatten(lam_1[:neqs, :neqs]))
+            guess_list.append(flatten(lam_1[:neqs, -lat:]))
+            guess_list.append(flatten(lam_1[-lat:, :neqs]))
+            guess_list.append(flatten(lam_1[-lat:, -lat:]))
             guess_list.append(flatten(delta_1[-lat:, 0]))
             guess_list.append(flatten(mu[-lat:, 0]))
             guess_list.append(flatten(phi[-lat:, -lat:]))
             guess_list.append(flatten(sigma[-lat:, -lat:]))
+        else:
+            guess_list.append(flatten(lam_0[:neqs]))
+            guess_list.append(flatten(lam_1[:neqs, :neqs]))
+
         #flatten this list into one dimension
         flatg_list = [item for sublist in guess_list for item in sublist]
         return flatg_list
@@ -578,8 +626,8 @@ class Affine(LikelihoodModel):
 
         pos_list = []
         pos = 0
-        len_lam_0 = neqs * k_ar + lat
-        len_lam_1 = (neqs * k_ar + lat) * (neqs * k_ar + lat)
+        len_lam_0 = neqs + lat
+        len_lam_1 = neqs**2 + (neqs * lat) + (lat * neqs) + lat**2
         len_delta_1 = lat
         len_mu = lat
         len_phi = lat * lat
@@ -592,3 +640,39 @@ class Affine(LikelihoodModel):
             pos += length
 
         return pos_list
+
+    def _gen_col_names(self, pre_name):
+        """
+        Generate column names for err and noerr
+        """
+        noerr_indx = self.noerr_indx
+        err_indx = self.err_indx
+        noerr_cols = []
+        err_cols = []
+        for col in noerr_indx:
+            noerr_cols.append(pre_name + str(col))
+        for col in err_indx:
+            err_cols.append(pre_name + str(col))
+        return noerr_cols, err_cols
+
+    def _construct_J(self, b_sel_obs, b_sel_unobs, meas_mat): 
+        """
+        Consruct jacobian matrix
+        meas_mat : array 
+        LEFT OFF here 
+        """
+        k_ar = self.k_ar
+        neqs = self.neqs
+        lat = self.latent
+        num_yields = self.num_yields
+        num_obs = neqs * k_ar
+
+        #now construct Jacobian
+        msize = neqs * k_ar + num_yields
+        jacob = np.zeros([msize, msize])
+        jacob[:num_bs, :num_obs] = np.identity(neqs*k_ar)
+        jacob[num_obs:, :num_obs] = b_sel_obs
+        jacob[num_obs:, num_obs:num_obs + lat] = b_sel_unobs
+        jacob[num_obs:, num_obs + lat:] = meas_mat
+
+        return jacob
