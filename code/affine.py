@@ -51,9 +51,10 @@ class Affine(LikelihoodModel):
             (1, 6, and 12 period yields measured without error)
         """
         self.yc_data = yc_data
-        self.num_yields = len(num_yields)
+        self.var_data = var_data
+        self.num_yields = len(yc_data.columns)
         self.names = names = var_data.columns
-        self.k_ar = max_lags
+        self.k_ar = maxlags
         self.neqs = len(names)
         self.no_err = no_err
         self.freq = freq
@@ -70,6 +71,9 @@ class Affine(LikelihoodModel):
                                         + "for each latent variable"
             #gen position list for processing list input to solver
             self.pos_list = self._gen_pos_list()
+
+            pdb.set_trace()
+
             self.noerr_indx = list(set(mths).intersection(no_err)).sort()
             self.err_indx = list(set(mths).difference(no_err)).sort()
             self.noerr_cols, self.err_cols = self._gen_col_names(pre)
@@ -93,7 +97,7 @@ class Affine(LikelihoodModel):
                 x_t_na[var + '_m' + str(lag+1)] = px.Series(var_data[var].
                         values[:-(lag+1)], index=var_data.index[lag+1:])
 
-        self.var_data = x_t_na.dropna(axis=0)
+        self.var_data_vert = x_t_na.dropna(axis=0)
         self.periods = len(self.var_data)
 
         super(Affine, self).__init__(var_data)
@@ -175,18 +179,17 @@ class Affine(LikelihoodModel):
             #need to stack
             yield_stack = self._stack_yields(yc_data)
             #run optmization
-            reslt = optimize.curve_fit(func, var_data, yield_stack, p0=params,
+            reslt = optimize.curve_fit(func, var_data_vert, yield_stack, p0=params,
                                        maxfev=maxfev, xtol=xtol,
                                        full_output=full_output)
             lam_solv = reslt[0]
             lam_cov = reslt[1]
 
-        elif method = "ml":
-            #reslt = optmize.ne(func, var_data, yi)
+        elif method == "ml":
+            #reslt = optmize.ne(func, var_data_vert, yi)
             lam_solv = super(Affine).fit(start_params=params, method=solver,
                     maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                    fargs=(lam_0=lam_0_g, lam_1=lam_1_g, delta_1=delta_1_g,
-                        mu=mu_g, phi=phi_g, sigma=sigma_g))
+                    fargs=(lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g))
 
         # elif method = "mlangpiz":
         #     func = self.something
@@ -302,7 +305,7 @@ class Affine(LikelihoodModel):
         lat = self.latent
         mths = self.mths
         yc_data = self.yc_data
-        x_t = self.var_data
+        x_t = self.var_data_vert
 
         lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(*params)
 
@@ -338,7 +341,7 @@ class Affine(LikelihoodModel):
             The errors for the yields estimated with error
         """
         yc_data = self.yc_data
-        var_data = self.var_data
+        var_data = self.var_data_vert
         names = self.names
         k_ar = self.k_ar
         neqs = self.neqs
@@ -386,11 +389,13 @@ class Affine(LikelihoodModel):
         a list of them
         """
         mths = []
-        columns = self.yc_data.columns()
-        matcher = re.compile(r"(.*)(\d+)$")
+        columns = self.yc_data.columns
+        matcher = re.compile(r"(.*)([0-9]+)$")
         for column in columns:
             pre = re.match(matcher, column).group(1)
+            print pre
             mths.append(re.match(matcher, column).group(2))
+            print mths
         return pre, mths
 
     def _params_to_array(self, params=None, delta_1=None, mu=None, phi=None,
@@ -566,9 +571,12 @@ class Affine(LikelihoodModel):
         """
         #run VAR to generate parameters for known 
         var_data = self.var_data
+        k_ar = self.k_ar
+        neqs = self.neqs
+        lat = self.latent
         freq = self.freq
 
-        var_fit = VAR(var_data, freq=freq).fit(maxlags=maxlags)
+        var_fit = VAR(var_data, freq=freq).fit(maxlags=k_ar)
 
         coefs = var_fit.params.values
         sigma_u = var_fit.sigma_u

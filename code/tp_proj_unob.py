@@ -16,18 +16,11 @@ from util import pickle_file, success_mail, fail_mail, to_mth
 #identify computer
 #identify computer
 comp = socket.gethostname()
-global path_pre
-if comp == "BBAKER":
-    path_pre = "../"
-if comp == "bart-Inspiron-1525":
-    path_pre = "/home/bart"
-if comp == "linux-econ6":
-    path_pre = "/home/labuser"
 
 ########################################
 # Get macro data                       #
 ########################################
-mthdata = px.read_csv(path_pre + "/data/VARbernankedata.csv", na_values="M",
+mthdata = px.read_csv("../data/VARbernankedata.csv", na_values="M",
                         index_col = 0, parse_dates=True)
 
 mthdata['tr_empl_gap'], mthdata['hp_ch'] = \
@@ -62,7 +55,7 @@ x_t = x_t_na.dropna(axis=0)
 # Grab yield curve data                     #
 #############################################
 
-ycdata = px.read_csv(path_pre + "/data/yield_curve.csv",
+ycdata = px.read_csv("../data/yield_curve.csv",
                      na_values = "M", index_col=0, parse_dates=True)
 
 mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',
@@ -78,12 +71,12 @@ mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1)
 
 mth_only = to_mth(mod_yc_data)
 
-#from affine import Affine
+from affine import Affine
 
 
-#bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
-#        latent=3, no_err=["l_tr_m3", "l_tr_y3", "l_tr_y10"])
+bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
+                   latent=3, no_err=["l_tr_m3", "l_tr_y3", "l_tr_y10"])
 
 
 
-#bsr_solve = bsr_model.solve()
+bsr_solve = bsr_model.solve()
