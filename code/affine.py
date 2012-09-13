@@ -54,8 +54,8 @@ class Affine(LikelihoodModel):
         self.var_data = var_data
         self.num_yields = len(yc_data.columns)
         self.names = names = var_data.columns
-        self.k_ar = maxlags
-        self.neqs = len(names)
+        k_ar = self.k_ar = maxlags
+        neqs = self.neqs = len(names)
         self.no_err = no_err
         self.freq = freq
         lat = self.latent = latent
@@ -71,11 +71,7 @@ class Affine(LikelihoodModel):
                                         + "for each latent variable"
             #gen position list for processing list input to solver
             self.pos_list = self._gen_pos_list()
-
-            pdb.set_trace()
-
-            self.noerr_indx = list(set(mths).intersection(no_err)).sort()
-            self.err_indx = list(set(mths).difference(no_err)).sort()
+            self.err = list(set(mths).difference(no_err))
             self.noerr_cols, self.err_cols = self._gen_col_names(pre)
             #set to unconditional mean of short_rate
             self.delta_0 = np.mean(rf_rate)
@@ -110,7 +106,7 @@ class Affine(LikelihoodModel):
 
         method : string
             ls = linear least squares
-            cf = nonlinear least squares
+            nls = nonlinear least squares
             ml = maximum likelihood
         lam_0_g : array (neqs * k_ar + lat, 1)
             guess for elements of lambda_0
@@ -143,12 +139,15 @@ class Affine(LikelihoodModel):
         neqs = self.neqs
         lat = self.latent
         yc_data = self.yc_data
+        var_data_vert = self.var_data_vert
 
         dim = neqs * k_ar + lat
+        if lam_0_g is not None:
+            assert np.shape(lam_0_g) == (dim, 1), "Shape of lam_0_g incorrect"
+        if lam_1_g is not None:
+            assert np.shape(lam_1_g) == (dim, dim), "Shape of lam_1_g incorrect"
 
         #creates single input vector for params to solve
-        assert np.shape(lam_0_g) == (dim, 1), "Shape of lam_0_g incorrect"
-        assert np.shape(lam_1_g) == (dim, dim), "Shape of lam_1_g incorrect"
         if lat:
             assert np.shape(delta_1_g) == (dim, 1), "Shape of delta_1_g" \
                 "incorrect"
@@ -159,11 +158,9 @@ class Affine(LikelihoodModel):
                     self._pass_ols(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
                                    sigma=sigma_g)
 
-            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g, \
+            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g, 
                     delta_1=delta_1_g, mu=mu_g, phi=phi_g, sigma=sig_g)
-
         else:
-            params = []
             params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g)
 
         #this should be specified in function call
@@ -174,7 +171,7 @@ class Affine(LikelihoodModel):
             lam_solv = reslt[0]
             output = reslt[1:]
 
-        elif method == "cf":
+        elif method == "nls":
             func = self._affine_pred
             #need to stack
             yield_stack = self._stack_yields(yc_data)
@@ -204,7 +201,7 @@ class Affine(LikelihoodModel):
 
         #if full_output:
             #return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output 
-        if method == "cf":
+        if method == "nls":
             return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, lam_cov
         elif method == "ls":
             return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output
@@ -307,7 +304,7 @@ class Affine(LikelihoodModel):
         yc_data = self.yc_data
         x_t = self.var_data_vert
 
-        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(*params)
+        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(params=params)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sigma)
 
@@ -390,12 +387,10 @@ class Affine(LikelihoodModel):
         """
         mths = []
         columns = self.yc_data.columns
-        matcher = re.compile(r"(.*)([0-9]+)$")
+        matcher = re.compile(r"(.*?)([0-9]+)$")
         for column in columns:
             pre = re.match(matcher, column).group(1)
-            print pre
-            mths.append(re.match(matcher, column).group(2))
-            print mths
+            mths.append(int(re.match(matcher, column).group(2)))
         return pre, mths
 
     def _params_to_array(self, params=None, delta_1=None, mu=None, phi=None,
@@ -492,7 +487,9 @@ class Affine(LikelihoodModel):
         mths = self.mths
         yc_data = self.yc_data
 
-        lam_0, lam_1, delta_1, phi, sigma = self._params_to_array(*params)
+        pdb.set_trace()
+
+        lam_0, lam_1, delta_1, phi, sigma = self._params_to_array(params=params)
 
         a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sigma)
 
@@ -517,8 +514,8 @@ class Affine(LikelihoodModel):
             new[col*obs:(col+1)*obs] = orig[mth].values
         return new
     
-    def _params_to_list(lam_0=None, lam_1=None, delta_1=None, mu=None,
-            phi=None, sigma=None):
+    def _params_to_list(self, lam_0=None, lam_1=None, delta_1=None, mu=None,
+                        phi=None, sigma=None):
         """
         Creates a single list of params from guess arrays that is passed into
         solver
@@ -544,7 +541,7 @@ class Affine(LikelihoodModel):
         neqs = self.neqs
         guess_list = []
         #we assume that those params corresponding to lags are set to zero
-        if lat >= 1:
+        if lat: 
             #we are assuming independence between macro factors and latent
             #factors
             guess_list.append(flatten(lam_0[:neqs]))
@@ -653,13 +650,13 @@ class Affine(LikelihoodModel):
         """
         Generate column names for err and noerr
         """
-        noerr_indx = self.noerr_indx
-        err_indx = self.err_indx
+        no_err = self.no_err
+        err = self.err
         noerr_cols = []
         err_cols = []
-        for col in noerr_indx:
+        for col in no_err:
             noerr_cols.append(pre_name + str(col))
-        for col in err_indx:
+        for col in err:
             err_cols.append(pre_name + str(col))
         return noerr_cols, err_cols
 
