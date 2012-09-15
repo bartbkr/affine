@@ -93,21 +93,18 @@ class Affine(LikelihoodModel):
                 x_t_na[var + '_m' + str(lag+1)] = px.Series(var_data[var].
                         values[:-(lag+1)], index=var_data.index[lag+1:])
 
-        self.var_data_vert = x_t_na.dropna(axis=0)
+        var_data_vert = self.var_data_vert = x_t_na.dropna(axis=0)
         self.periods = len(self.var_data)
 
-        super(Affine, self).__init__(var_data)
+        super(Affine, self).__init__(var_data_vert)
 
     def solve(self, lam_0_g=None, lam_1_g=None, delta_1_g=None, mu_g=None,
-            phi_g=None, sigma_g=None, method="ls", maxfev=10000, ftol=1e-100,
-            xtol=1e-100, full_output=False):
+              phi_g=None, sigma_g=None, method="ls", alg="newton",
+              maxfev=10000, maxiter=10000, ftol=1e-100, xtol=1e-100,
+              full_output=False):
         """
         Attempt to solve affine model
 
-        method : string
-            ls = linear least squares
-            nls = nonlinear least squares
-            ml = maximum likelihood
         lam_0_g : array (neqs * k_ar + lat, 1)
             guess for elements of lambda_0
         lam_1_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
@@ -120,10 +117,27 @@ class Affine(LikelihoodModel):
             guess for elements of phi
         sig_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of sigma
+        method : string
+            solution method
+            ls = linear least squares
+            nls = nonlinear least squares
+            ml = maximum likelihood
+        alg : str {'newton','nm','bfgs','powell','cg', or 'ncg'}
+            algorithm used for numerical approximation
+            Method can be 'newton' for Newton-Raphson, 'nm' for Nelder-Mead,
+            'bfgs' for Broyden-Fletcher-Goldfarb-Shanno, 'powell' for modified
+            Powell's method, 'cg' for conjugate gradient, or 'ncg' for Newton-
+            conjugate gradient. `method` determines which solver from
+            scipy.optimize is used.  The explicit arguments in `fit` are passed
+            to the solver.  Each solver has several optional arguments that are
+            not the same across solvers.  See the notes section below (or
+            scipy.optimize) for the available arguments.
 
         scipy.optimize.leastsq params
         maxfev : int
             maximum number of calls to the function for solution alg
+        maxiter : int
+            maximum number of iterations to perform
         ftol : float
             relative error desired in sum of squares
         xtol : float
@@ -131,7 +145,7 @@ class Affine(LikelihoodModel):
         full_output : bool
             non_zero to return all optional outputs
         """
-        #Notes for you Bart:
+        #Notes for you:
         #remember that Ang and Piazzesi treat observed and unobserved factors
         #as orthogonal
         #observed factor parameters can thus be estimated using OLS
@@ -163,7 +177,6 @@ class Affine(LikelihoodModel):
         else:
             params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g)
 
-        #this should be specified in function call
         if method == "ls":
             func = self._affine_nsum_errs
             reslt = optimize.leastsq(func, params, maxfev=maxfev,
@@ -176,24 +189,25 @@ class Affine(LikelihoodModel):
             #need to stack
             yield_stack = self._stack_yields(yc_data)
             #run optmization
-            reslt = optimize.curve_fit(func, var_data_vert, yield_stack, p0=params,
-                                       maxfev=maxfev, xtol=xtol,
+            reslt = optimize.curve_fit(func, var_data_vert, yield_stack,
+                                       p0=params, maxfev=maxfev, xtol=xtol,
                                        full_output=full_output)
             lam_solv = reslt[0]
             lam_cov = reslt[1]
 
         elif method == "ml":
-            #reslt = optmize.ne(func, var_data_vert, yi)
-            lam_solv = super(Affine).fit(start_params=params, method=solver,
-                    maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                    fargs=(lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g))
+            lam_solv = self.fit(start_params=params, method=alg,
+                                maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                                lam_0=lam_0_g, lam_1=lam_1_g,
+                                delta_1=delta_1_g, mu=mu_g, phi=phi_g,
+                                sigma=sigma_g)
 
-        # elif method = "mlangpiz":
+        # elif method = "ml_angpiaz":
         #     func = self.something
 
         lam_0, lam_1, delta_1, phi, sigma = \
-                self._params_to_array(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
-                        sigma=sigma_g, *lam_solv)
+                self._param_to_array(params=lam_solv, delta_1=delta_1_g,
+                                      mu=mu_g, phi=phi_g, sigma=sigma_g)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
                                               delta_1=delta_1, mu=mu, phi=phi,
@@ -206,7 +220,7 @@ class Affine(LikelihoodModel):
         elif method == "ls":
             return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output
 
-    def score(self, params):
+    def score(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
         Return the gradient of the loglike at params
 
@@ -220,15 +234,18 @@ class Affine(LikelihoodModel):
         """
         #would be nice to have additional arguments here
         loglike = self.loglike
-        return approx_fprime(params, loglike, epsilon=1e-8)
+        return approx_fprime(params, loglike, epsilon=1e-8, lam_0=lam_0,
+                             lam_1=lam_1, delta_1=delta_1, mu=mu, phi=phi,
+                             sigma=sigma)
 
-    def hessian(self, params):
+    def hessian(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
         Returns numerical hessian.
         """
         #would be nice to have additional arguments here
         loglike = self._affine_nsum_errs
-        return approx_hess(params, loglike)[0]
+        return approx_hess(params, loglike, lam_0=lam_0, lam_1=lam_1,
+                           delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)[0]
 
     def loglike(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
@@ -237,7 +254,7 @@ class Affine(LikelihoodModel):
         lat = self.latent
         per = self.periods
 
-        delta_1, mu, phi, sigma = _params_to_array(params=params, \
+        delta_1, mu, phi, sigma = self._param_to_array(params=params, \
                                     delta_1=delta_1, mu=mu, phi=phi, \
                                     sigma=sigma)
 
@@ -304,9 +321,11 @@ class Affine(LikelihoodModel):
         yc_data = self.yc_data
         x_t = self.var_data_vert
 
-        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(params=params)
+        lam_0, lam_1, delta_1, mu, phi, sigma = self._param_to_array(params=params)
 
-        a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sigma)
+        a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
+                                              delta_1=delta_1, mu=mu,phi=phi,
+                                              sigma=sigma)
 
         errs = []
         
@@ -393,7 +412,7 @@ class Affine(LikelihoodModel):
             mths.append(int(re.match(matcher, column).group(2)))
         return pre, mths
 
-    def _params_to_array(self, params=None, delta_1=None, mu=None, phi=None,
+    def _param_to_array(self, params, delta_1=None, mu=None, phi=None,
             sigma=None):
         """
         Process params input into appropriate arrays
@@ -479,25 +498,26 @@ class Affine(LikelihoodModel):
 
         return lam_0, lam_1, delta_1, mu, phi, sigma
 
-    def _affine_pred(self, x_t, *params):
+    def _affine_pred(self, data, *params):
         """
-        Function based on lambda and x_t that generates predicted yields
-        x_t : X_inforionat
+        Function based on lambda and data that generates predicted yields
+        data : DataFrame
+        params : tuple of floats
+            parameter guess
         """
         mths = self.mths
         yc_data = self.yc_data
 
-        pdb.set_trace()
+        lam_0, lam_1, delta_1, mu, phi, sigma = self._param_to_array(params)
 
-        lam_0, lam_1, delta_1, phi, sigma = self._params_to_array(params=params)
-
-        a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_1, phi, sigma)
+        a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_1, mu, phi,
+                                            sigma)
 
         pred = px.DataFrame(index=yc_data.index)
 
         for i in mths:
             pred["l_tr_m" + str(i)] = a_test[i-1] + np.dot(b_test[i-1].T,
-                                      x_t.T).T[:,0]
+                                      data.T).T[:,0]
 
         pred = self._stack_yields(pred)
 
@@ -509,7 +529,7 @@ class Affine(LikelihoodModel):
         """
         mths = self.mths
         obs = len(orig)
-        new = np.zeros((len(mths)*obs))
+        new = np.zeros((len(mths) * obs))
         for col, mth in enumerate(orig.columns):
             new[col*obs:(col+1)*obs] = orig[mth].values
         return new
@@ -535,7 +555,6 @@ class Affine(LikelihoodModel):
         #we will integrate standard assumptions
         #these could be changed later, but need to think of a standard way of
         #bring them in
-        #see _params_to_array
 
         lat = self.latent
         neqs = self.neqs

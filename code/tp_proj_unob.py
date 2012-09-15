@@ -83,5 +83,14 @@ bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
 lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g = gen_guesses(k_ar=k_ar,
                                                                 neqs=neqs,
                                                                 latent=latent)
+#This is for nls method, only need guesses for lam_0, lam_1
+#bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
+bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g,
+                            delta_1_g=delta_1_g, mu_g=mu_g, phi_g=phi_g,
+                            sigma_g=sigma_g, method="ml", alg="newton")
 
-bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
+lam_0 = bsr_solve[0]
+lam_1 = bsr_solve[1]
+
+print lam_0
+print lam_1
