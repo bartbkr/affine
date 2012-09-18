@@ -52,6 +52,7 @@ class Affine(LikelihoodModel):
         """
         self.yc_data = yc_data
         self.var_data = var_data
+        self.rf_rate = rf_rate
         self.num_yields = len(yc_data.columns)
         self.names = names = var_data.columns
         k_ar = self.k_ar = maxlags
@@ -167,13 +168,14 @@ class Affine(LikelihoodModel):
                 "incorrect"
             assert np.shape(mu_g) == (dim, 1), "Shape of mu incorrect"
             assert np.shape(phi_g) == (dim, dim), "Shape of phi_g incorrect"
-            assert np.shape(sig_g) == (dim, dim), "Shape of sig_g incorrect"
+            assert np.shape(sigma_g) == (dim, dim), "Shape of sig_g incorrect"
             delta_1_g, mu_g, phi_g, sigma_g = \
                     self._pass_ols(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
                                    sigma=sigma_g)
 
             params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g, 
-                    delta_1=delta_1_g, mu=mu_g, phi=phi_g, sigma=sig_g)
+                    delta_1=delta_1_g, mu=mu_g, phi=phi_g, sigma=sigma_g)
+
         else:
             params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g)
 
@@ -198,9 +200,8 @@ class Affine(LikelihoodModel):
         elif method == "ml":
             lam_solv = self.fit(start_params=params, method=alg,
                                 maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                                lam_0=lam_0_g, lam_1=lam_1_g,
-                                delta_1=delta_1_g, mu=mu_g, phi=phi_g,
-                                sigma=sigma_g)
+                                fargs=(lam_0_g, lam_1_g, delta_1_g, mu_g,
+                                       phi_g, sigma_g))
 
         # elif method = "ml_angpiaz":
         #     func = self.something
@@ -238,14 +239,13 @@ class Affine(LikelihoodModel):
                              lam_1=lam_1, delta_1=delta_1, mu=mu, phi=phi,
                              sigma=sigma)
 
-    def hessian(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
+    def hessian(self, params, args=()):
         """
         Returns numerical hessian.
         """
         #would be nice to have additional arguments here
-        loglike = self._affine_nsum_errs
-        return approx_hess(params, loglike, lam_0=lam_0, lam_1=lam_1,
-                           delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)[0]
+        loglike = self.loglike
+        return approx_hess(params, loglike, args=args)[0]
 
     def loglike(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
@@ -254,15 +254,15 @@ class Affine(LikelihoodModel):
         lat = self.latent
         per = self.periods
 
-        delta_1, mu, phi, sigma = self._param_to_array(params=params, \
-                                    delta_1=delta_1, mu=mu, phi=phi, \
-                                    sigma=sigma)
+        lam_0, lam_1, delta_1, mu, phi, sigma \
+            = self._param_to_array(params=params, delta_1=delta_1, mu=mu, \
+                                   phi=phi, sigma=sigma)
 
         solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1, \
                                 delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)
         #first solve for unknown part of information vector
-        var_data_c, jacob, yield_errs  = self._solve_unobs(solve_a=solve_a,
-                                                solve_b=solve_b)
+        var_data_c, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
+                                                           b_in=solve_b)
 
 
         # here is the likelihood that needs to be used
@@ -375,9 +375,10 @@ class Affine(LikelihoodModel):
         b_sel_unobs = np.zeros([no_err_num, lat])
         for indx, period in enumerate(no_err):
             a_sel[indx, 0] = a_in[period-1]
-            b_sel_obs[indx, :] = b_in[period-1][:neqs * k_ar]
+            b_sel_obs[indx, :, None] = b_in[period-1][:neqs * k_ar]
             b_sel_unobs = b_in[period-1][neqs * k_ar:]
         #now solve for unknown factors using long matrices
+        #square matrix error LEFT OFF HERE
         unobs = np.dot(la.inv(b_sel_unobs), \
                     (ycdata.filter(items=noerr_cols).values.T - a_sel - \
                     np.dot(b_sel_obs, var_data.values.T)))
@@ -435,14 +436,14 @@ class Affine(LikelihoodModel):
 
         if lat:
 
-            pos_lst = self.pos_lst
+            pos_list = self.pos_list
 
-            lam_0_est = params[:pos_lst[0]]
-            lam_1_est = params[pos_lst[0]:pos_lst[1]]
-            delta_1_g = params[pos_lst[1]:pos_lst[2]]
-            mu_g = params[pos_lst[2]:pos_lst[3]]
-            phi_g = params[pos_lst[3]:pos_lst[4]]
-            sigma_g = params[pos_lst[4]:]
+            lam_0_est = params[:pos_list[0]]
+            lam_1_est = params[pos_list[0]:pos_list[1]]
+            delta_1_g = params[pos_list[1]:pos_list[2]]
+            mu_g = params[pos_list[2]:pos_list[3]]
+            phi_g = params[pos_list[3]:pos_list[4]]
+            sigma_g = params[pos_list[4]:]
 
             #lambda_0
 
@@ -597,7 +598,7 @@ class Affine(LikelihoodModel):
         coefs = var_fit.params.values
         sigma_u = var_fit.sigma_u
 
-        mu = np.zeros([k_ar*neqs+lat, 1])
+        mu = np.zeros([k_ar*neqs, 1])
         mu[:neqs] = coefs[0, None].T
 
         phi = np.zeros([k_ar*neqs, k_ar*neqs])
@@ -623,11 +624,15 @@ class Affine(LikelihoodModel):
             guess for elements of sigma
         """
         macro = self.var_data
+        k_ar = self.k_ar
+        neqs = self.neqs
+
         macro["constant"] = 1
-        delta_1[:neqs] = OLS(self.rf_rate, macro).fit().params[1:].values
-        mu[:neqs*k_ar, 0] = self.mu_ols
-        phi[:neqs*k_ar, :neqs] = self.phi_ols
-        sigma[:neqs, :neqs] = self.sigma_ols
+        delta_1[:neqs] = OLS(self.rf_rate,
+                             macro).fit().params[1:].values[None].T
+        mu[:neqs * k_ar, 0, None] = self.mu_ols[None]
+        phi[:neqs * k_ar, :neqs * k_ar] = self.phi_ols[None]
+        sigma[:neqs * k_ar, :neqs * k_ar] = self.sigma_ols[None]
 
         return delta_1, mu, phi, sigma
 

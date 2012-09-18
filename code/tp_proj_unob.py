@@ -41,8 +41,7 @@ mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
 # Set up affine affine model            #
 #########################################
 k_ar = 4
-neqs = len(mod_data.columns)
-latent = 0
+latent = 3
 
 #create BSR x_t
 x_t_na = mod_data.copy()
@@ -57,21 +56,28 @@ x_t = x_t_na.dropna(axis=0)
 # Grab yield curve data                     #
 #############################################
 
-ycdata = px.read_csv("../data/yield_curve.csv",
-                     na_values = "M", index_col=0, parse_dates=True)
+ycdata = px.read_csv("../data/yield_curve.csv", na_values = "M", index_col=0,
+                     parse_dates=True)
 
-mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',
-                                      'l_tr_y1', 'l_tr_y2',
-                                      'l_tr_y3', 'l_tr_y5',
-                                      'l_tr_y7', 'l_tr_y10'])
+mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6', 'l_tr_y1',
+                                           'l_tr_y2', 'l_tr_y3', 'l_tr_y5',
+                                           'l_tr_y7', 'l_tr_y10'])
+
 #align number of obs between yields and grab rf rate
 mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
 mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
 mod_yc_data = mod_yc_data.rename(columns = {'fed_funds' : 'l_tr_m1'})
-rf_rate = mod_yc_data["l_tr_m1"]
 mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1)
 
+rf_rate = mod_data["fed_funds"]
+
 mth_only = to_mth(mod_yc_data)
+
+#for affine model, only want two macro vars
+
+mod_data = mod_data.reindex(columns=['tr_empl_gap_perc',
+                                     'act_infl']).dropna(axis=0)
+neqs = len(mod_data.columns)
 
 from affine import Affine
 
