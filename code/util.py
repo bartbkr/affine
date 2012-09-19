@@ -190,6 +190,7 @@ def gen_guesses(neqs, k_ar, latent):
     lam_0 = np.zeros([dim, 1])
     lam_1 = np.zeros([dim, dim])
     delta_1 = np.zeros([dim, 1])
+    delta_1[-latent:, ] = np.array([[-0.0001], [0.0001], [-0.0001]])
     mu = np.zeros([dim, 1])
     phi = np.zeros([dim, dim])
     sigma = np.zeros([dim, dim])

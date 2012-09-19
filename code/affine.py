@@ -260,6 +260,7 @@ class Affine(LikelihoodModel):
 
         solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1, \
                                 delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)
+
         #first solve for unknown part of information vector
         var_data_c, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
                                                            b_in=solve_b)
@@ -298,6 +299,7 @@ class Affine(LikelihoodModel):
         a_pre[0] = -delta_0
         b_pre = []
         b_pre.append(-delta_1)
+
         for mth in range(max_mth-1):
             a_pre[mth+1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
                             (mu - np.dot(sigma, lam_0))) + \
@@ -362,37 +364,50 @@ class Affine(LikelihoodModel):
         k_ar = self.k_ar
         neqs = self.neqs
         no_err = self.no_err
+        err = self.err
         lat = self.latent
         noerr_cols = self.noerr_cols
         err_cols = self.err_cols
 
-        names = var_data.columns
+        yc_data_names = yc_data.columns.tolist()
         no_err_num = len(noerr_cols)
         err_num = len(err_cols)
 
         a_sel = np.zeros([no_err_num, 1])
-        b_sel_obs = np.zeros([no_err_num, neqs*k_ar])
+        b_sel_obs = np.zeros([no_err_num, neqs * k_ar])
         b_sel_unobs = np.zeros([no_err_num, lat])
         for indx, period in enumerate(no_err):
             a_sel[indx, 0] = a_in[period-1]
             b_sel_obs[indx, :, None] = b_in[period-1][:neqs * k_ar]
-            b_sel_unobs = b_in[period-1][neqs * k_ar:]
+            b_sel_unobs[indx, :, None] = b_in[period-1][neqs * k_ar:]
         #now solve for unknown factors using long matrices
         #square matrix error LEFT OFF HERE
-        unobs = np.dot(la.inv(b_sel_unobs), \
-                    (ycdata.filter(items=noerr_cols).values.T - a_sel - \
-                    np.dot(b_sel_obs, var_data.values.T)))
 
-        yield_errs = ycdata.filter(items=err_cols).values.T - a_sel - \
+        unobs = np.dot(la.inv(b_sel_unobs), \
+                    yc_data.filter(items=noerr_cols).values.T - a_sel - \
+                    np.dot(b_sel_obs, var_data.values.T))
+
+        a_sel = np.zeros([err_num, 1])
+        b_sel_obs = np.zeros([err_num, neqs * k_ar])
+        b_sel_unobs = np.zeros([err_num, lat])
+        for indx, period in enumerate(err):
+            a_sel[indx, 0] = a_in[period-1]
+            b_sel_obs[indx, :, None] = b_in[period-1][:neqs * k_ar]
+            b_sel_unobs[indx, :, None] = b_in[period-1][neqs * k_ar:]
+
+        yield_errs = yc_data.filter(items=err_cols).values.T - a_sel - \
                         np.dot(b_sel_obs, var_data.values.T) - \
                         np.dot(b_sel_unobs, unobs)
 
         var_data_c = var_data.copy()
         for factor in range(lat):
             var_data_c["latent_" + str(factor)] = unobs[factor, :]
-        meas_mat = np.zeros(neqs * k_ar + lat, err_num)
+        meas_mat = np.zeros((neqs * k_ar + lat, err_num))
+
+        pdb.set_trace()
+
         for col_index, col in enumerate(err_cols):
-            row_index = names.index(col)
+            row_index = yc_data_names.index(col)
             meas_mat[row_index, col_index] = 1
 
         jacob = self._construct_J(b_sel_obs=b_sel_obs, \
@@ -601,11 +616,11 @@ class Affine(LikelihoodModel):
         mu = np.zeros([k_ar*neqs, 1])
         mu[:neqs] = coefs[0, None].T
 
-        phi = np.zeros([k_ar*neqs, k_ar*neqs])
+        phi = np.zeros([k_ar * neqs, k_ar * neqs])
         phi[:neqs] = coefs[1:].T
-        phi[neqs:, :(k_ar-1)*neqs] = np.identity((k_ar-1)*neqs)
+        phi[neqs:, neqs:k_ar * neqs] = np.identity((k_ar-1)*neqs)
 
-        sigma = np.zeros([k_ar*neqs, k_ar*neqs])
+        sigma = np.zeros([k_ar * neqs, k_ar * neqs])
         sigma[:neqs, :neqs] = sigma_u
         
         return mu, phi, sigma
@@ -699,7 +714,7 @@ class Affine(LikelihoodModel):
         #now construct Jacobian
         msize = neqs * k_ar + num_yields
         jacob = np.zeros([msize, msize])
-        jacob[:num_bs, :num_obs] = np.identity(neqs*k_ar)
+        jacob[:num_obs, :num_obs] = np.identity(neqs*k_ar)
         jacob[num_obs:, :num_obs] = b_sel_obs
         jacob[num_obs:, num_obs:num_obs + lat] = b_sel_unobs
         jacob[num_obs:, num_obs + lat:] = meas_mat
