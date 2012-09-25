@@ -41,7 +41,8 @@ mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
 # Set up affine affine model            #
 #########################################
 k_ar = 4
-latent = 3
+lat = 3
+latent = True
 
 #create BSR x_t
 x_t_na = mod_data.copy()
@@ -84,11 +85,11 @@ from affine import Affine
 #bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
                    #latent=3, no_err=[3, 36, 120])
 bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
-                   latent=latent, no_err=[3, 36, 120])
+                   latent=latent, no_err=[0, 4, 7])
 
 lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g = gen_guesses(k_ar=k_ar,
                                                                 neqs=neqs,
-                                                                latent=latent)
+                                                                lat=lat)
 #This is for nls method, only need guesses for lam_0, lam_1
 #bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
 bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g,

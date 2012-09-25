@@ -182,19 +182,21 @@ def to_mth(data):
     mths.sort()
     return mth_only
 
-def gen_guesses(neqs, k_ar, latent):
+def gen_guesses(neqs, k_ar, lat):
     """
     Generates Ang and Piazzesi guesses for matrices
     """
-    dim = neqs * k_ar + latent
+    dim = neqs * k_ar + lat
     lam_0 = np.zeros([dim, 1])
     lam_1 = np.zeros([dim, dim])
     delta_1 = np.zeros([dim, 1])
-    delta_1[-latent:, ] = np.array([[-0.0001], [0.0001], [-0.0001]])
+    delta_1[-lat:, ] = np.array([[-0.0001], [0.0000], [0.0001]])
     mu = np.zeros([dim, 1])
     phi = np.zeros([dim, dim])
     sigma = np.zeros([dim, dim])
-    if latent:
-        sigma[-latent:, -latent:] = np.identity(latent)
+    if lat:
+        sigma[-lat:, -lat:] = np.identity(lat)
+        phi[-lat:, -lat:] = \
+                np.random.random(lat*lat).reshape((lat, -1)) / 100000
     return lam_0, lam_1, delta_1, mu, phi, sigma
 

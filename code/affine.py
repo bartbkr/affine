@@ -29,8 +29,8 @@ class Affine(LikelihoodModel):
     """
     This class defines an affine model of the term structure
     """
-    def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4,
-                 freq='M', latent=0, no_err=None):
+    def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4, freq='M',
+                    latent=False, no_err=None):
         """
         Attempts to solve affine model
         yc_data : DataFrame 
@@ -43,37 +43,38 @@ class Affine(LikelihoodModel):
             number of lags for VAR system
         freq : string
             frequency of data
-        latent : int
-            # number of latent variables
         no_err : list of ints
-            list of the yields by number of periods that are estimated without error
-            ex: [1, 6, 12] 
-            (1, 6, and 12 period yields measured without error)
+            list of the column indexes of yields to be measured without error
+            ex: [0, 3, 4] 
+            (1st, 4th, and 5th columns in yc_data to be estimatd without error)
         """
         self.yc_data = yc_data
         self.var_data = var_data
         self.rf_rate = rf_rate
+        self.yc_names = yc_data.columns
         self.num_yields = len(yc_data.columns)
         self.names = names = var_data.columns
         k_ar = self.k_ar = maxlags
         neqs = self.neqs = len(names)
-        self.no_err = no_err
         self.freq = freq
-        lat = self.latent = latent
+        self.latent = latent
+        self.no_err = no_err
 
         #generates mths: list of mths in yield curve data
-        pre, mths = self._mths_list()
+        mths = self._mths_list()
         self.mths = mths
 
-        self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
+        if latent:
 
-        if lat:
-            assert len(no_err) >= lat, "One yield estimated with no err" \
-                                        + "for each latent variable"
-            #gen position list for processing list input to solver
+            lat = self.lat = len(no_err)
+
+            self.err = list(set(range(len(mths))).difference(no_err))
+
             self.pos_list = self._gen_pos_list()
-            self.err = list(set(mths).difference(no_err))
-            self.noerr_cols, self.err_cols = self._gen_col_names(pre)
+
+            self.no_err_mth, self.err_mth = self._gen_mth_list()
+            #gen position list for processing list input to solver
+            self.noerr_cols, self.err_cols = self._gen_col_names()
             #set to unconditional mean of short_rate
             self.delta_0 = np.mean(rf_rate)
 
@@ -85,6 +86,8 @@ class Affine(LikelihoodModel):
             #delta_1 is vector of zeros, with one grabbing fed_funds rate
             delta_1[np.argmax(var_data.columns == 'fed_funds')] = 1
             self.delta_1_nolat = delta_1
+
+        self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
 
         #maybe this should be done in setup script...
         #get VAR input data ready
@@ -152,7 +155,7 @@ class Affine(LikelihoodModel):
         #observed factor parameters can thus be estimated using OLS
         k_ar = self.k_ar
         neqs = self.neqs
-        lat = self.latent
+        lat = self.lat
         yc_data = self.yc_data
         var_data_vert = self.var_data_vert
 
@@ -251,7 +254,8 @@ class Affine(LikelihoodModel):
         """
         Loglikelihood used in latent factor models
         """
-        lat = self.latent
+        k_ar = self.k_ar
+        lat = self.lat
         per = self.periods
 
         lam_0, lam_1, delta_1, mu, phi, sigma \
@@ -265,13 +269,14 @@ class Affine(LikelihoodModel):
         var_data_c, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
                                                            b_in=solve_b)
 
+        pdb.set_trace()
 
         # here is the likelihood that needs to be used
         # sigma is implied VAR sigma
         # use two matrices to take the difference
-        errors = var_data_c.values.T[2:] - mu - np.dot(phi,
-                var_data_c.values.T[:-1])
 
+        errors = var_data_c.values.T[:, 1:] - mu - np.dot(phi,
+                var_data_c.values.T[:, :-1])
 
         like = -(per - 1) * np.logdet(jacob) - (per - 1) * 1.0 / 2 * \
                np.logdet(np.dot(sigma, sigma.T)) - 1.0 / 2 * \
@@ -318,7 +323,7 @@ class Affine(LikelihoodModel):
         """
         This function generates the sum of the prediction errors
         """
-        lat = self.latent
+        lat = self.lat
         mths = self.mths
         yc_data = self.yc_data
         x_t = self.var_data_vert
@@ -360,58 +365,73 @@ class Affine(LikelihoodModel):
         """
         yc_data = self.yc_data
         var_data = self.var_data_vert
+        yc_names = self.yc_names
+        num_yields = self.num_yields
         names = self.names
         k_ar = self.k_ar
         neqs = self.neqs
+        lat = self.lat
         no_err = self.no_err
         err = self.err
-        lat = self.latent
+        no_err_mth = self.no_err_mth
+        err_mth = self.err_mth
         noerr_cols = self.noerr_cols
         err_cols = self.err_cols
 
-        yc_data_names = yc_data.columns.tolist()
+        yc_data_names = yc_names.tolist()
         no_err_num = len(noerr_cols)
         err_num = len(err_cols)
+
+        #need to combine the two matrices
+        #these matrices will collect the final values
+        a_all = np.zeros([num_yields, 1])
+        b_all_obs = np.zeros([num_yields, neqs * k_ar])
+        b_all_unobs = np.zeros([num_yields, lat])
 
         a_sel = np.zeros([no_err_num, 1])
         b_sel_obs = np.zeros([no_err_num, neqs * k_ar])
         b_sel_unobs = np.zeros([no_err_num, lat])
-        for indx, period in enumerate(no_err):
-            a_sel[indx, 0] = a_in[period-1]
-            b_sel_obs[indx, :, None] = b_in[period-1][:neqs * k_ar]
-            b_sel_unobs[indx, :, None] = b_in[period-1][neqs * k_ar:]
+        for ix, y_pos in enumerate(no_err):
+            a_sel[ix, 0] = a_in[no_err_mth[ix] - 1]
+            b_sel_obs[ix, :, None] = b_in[no_err_mth[ix] - 1][:neqs * k_ar]
+            b_sel_unobs[ix, :, None] = b_in[no_err_mth[ix] - 1][neqs * k_ar:]
+
+            a_all[y_pos, 0] = a_in[no_err_mth[ix] - 1]
+            b_all_obs[y_pos, :, None] = b_in[no_err_mth[ix] - 1][:neqs * k_ar]
+            b_all_unobs[y_pos, :, None] = b_in[no_err_mth[ix] - 1][neqs * k_ar:]
         #now solve for unknown factors using long matrices
-        #square matrix error LEFT OFF HERE
 
         unobs = np.dot(la.inv(b_sel_unobs), \
                     yc_data.filter(items=noerr_cols).values.T - a_sel - \
                     np.dot(b_sel_obs, var_data.values.T))
 
+        #re-initialize a_sel, b_sel_obs, and b_sel_obs
         a_sel = np.zeros([err_num, 1])
         b_sel_obs = np.zeros([err_num, neqs * k_ar])
         b_sel_unobs = np.zeros([err_num, lat])
-        for indx, period in enumerate(err):
-            a_sel[indx, 0] = a_in[period-1]
-            b_sel_obs[indx, :, None] = b_in[period-1][:neqs * k_ar]
-            b_sel_unobs[indx, :, None] = b_in[period-1][neqs * k_ar:]
+        for ix, y_pos in enumerate(err):
+            a_all[y_pos, 0] =  a_sel[ix, 0] = a_in[err_mth[ix] - 1]
+            b_all_obs[y_pos, :, None] = b_sel_obs[ix, :, None] = \
+                    b_in[err_mth[ix] - 1][:neqs * k_ar]
+            b_all_unobs[y_pos, :, None] = b_sel_unobs[ix, :, None] = \
+                    b_in[err_mth[ix] - 1][neqs * k_ar:]
 
         yield_errs = yc_data.filter(items=err_cols).values.T - a_sel - \
                         np.dot(b_sel_obs, var_data.values.T) - \
                         np.dot(b_sel_unobs, unobs)
 
+
         var_data_c = var_data.copy()
         for factor in range(lat):
             var_data_c["latent_" + str(factor)] = unobs[factor, :]
-        meas_mat = np.zeros((neqs * k_ar + lat, err_num))
-
-        pdb.set_trace()
+        meas_mat = np.zeros((num_yields, err_num))
 
         for col_index, col in enumerate(err_cols):
             row_index = yc_data_names.index(col)
             meas_mat[row_index, col_index] = 1
 
-        jacob = self._construct_J(b_sel_obs=b_sel_obs, \
-                                    b_sel_unobs=b_sel_unobs, meas_mat=meas_mat)
+        jacob = self._construct_J(b_obs=b_all_obs, 
+                                    b_unobs=b_all_unobs, meas_mat=meas_mat)
         
         return var_data_c, jacob, yield_errs 
 
@@ -421,12 +441,11 @@ class Affine(LikelihoodModel):
         a list of them
         """
         mths = []
-        columns = self.yc_data.columns
+        columns = self.yc_names
         matcher = re.compile(r"(.*?)([0-9]+)$")
         for column in columns:
-            pre = re.match(matcher, column).group(1)
             mths.append(int(re.match(matcher, column).group(2)))
-        return pre, mths
+        return mths
 
     def _param_to_array(self, params, delta_1=None, mu=None, phi=None,
             sigma=None):
@@ -445,7 +464,7 @@ class Affine(LikelihoodModel):
             sigma prior to complete model solve
 
         """
-        lat = self.latent
+        lat = self.lat
         neqs = self.neqs
         k_ar = self.k_ar
 
@@ -572,7 +591,7 @@ class Affine(LikelihoodModel):
         #these could be changed later, but need to think of a standard way of
         #bring them in
 
-        lat = self.latent
+        lat = self.lat
         neqs = self.neqs
         guess_list = []
         #we assume that those params corresponding to lags are set to zero
@@ -605,7 +624,7 @@ class Affine(LikelihoodModel):
         var_data = self.var_data
         k_ar = self.k_ar
         neqs = self.neqs
-        lat = self.latent
+        lat = self.lat
         freq = self.freq
 
         var_fit = VAR(var_data, freq=freq).fit(maxlags=k_ar)
@@ -666,7 +685,7 @@ class Affine(LikelihoodModel):
         """
         neqs = self.neqs
         k_ar = self.k_ar
-        lat = self.latent
+        lat = self.lat
 
         pos_list = []
         pos = 0
@@ -685,21 +704,41 @@ class Affine(LikelihoodModel):
 
         return pos_list
 
-    def _gen_col_names(self, pre_name):
+    def _gen_col_names(self):
         """
         Generate column names for err and noerr
         """
+        yc_names = self.yc_names
         no_err = self.no_err
         err = self.err
         noerr_cols = []
         err_cols = []
-        for col in no_err:
-            noerr_cols.append(pre_name + str(col))
-        for col in err:
-            err_cols.append(pre_name + str(col))
+        for index in no_err:
+            noerr_cols.append(yc_names[index])
+        for index in err:
+            err_cols.append(yc_names[index])
         return noerr_cols, err_cols
 
-    def _construct_J(self, b_sel_obs, b_sel_unobs, meas_mat): 
+    def _gen_mth_list(self):
+        """
+        Generate list of mths measured with and wihout error
+        """
+        yc_names = self.yc_names
+        no_err = self.no_err
+        mths = self.mths
+        err = self.err
+
+        no_err_mth = []
+        err_mth = []
+
+        for index in no_err:
+            no_err_mth.append(mths[index])
+        for index in err:
+            err_mth.append(mths[index])
+
+        return no_err_mth, err_mth
+
+    def _construct_J(self, b_obs, b_unobs, meas_mat): 
         """
         Consruct jacobian matrix
         meas_mat : array 
@@ -707,16 +746,17 @@ class Affine(LikelihoodModel):
         """
         k_ar = self.k_ar
         neqs = self.neqs
-        lat = self.latent
+        lat = self.lat
         num_yields = self.num_yields
-        num_obs = neqs * k_ar
+        num_obsrv = neqs * k_ar
 
         #now construct Jacobian
-        msize = neqs * k_ar + num_yields
+        msize = neqs * k_ar + num_yields 
         jacob = np.zeros([msize, msize])
-        jacob[:num_obs, :num_obs] = np.identity(neqs*k_ar)
-        jacob[num_obs:, :num_obs] = b_sel_obs
-        jacob[num_obs:, num_obs:num_obs + lat] = b_sel_unobs
-        jacob[num_obs:, num_obs + lat:] = meas_mat
+        jacob[:num_obsrv, :num_obsrv] = np.identity(neqs*k_ar)
+
+        jacob[num_obsrv:, :num_obsrv] = b_obs
+        jacob[num_obsrv:, num_obsrv:num_obsrv + lat] = b_unobs
+        jacob[num_obsrv:, num_obsrv + lat:] = meas_mat
 
         return jacob
