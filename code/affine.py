@@ -283,8 +283,6 @@ class Affine(LikelihoodModel):
         sign, sigma_logdt = nla.slogdet(np.dot(sigma, sigma.T))
         sigma_slogdt = sign * sigma_logdt
 
-        pdb.set_trace()
-
         like = -(per - 1) * j_slogdt - (per - 1) * 1.0 / 2 * sigma_slogdt - \
                1.0 / 2 * np.sum(np.dot(np.dot(errors.T, \
                la.inv(np.dot(sigma, sigma.T))), errors)) - (per - 1) / 2.0 * \
