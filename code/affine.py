@@ -638,15 +638,18 @@ class Affine(LikelihoodModel):
         coefs = var_fit.params.values
         sigma_u = var_fit.sigma_u
 
+        obs_var = neqs * k_ar
+
         mu = np.zeros([k_ar*neqs, 1])
         mu[:neqs] = coefs[0, None].T
 
         phi = np.zeros([k_ar * neqs, k_ar * neqs])
         phi[:neqs] = coefs[1:].T
-        phi[neqs:, neqs:k_ar * neqs] = np.identity((k_ar-1)*neqs)
+        phi[neqs:obs_var, :(k_ar - 1) * neqs] = np.identity((k_ar - 1) * neqs)
 
         sigma = np.zeros([k_ar * neqs, k_ar * neqs])
         sigma[:neqs, :neqs] = sigma_u
+        sigma[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
         
         return mu, phi, sigma
 
