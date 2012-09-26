@@ -10,6 +10,7 @@ import pandas as px
 import scipy.linalg as la
 import re
 
+from numpy import linalg as nla
 from statsmodels.tsa.api import VAR
 from statsmodels.base.model import LikelihoodModel
 from statsmodels.regression.linear_model import OLS
@@ -94,8 +95,8 @@ class Affine(LikelihoodModel):
         x_t_na = var_data.copy()
         for lag in range(k_ar-1):
             for var in var_data.columns:
-                x_t_na[var + '_m' + str(lag+1)] = px.Series(var_data[var].
-                        values[:-(lag+1)], index=var_data.index[lag+1:])
+                x_t_na[var + '_m' + str(lag + 1)] = px.Series(var_data[var].
+                        values[:-(lag+1)], index=var_data.index[lag + 1:])
 
         var_data_vert = self.var_data_vert = x_t_na.dropna(axis=0)
         self.periods = len(self.var_data)
@@ -269,8 +270,6 @@ class Affine(LikelihoodModel):
         var_data_c, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
                                                            b_in=solve_b)
 
-        pdb.set_trace()
-
         # here is the likelihood that needs to be used
         # sigma is implied VAR sigma
         # use two matrices to take the difference
@@ -278,10 +277,17 @@ class Affine(LikelihoodModel):
         errors = var_data_c.values.T[:, 1:] - mu - np.dot(phi,
                 var_data_c.values.T[:, :-1])
 
-        like = -(per - 1) * np.logdet(jacob) - (per - 1) * 1.0 / 2 * \
-               np.logdet(np.dot(sigma, sigma.T)) - 1.0 / 2 * \
-               np.sum(np.dot(np.dot(errors.T, np.inv(np.dot(sigma, sigma.T))),\
-                             errors)) - (per - 1) / 2.0 * \
+        sign, j_logdt = nla.slogdet(jacob)
+        j_slogdt = sign * j_logdt
+
+        sign, sigma_logdt = nla.slogdet(np.dot(sigma, sigma.T))
+        sigma_slogdt = sign * sigma_logdt
+
+        pdb.set_trace()
+
+        like = -(per - 1) * j_slogdt - (per - 1) * 1.0 / 2 * sigma_slogdt - \
+               1.0 / 2 * np.sum(np.dot(np.dot(errors.T, \
+               la.inv(np.dot(sigma, sigma.T))), errors)) - (per - 1) / 2.0 * \
                np.log(np.sum(np.var(yield_errs, axis=1))) - 1.0 / 2 * \
                np.sum(yield_errs**2/np.var(yield_errs, axis=1)[None].T)
 
@@ -657,7 +663,7 @@ class Affine(LikelihoodModel):
         sig : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of sigma
         """
-        macro = self.var_data
+        macro = self.var_data.copy()
         k_ar = self.k_ar
         neqs = self.neqs
 
