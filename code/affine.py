@@ -82,6 +82,7 @@ class Affine(LikelihoodModel):
         #with all observed factors, mu, phi, and sigma are directly generated
         #from OLS VAR one step estimation
         else:
+            self.lat = 0
             self.delta_0 = 0
             delta_1 = np.zeros([neqs*k_ar, 1])
             #delta_1 is vector of zeros, with one grabbing fed_funds rate
@@ -128,7 +129,7 @@ class Affine(LikelihoodModel):
             nls = nonlinear least squares
             ml = maximum likelihood
         alg : str {'newton','nm','bfgs','powell','cg', or 'ncg'}
-            algorithm used for numerical approximation
+            algorithm used for numerical approximation in ML
             Method can be 'newton' for Newton-Raphson, 'nm' for Nelder-Mead,
             'bfgs' for Broyden-Fletcher-Goldfarb-Shanno, 'powell' for modified
             Powell's method, 'cg' for conjugate gradient, or 'ncg' for Newton-
@@ -142,7 +143,7 @@ class Affine(LikelihoodModel):
         maxfev : int
             maximum number of calls to the function for solution alg
         maxiter : int
-            maximum number of iterations to perform
+            maximum number of iterations to perform, used for ML
         ftol : float
             relative error desired in sum of squares
         xtol : float
@@ -210,7 +211,7 @@ class Affine(LikelihoodModel):
         # elif method = "ml_angpiaz":
         #     func = self.something
 
-        lam_0, lam_1, delta_1, phi, sigma = \
+        lam_0, lam_1, delta_1, mu, phi, sigma = \
                 self._param_to_array(params=lam_solv, delta_1=delta_1_g,
                                       mu=mu_g, phi=phi_g, sigma=sigma_g)
 
@@ -339,10 +340,11 @@ class Affine(LikelihoodModel):
                                               sigma=sigma)
 
         errs = []
-        
-        for i in mths:
-            act = np.flipud(yc_data['l_tr_m' + str(i)].values)
-            pred = a_solve[i-1] + np.dot(b_solve[i-1].T, np.fliplr(x_t.T))[0]
+
+        for index, period in enumerate(mths):
+            act = np.flipud(yc_data.values[:, index])
+            pred = a_solve[period-1] + np.dot(b_solve[period-1].T,
+                    np.fliplr(x_t.T))[0]
             errs = errs + (act-pred).tolist()
         return errs
 
