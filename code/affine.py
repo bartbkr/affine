@@ -283,8 +283,6 @@ class Affine(LikelihoodModel):
         sign, sigma_logdt = nla.slogdet(np.dot(sigma, sigma.T))
         sigma_slogdt = sign * sigma_logdt
 
-        pdb.set_trace()
-
         like = -(per - 1) * j_slogdt - (per - 1) * 1.0 / 2 * sigma_slogdt - \
                1.0 / 2 * np.sum(np.dot(np.dot(errors.T, \
                la.inv(np.dot(sigma, sigma.T))), errors)) - (per - 1) / 2.0 * \
@@ -638,15 +636,18 @@ class Affine(LikelihoodModel):
         coefs = var_fit.params.values
         sigma_u = var_fit.sigma_u
 
+        obs_var = neqs * k_ar
+
         mu = np.zeros([k_ar*neqs, 1])
         mu[:neqs] = coefs[0, None].T
 
         phi = np.zeros([k_ar * neqs, k_ar * neqs])
         phi[:neqs] = coefs[1:].T
-        phi[neqs:, neqs:k_ar * neqs] = np.identity((k_ar-1)*neqs)
+        phi[neqs:obs_var, :(k_ar - 1) * neqs] = np.identity((k_ar - 1) * neqs)
 
         sigma = np.zeros([k_ar * neqs, k_ar * neqs])
         sigma[:neqs, :neqs] = sigma_u
+        sigma[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
         
         return mu, phi, sigma
 
