@@ -4,18 +4,10 @@ This script attempts to solve the model with unknown variables
 import numpy as np
 import pandas as px
 
-import socket
-import atexit
-import keyring
-
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
 from util import pickle_file, success_mail, fail_mail, to_mth, gen_guesses
-
-#identify computer
-#identify computer
-comp = socket.gethostname()
 
 ########################################
 # Get macro data                       #
@@ -75,16 +67,15 @@ rf_rate = mod_data["fed_funds"]
 mth_only = to_mth(mod_yc_data)
 
 #for affine model, only want two macro vars
-
-mod_data = mod_data.reindex(columns=['tr_empl_gap_perc',
+mod_data_af = mod_data.reindex(columns=['tr_empl_gap_perc',
                                      'act_infl']).dropna(axis=0)
-neqs = len(mod_data.columns)
+neqs = len(mod_data_af.columns)
 
 from affine import Affine
 
 #bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
                    #latent=3, no_err=[3, 36, 120])
-bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
+bsr_model = Affine(yc_data=mth_only, var_data=mod_data_af, rf_rate=rf_rate,
                    latent=latent, no_err=[0, 4, 7])
 
 lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g = gen_guesses(k_ar=k_ar,
