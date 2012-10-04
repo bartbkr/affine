@@ -65,6 +65,9 @@ class Affine(LikelihoodModel):
         mths = self._mths_list()
         self.mths = mths
 
+        assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)), \
+            "Number of non-null values unequal in VAR and yield curve data"
+
         if latent:
 
             lat = self.lat = len(no_err)
@@ -255,9 +258,10 @@ class Affine(LikelihoodModel):
         """
         Loglikelihood used in latent factor models
         """
-        k_ar = self.k_ar
         lat = self.lat
         per = self.periods
+
+        #HERE all of the params don't seem to be moving
 
         lam_0, lam_1, delta_1, mu, phi, sigma \
             = self._param_to_array(params=params, delta_1=delta_1, mu=mu, \
@@ -402,11 +406,12 @@ class Affine(LikelihoodModel):
 
             a_all[y_pos, 0] = a_in[no_err_mth[ix] - 1]
             b_all_obs[y_pos, :, None] = b_in[no_err_mth[ix] - 1][:neqs * k_ar]
-            b_all_unobs[y_pos, :, None] = b_in[no_err_mth[ix] - 1][neqs * k_ar:]
+            b_all_unobs[y_pos, :, None] = \
+                    b_in[no_err_mth[ix] - 1][neqs * k_ar:]
         #now solve for unknown factors using long matrices
 
-        unobs = np.dot(la.inv(b_sel_unobs), \
-                    yc_data.filter(items=noerr_cols).values.T - a_sel - \
+        unobs = np.dot(la.inv(b_sel_unobs), 
+                    yc_data.filter(items=noerr_cols)[lat:].values.T - a_sel - \
                     np.dot(b_sel_obs, var_data.values.T))
 
         #re-initialize a_sel, b_sel_obs, and b_sel_obs
@@ -420,7 +425,7 @@ class Affine(LikelihoodModel):
             b_all_unobs[y_pos, :, None] = b_sel_unobs[ix, :, None] = \
                     b_in[err_mth[ix] - 1][neqs * k_ar:]
 
-        yield_errs = yc_data.filter(items=err_cols).values.T - a_sel - \
+        yield_errs = yc_data.filter(items=err_cols)[lat:].values.T - a_sel - \
                         np.dot(b_sel_obs, var_data.values.T) - \
                         np.dot(b_sel_unobs, unobs)
 
