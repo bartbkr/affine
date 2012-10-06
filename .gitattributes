@@ -4,3 +4,6 @@
 *.png binary
 *.jpg binary
 *.pdf binary
+*.xlsx binary
+*.xls binary
+*.ods binary
