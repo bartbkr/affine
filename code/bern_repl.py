@@ -7,6 +7,7 @@ import datetime as dt
 
 import atexit
 import keyring
+import sys
 
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
@@ -37,12 +38,14 @@ mthdata['ed_fut'] = 100 - mthdata['one_year_ED']
 #define final data set
 mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                    'act_infl',
-                                   'output_deflator_year_ahead',
+                                   'gnp_gdp_deflat_nxtyr',
                                     'fed_funds',
                                     'ed_fut']).dropna(axis=0)
 
 neqs = 5
 k_ar = 4
+
+sys.exit("Stop here")
 
 #########################
 # Grab yield curve data #
