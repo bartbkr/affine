@@ -65,6 +65,9 @@ class Affine(LikelihoodModel):
         mths = self._mths_list()
         self.mths = mths
 
+        assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)), \
+            "Number of non-null values unequal in VAR and yield curve data"
+
         if latent:
 
             lat = self.lat = len(no_err)
@@ -121,7 +124,7 @@ class Affine(LikelihoodModel):
             guess for elements of mu
         phi_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of phi
-        sig_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
+        sigma_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of sigma
         method : string
             solution method
@@ -188,7 +191,7 @@ class Affine(LikelihoodModel):
             func = self._affine_nsum_errs
             reslt = optimize.leastsq(func, params, maxfev=maxfev,
                                 xtol=xtol, full_output=full_output)
-            lam_solv = reslt[0]
+            solv_params = reslt[0]
             output = reslt[1:]
 
         elif method == "nls":
@@ -199,32 +202,40 @@ class Affine(LikelihoodModel):
             reslt = optimize.curve_fit(func, var_data_vert, yield_stack,
                                        p0=params, maxfev=maxfev, xtol=xtol,
                                        full_output=full_output)
-            lam_solv = reslt[0]
-            lam_cov = reslt[1]
+            solv_params = reslt[0]
+            solv_cov = reslt[1]
 
         elif method == "ml":
-            lam_solv = self.fit(start_params=params, method=alg,
+            solve = self.fit(start_params=params, method=alg,
                                 maxiter=maxiter, maxfun=maxfev, xtol=xtol,
                                 fargs=(lam_0_g, lam_1_g, delta_1_g, mu_g,
                                        phi_g, sigma_g))
+            solv_params = solve.params
+            tvalues = solve.tvalues
 
         # elif method = "ml_angpiaz":
         #     func = self.something
 
         lam_0, lam_1, delta_1, mu, phi, sigma = \
-                self._param_to_array(params=lam_solv, delta_1=delta_1_g,
+                self._param_to_array(params=solv_params, delta_1=delta_1_g,
                                       mu=mu_g, phi=phi_g, sigma=sigma_g)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
                                               delta_1=delta_1, mu=mu, phi=phi,
                                               sigma=sigma)
 
+        #This will need to be reworked
         #if full_output:
             #return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output 
         if method == "nls":
-            return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, lam_cov
+            return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
+                    solv_cov
         elif method == "ls":
-            return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output
+            return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
+                    output
+        elif method == "ml":
+            return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
+                    tvalues
 
     def score(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
@@ -250,15 +261,16 @@ class Affine(LikelihoodModel):
         """
         #would be nice to have additional arguments here
         loglike = self.loglike
-        return approx_hess(params, loglike, args=args)[0]
+        return approx_hess(params, loglike, args=args)
 
     def loglike(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
         Loglikelihood used in latent factor models
         """
-        k_ar = self.k_ar
         lat = self.lat
         per = self.periods
+
+        #HERE all of the params don't seem to be moving
 
         lam_0, lam_1, delta_1, mu, phi, sigma \
             = self._param_to_array(params=params, delta_1=delta_1, mu=mu, \
@@ -404,11 +416,12 @@ class Affine(LikelihoodModel):
 
             a_all[y_pos, 0] = a_in[no_err_mth[ix] - 1]
             b_all_obs[y_pos, :, None] = b_in[no_err_mth[ix] - 1][:neqs * k_ar]
-            b_all_unobs[y_pos, :, None] = b_in[no_err_mth[ix] - 1][neqs * k_ar:]
+            b_all_unobs[y_pos, :, None] = \
+                    b_in[no_err_mth[ix] - 1][neqs * k_ar:]
         #now solve for unknown factors using long matrices
 
-        unobs = np.dot(la.inv(b_sel_unobs), \
-                    yc_data.filter(items=noerr_cols).values.T - a_sel - \
+        unobs = np.dot(la.inv(b_sel_unobs), 
+                    yc_data.filter(items=noerr_cols)[lat:].values.T - a_sel - \
                     np.dot(b_sel_obs, var_data.values.T))
 
         #re-initialize a_sel, b_sel_obs, and b_sel_obs
@@ -422,7 +435,7 @@ class Affine(LikelihoodModel):
             b_all_unobs[y_pos, :, None] = b_sel_unobs[ix, :, None] = \
                     b_in[err_mth[ix] - 1][neqs * k_ar:]
 
-        yield_errs = yc_data.filter(items=err_cols).values.T - a_sel - \
+        yield_errs = yc_data.filter(items=err_cols)[lat:].values.T - a_sel - \
                         np.dot(b_sel_obs, var_data.values.T) - \
                         np.dot(b_sel_unobs, unobs)
 

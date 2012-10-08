@@ -198,4 +198,3 @@ def gen_guesses(neqs, k_ar, lat):
         phi[-lat:, -lat:] = \
                 np.random.random(lat*lat).reshape((lat, -1)) / 100000
     return lam_0, lam_1, delta_1, mu, phi, sigma
-

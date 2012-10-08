@@ -23,8 +23,12 @@ comp = socket.gethostname()
 mthdata = px.read_csv("../data/VARbernankedata.csv", na_values="M",
                         index_col = 0, parse_dates=True)
 
-mthdata['tr_empl_gap'], mthdata['hp_ch'] = \
-    hpfilter(mthdata['Total_Nonfarm_employment'], lamb=129600)
+index = mthdata['Total_Nonfarm_employment'].index
+tr_empl_gap, hp_ch = hpfilter(mthdata['Total_Nonfarm_employment'], lamb=129600)
+
+mthdata['tr_empl_gap'] = px.Series(tr_empl_gap, index=index)
+mthdata['hp_ch'] = px.Series(hp_ch, index=index)
+
 mthdata['tr_empl_gap_perc'] = mthdata['tr_empl_gap']/mthdata['hp_ch']
 mthdata['act_infl'] = \
     mthdata['Pers_Cons_P'].diff(periods=12)/mthdata['Pers_Cons_P']*100
@@ -32,10 +36,8 @@ mthdata['ed_fut'] = 100 - mthdata['one_year_ED']
 
 #define final data set
 mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
-                                   'act_infl',
-                                   'inflexp_1yr_mean',
-                                    'fed_funds',
-                                    'ed_fut']).dropna(axis=0)
+                                   'act_infl', 
+                                   'fed_funds']).dropna(axis=0)
 
 #########################################
 # Set up affine affine model            #
@@ -68,22 +70,23 @@ mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6', 'l_tr_y1',
 mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
 mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
 mod_yc_data = mod_yc_data.rename(columns = {'fed_funds' : 'l_tr_m1'})
-mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1)
+mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1).dropna()
 
 rf_rate = mod_data["fed_funds"]
 
 mth_only = to_mth(mod_yc_data)
+yc_index = mth_only.index
 
 #for affine model, only want two macro vars
+mod_data = mod_data.reindex(columns=['tr_empl_gap_perc', 'act_infl'])
+mod_data = mod_data.reindex(index=yc_index)
 
-mod_data = mod_data.reindex(columns=['tr_empl_gap_perc',
-                                     'act_infl']).dropna(axis=0)
+rf_rate = rf_rate.reindex(index=yc_index)
+
 neqs = len(mod_data.columns)
 
 from affine import Affine
 
-#bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
-                   #latent=3, no_err=[3, 36, 120])
 bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
                    latent=latent, no_err=[0, 4, 7])
 
@@ -95,7 +98,7 @@ lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g = gen_guesses(k_ar=k_ar,
 #bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
 bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g,
                             delta_1_g=delta_1_g, mu_g=mu_g, phi_g=phi_g,
-                            sigma_g=sigma_g, method="ml", alg="newton")
+                            sigma_g=sigma_g, method="ml", alg="nm")
 
 lam_0 = bsr_solve[0]
 lam_1 = bsr_solve[1]
