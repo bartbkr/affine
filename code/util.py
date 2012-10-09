@@ -63,12 +63,12 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
                      [mult*-0.1]]
             lam_1_g[eqnumb, :neqs, None] = np.array([guess])*np.random.random()
 
-    out_bsr = bsr.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method=method,
+    outs = bsr.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method=method,
                         ftol=1e-950, xtol=1e-950, maxfev=1000000000,
                         full_output=False)
 
-    lam_0, lam_1, delta_1, phi, sig, a_solve, b_solve, lam_cov = out_bsr
-    return lam_0, lam_1, lam_cov
+    lam_0, lam_1, delta_1, mu, phi, sig, a_solve, b_solve, cov_x, output = outs
+    return lam_0, lam_1, cov_x, output
 
 def success_mail(passwd):
     """

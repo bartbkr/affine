@@ -65,7 +65,8 @@ class Affine(LikelihoodModel):
         mths = self._mths_list()
         self.mths = mths
 
-        assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)), \
+        assert len(yc_data.dropna(axis=0)) == \
+                    len(var_data.dropna(axis=0)) - (k_ar - 1), \
             "Number of non-null values unequal in VAR and yield curve data"
 
         if latent:
@@ -192,7 +193,8 @@ class Affine(LikelihoodModel):
             reslt = optimize.leastsq(func, params, maxfev=maxfev,
                                 xtol=xtol, full_output=full_output)
             solv_params = reslt[0]
-            output = reslt[1:]
+            cov_x = reslt[1]
+            output = reslt[2:]
 
         elif method == "nls":
             func = self._affine_pred
@@ -204,6 +206,7 @@ class Affine(LikelihoodModel):
                                        full_output=full_output)
             solv_params = reslt[0]
             solv_cov = reslt[1]
+            output = rshape[2:]
 
         elif method == "ml":
             solve = self.fit(start_params=params, method=alg,
@@ -232,7 +235,7 @@ class Affine(LikelihoodModel):
                     solv_cov
         elif method == "ls":
             return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
-                    output
+                    cov_x, output
         elif method == "ml":
             return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
                     tvalues

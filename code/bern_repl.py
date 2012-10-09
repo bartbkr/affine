@@ -81,9 +81,13 @@ np.random.seed(101)
 collect_0 = []
 collect_1 = []
 
-dates = np.asarray(px.date_range("6/1/1982", "12/1/2004", freq="MS"))
+#subset to range specified in BSR
 
-sys.exit("Stopped here")
+var_dates = px.date_range("3/1/1982", "12/1/2004", freq="MS").to_pydatetime()
+yc_dates = px.date_range("6/1/1982", "12/1/2004", freq="MS").to_pydatetime()
+
+mod_data = mod_data.ix[var_dates]
+mod_yc_data = mod_yc_data.ix[yc_dates]
 
 ##################################################
 # Define exit message to send to email upon fail #
