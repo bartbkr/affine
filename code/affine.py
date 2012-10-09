@@ -236,7 +236,7 @@ class Affine(LikelihoodModel):
             return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
                     tvalues
 
-    def score(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
+    def score(self, params, *args):
         """
         Return the gradient of the loglike at params
 
@@ -250,17 +250,15 @@ class Affine(LikelihoodModel):
         """
         #would be nice to have additional arguments here
         loglike = self.loglike
-        return approx_fprime(params, loglike, epsilon=1e-8, lam_0=lam_0,
-                             lam_1=lam_1, delta_1=delta_1, mu=mu, phi=phi,
-                             sigma=sigma)
+        return approx_fprime(params, loglike, epsilon=1e-8, args=(args))
 
-    def hessian(self, params, args=()):
+    def hessian(self, params, *args):
         """
         Returns numerical hessian.
         """
         #would be nice to have additional arguments here
         loglike = self.loglike
-        return approx_hess(params, loglike, args=args)
+        return approx_hess(params, loglike, args=(args))
 
     def loglike(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
