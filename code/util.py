@@ -36,9 +36,9 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
     from affine import Affine
         
     # subset to pre 2005
-    if bsr_orig:
-        mod_data = mod_data[:217]
-        mod_yc_data = mod_yc_data[:214]
+    #if bsr_orig:
+        #mod_data = mod_data[:217]
+        #mod_yc_data = mod_yc_data[:214]
 
     #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
     bsr = Affine(yc_data = mod_yc_data, var_data = mod_data)

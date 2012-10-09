@@ -34,18 +34,17 @@ mthdata['tr_empl_gap_perc'] = mthdata['tr_empl_gap']/mthdata['hp_ch'] * 100
 mthdata['act_infl'] = \
     mthdata['Pers_Cons_P'].diff(periods=12)/mthdata['Pers_Cons_P']*100
 mthdata['ed_fut'] = 100 - mthdata['one_year_ED']
+mthdata['ed_fut4'] = 100 - mthdata['ed4_end_mth']
 
 #define final data set
 mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                    'act_infl',
                                    'gnp_gdp_deflat_nxtyr',
                                     'fed_funds',
-                                    'ed_fut']).dropna(axis=0)
+                                    'ed_fut4']).dropna(axis=0)
 
 neqs = 5
 k_ar = 4
-
-sys.exit("Stop here")
 
 #########################
 # Grab yield curve data #
@@ -81,6 +80,10 @@ atts = 100
 np.random.seed(101)
 collect_0 = []
 collect_1 = []
+
+dates = np.asarray(px.date_range("6/1/1982", "12/31/2004", freq="M"))
+
+sys.exit("Stopped here")
 
 ##################################################
 # Define exit message to send to email upon fail #
