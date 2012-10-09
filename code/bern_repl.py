@@ -81,7 +81,7 @@ np.random.seed(101)
 collect_0 = []
 collect_1 = []
 
-dates = np.asarray(px.date_range("6/1/1982", "12/31/2004", freq="M"))
+dates = np.asarray(px.date_range("6/1/1982", "12/1/2004", freq="MS"))
 
 sys.exit("Stopped here")
 
