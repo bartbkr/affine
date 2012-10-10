@@ -554,10 +554,17 @@ increases or decreases. It is likely that the pricing error would deteriorate
 by extending the data into the crisis period, since there is no inclusion of
 a high-frequency indicator of uncertainty. To respond to this deterioration,
 one of the factors (likely the Eurodollar futures) will be replaced with an
-aggregate measure of credit default swaps. My hypothesis is that including this
-factor will lead to lower pricing error for affine models during crisis
-periods. This analysis for this chapter will largely build off of the analysis
-presented in the above section.
+aggregate measure of uncertainty. This measure of uncertainty will be the
+difference between the 90\% and 10\% predictions for year ahead output (and
+possible other differences), taken from the Blue Chip Economic Indicators
+publication. Blue Chip Economic Indicators presents the opinions polled of
+``American's top business economists''. My hypothesis is that including this
+factor will lead to lower pricing error for affine models during crisis periods
+and that BSR's choice of factors was not suitable to other time periods of
+greater economic uncertainty. I will also examine whether including this
+uncertainty factor rather than Eurodollar futures leads to overall lower
+estimates of the term premium. This analysis for this chapter will largely
+build off of the replication presented in the above section.
 
 Chapter 2 will focus on improving the information set feeding bond pricing by
 using real-time rather than final macro-data. The aim of this chapter will be
@@ -574,7 +581,7 @@ incorrectly attributing available information regarding macroeconomic
 fundamentals at time $t$. Final versions of data, especially GDP and inflation,
 are often not available until quarters after the period that they refer to,
 making final data insuitable as a proxy for available information at time $t$
-influencing bond pricing decisions at time $t$. 
+influencing bond pricing decisions at time $t$.
 
 This will require some theoretical derivation of the exact advantage of using
 real-time data vs. final-data in estimating term structure models. After
@@ -586,7 +593,9 @@ and time-varying parameters results in overall lower estimates of the term
 premium, because a higher proportion of the premium can be attributed to future
 short-rate expectations. I will compare my results to the results presented in
 \citet{orphanideswei2010} in order to place this chapter in the affine term
-structure model literature.
+structure model literature. Data will be the Greenbook records of current
+quarter GDP and inflation expectations (prior to the publicaton of official
+numbers), combined with Blue-Chip data on inflation expectations.
 
 Chapter 3 will be a computational extension of the Python model solving class.
 In this chapter, I will write a C++ extension to the python class that I have
@@ -606,18 +615,10 @@ It may be interesting to see if the affine model produced measure of the term
 premium referenced in many of the post-crisis papers results in a much lower
 proportion of the term premium explained by the portfolio balance channel
 rather than through expectations of future short-term interest rates (as in
-\citet{bauerrudebusch2011}). because using final data may result in
+\citet{bauerrudebusch2011}). Because using final data may result in
 a mis-specified affine model, the percentage of the change in yields on
 longer-maturity bonds may be incorrectly split between a term premium component
 and expected future short-rates.
-
-I would also like to address the conclusion of \citet{diebold2006macroeconomy}
-using real-time data. because \citet{diebold2006macroeconomy} uses the same
-data on both sides of the causality (term structure causing macroeconomic
-fluctuations and vice versa), it would be interesting to see if their model would
-generate the same conclusions of 1) interest rates $\rightarrow$ macro factors
-is not as important as 2) macro factors $\rightarrow$ interest rates if the
-macro factors in 1) are replaced with real-time macro data.
 
 \subsection{Work that I have done}
 
