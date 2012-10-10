@@ -26,6 +26,5 @@
 #ignore
 *.cfg
 
-/code/*.pkl
 /code/store_pass.py
 *.pyc
