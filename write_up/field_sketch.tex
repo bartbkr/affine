@@ -564,7 +564,17 @@ and that BSR's choice of factors was not suitable to other time periods of
 greater economic uncertainty. I will also examine whether including this
 uncertainty factor rather than Eurodollar futures leads to overall lower
 estimates of the term premium. This analysis for this chapter will largely
-build off of the replication presented in the above section.
+build off of the replication presented in the above section. BSR solves their
+model using a least squares method.
+
+I have already written a Python-based solution suite that can solve both
+observed factor, latent factor, and mixed affine models of the term structure.
+The flexibility of the solution class that I have written allows for a great
+amount of flexibility in testing different numbers of latent variables,
+different mixes of latent and observed variables, and different solution
+methods and approaches. Maximum likelihood, least squares, and non-linear
+squares are currently implemented, with the \citet{ang2003no} iterative maximum
+likelihood solution method soon to follow.
 
 Chapter 2 will focus on improving the information set feeding bond pricing by
 using real-time rather than final macro-data. The aim of this chapter will be
@@ -619,15 +629,6 @@ rather than through expectations of future short-term interest rates (as in
 a mis-specified affine model, the percentage of the change in yields on
 longer-maturity bonds may be incorrectly split between a term premium component
 and expected future short-rates.
-
-\subsection{Work that I have done}
-
-I have already written a maximum likelihood solver in Python for models and
-have used it for a previous term paper. I would like to fully utilize it and
-also move onto a Kalman filter approach to estimating the system. I've also
-worked through solving some of the DSGE models of the term premium addressed in
-section \ref{sec:struct} using the permutation solution algorithm proposed by
-\citet{swanson2006higher}.
 
 \section{Structural models of the term structure}\label{sec:struct}
 
@@ -924,10 +925,7 @@ primary channel is through which these LSAP events have an impact on
 long-maturity interest rate.
 
 \bibliographystyle{chicago}
-%\bibliography{/home/bart/Documents/Bib_file/master1}
-%\bibliography{C:/Users/bbaker/Documents/Bib_File/master1}
-%\bibliography{G:/Bib_File/master1}
-\bibliography{C:/code/my_projs/bib_file/master1}
+\bibliography{/../../bib_file/master1}
 
 \section{Code}
 
