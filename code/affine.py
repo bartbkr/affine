@@ -206,7 +206,7 @@ class Affine(LikelihoodModel):
                                        full_output=full_output)
             solv_params = reslt[0]
             solv_cov = reslt[1]
-            output = rshape[2:]
+            output = reslt[2:]
 
         elif method == "ml":
             solve = self.fit(start_params=params, method=alg,
@@ -232,7 +232,7 @@ class Affine(LikelihoodModel):
             #return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output 
         if method == "nls":
             return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
-                    solv_cov
+                    solv_cov, output
         elif method == "ls":
             return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
                     cov_x, output
