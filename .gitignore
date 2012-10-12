@@ -26,5 +26,6 @@
 #ignore
 *.cfg
 
+/temp_res/*
 /code/store_pass.py
 *.pyc
