@@ -579,19 +579,20 @@ likelihood solution method soon to follow.
 Chapter 2 will focus on improving the information set feeding bond pricing by
 using real-time rather than final macro-data. The aim of this chapter will be
 to answer the question: Does real-time data increase the fit of affine models
-of the term structure that use observed factors? While real-time data has been
-integrated into an affine model framework in \citet{orphanideswei2010}, the
-focus of the paper was not on the value-added of using real-time data. Because
-the definition of the pricing kernel at time $t$ is supposed to reflect all
-information informing bond pricing decisions at time $t$, the necessity of
-adding unobserved latent factors to an affine model with observed factors is
-most often to increase the fit of the model, because the observed factors alone
-cannot match all of the variation. This may simply be an artifact of
-incorrectly attributing available information regarding macroeconomic
-fundamentals at time $t$. Final versions of data, especially GDP and inflation,
-are often not available until quarters after the period that they refer to,
-making final data insuitable as a proxy for available information at time $t$
-influencing bond pricing decisions at time $t$.
+of the term structure that use observed factors compared to models that use
+final data? While real-time data has been integrated into an affine model
+framework in \citet{orphanideswei2010}, the focus of the paper was not on the
+value-added of using real-time data. Because the definition of the pricing
+kernel at time $t$ is supposed to reflect all information informing bond
+pricing decisions at time $t$, the necessity of adding unobserved latent
+factors to an affine model with observed factors is most often to increase the
+fit of the model, because the observed factors alone cannot match all of the
+variation. This may simply be an artifact of incorrectly attributing available
+information regarding macroeconomic fundamentals at time $t$. Final, post
+revision macroeconomic data, especially GDP and inflation, are often not
+available until quarters after the period that they refer to, making final data
+unsuitable as a proxy for available information at time $t$ influencing bond
+pricing decisions at time $t$.
 
 This will require some theoretical derivation of the exact advantage of using
 real-time data vs. final-data in estimating term structure models. After
@@ -601,11 +602,28 @@ where the gain in explanatory value is statistically significant.
 \citet{orphanideswei2010} show that estimating the model using real-time data
 and time-varying parameters results in overall lower estimates of the term
 premium, because a higher proportion of the premium can be attributed to future
-short-rate expectations. I will compare my results to the results presented in
+short-rate expectations. Instead of simultaneously introducing both a real-time
+data with a new estimation strategy, this chapter's focus will be on the
+ability of using real-time data rather than final-data to decrease the pricing
+error. I will compare my results to the results presented in
 \citet{orphanideswei2010} in order to place this chapter in the affine term
-structure model literature. Data will be the Greenbook records of current
-quarter GDP and inflation expectations (prior to the publicaton of official
-numbers), combined with Blue-Chip data on inflation expectations.
+structure model literature. Data informing the pricing kernel will be the
+Greenbook records expected current quarter GDP and inflation (prior to the
+publication of official numbers), combined with Blue-Chip data on inflation
+expectations. I will compare the pricing error of a variety of these models, in
+each pair of cases using final-data compared to real-time data, but varying the
+number of latent factors from zero to three. Maximum likelihood (ML) via
+Newton-Raphson numerical approximation will be used to estimate the models
+without latent factors, with non-linear least squares estimation through the
+Levenburg-Marquardt algorithm will used as a check. In the case of the models
+with latent factors, iterative ML ala \citet{ang2003no} will be used to
+estimate all of the models, with the Kalman filter used as a check. Estimating
+multiple versions of the final versus real-time models and comparing their fit
+and estimated term premium will allow for a complete analysis of the advantage
+of using real-time vs final data. Estimating these models with only a few
+observed macro factors will allow some flexibility in the number of latent
+factors to include and allow for the analysis to completely focus on the
+advantage of using real-time data in affine models of the term structure.
 
 Chapter 3 will be a computational extension of the Python model solving class.
 In this chapter, I will write a C++ extension to the python class that I have

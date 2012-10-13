@@ -1,159 +1,1042 @@
-Haan (1995) "The term structure of interest rates in real and monetary economies"
+Haan (1995) "The term structure of interest rates in real and monetary
+economies"
 
-Haan examines the major statistical properties of key interest rates, nominal and real, and key macroeconomic variables. In the model, with positively autocorrelated consumption, the term structure will be downward sloping (919-920). In order to get positive slope of term structure and higher variance of longer term bond i-rates, need persistent expected growth rates of consumption and a negative autocorrelation for consumption growth, accomplished through a particular specification of the consumption shock process. But, these features are not present in U.S data (923). Adding labor supply and real money balances do not increase the ability of the model to match U.S data.
+Haan examines the major statistical properties of key interest rates, nominal
+and real, and key macroeconomic variables. In the model, with positively
+autocorrelated consumption, the term structure will be downward sloping
+(919-920). In order to get positive slope of term structure and higher variance
+of longer term bond i-rates, need persistent expected growth rates of
+consumption and a negative autocorrelation for consumption growth, accomplished
+through a particular specification of the consumption shock process. But, these
+features are not present in U.S data (923). Adding labor supply and real money
+balances do not increase the ability of the model to match U.S data.
 
 Donaldson, Johnsen, and Mehra (1990) "On the term structure of interest rates"
 
-Create definition of "internal consistency", whereby 'market' and risk-free rates are entirely determined endogenously within the model, making them consistent with each other. Not sure if affine models of term structure (TS) fit this definition. Has nice summary of important TS literature (573). C: Cites paper by Stambaugh that says upward sloping precede recoveries and vis-versa (577). Simple model is incapable of explaining the real term structure quantitatively (583). Standard deviation of YTM is seen to decline with maturity (585). The longer the forecast period, the larger the forward premium and the longer the maturity of the interest rate forecasted, the smaller the forward premium (588).
+Create definition of "internal consistency", whereby 'market' and risk-free
+rates are entirely determined endogenously within the model, making them
+consistent with each other. Not sure if affine models of term structure (TS)
+fit this definition. Has nice summary of important TS literature (573). C:
+Cites paper by Stambaugh that says upward sloping precede recoveries and
+vis-versa (577). Simple model is incapable of explaining the real term
+structure quantitatively (583). Standard deviation of YTM is seen to decline
+with maturity (585). The longer the forecast period, the larger the forward
+premium and the longer the maturity of the interest rate forecasted, the
+smaller the forward premium (588).
 
-Campbell and Cochrane (1999) "By Force of Habit: A Consumption-Based Explanation of Aggregate Stock Market Behavior"
+Campbell and Cochrane (1999) "By Force of Habit: A Consumption-Based
+Explanation of Aggregate Stock Market Behavior"
 
-References Cox, Ingersoll, and Ross (1985) for square root models of the term structure. Choose meaningful parameters and simulate consumption based model and examine properties compared to post-war relationships between stock-returns and the path of consumption. Model has "leverage effect", where price declines increase volatility, and counter-cycical variation in volatility (222). They discuss the equity premium puzzle in the context of their model (237). Agents fear stocks not because they are correlated with declines in wealth or consumption, but because they do badly in recessions (deviations of consumption from habit).
+References Cox, Ingersoll, and Ross (1985) for square root models of the term
+structure. Choose meaningful parameters and simulate consumption based model
+and examine properties compared to post-war relationships between stock-returns
+and the path of consumption. Model has "leverage effect", where price declines
+increase volatility, and counter-cycical variation in volatility (222). They
+discuss the equity premium puzzle in the context of their model (237). Agents
+fear stocks not because they are correlated with declines in wealth or
+consumption, but because they do badly in recessions (deviations of consumption
+from habit).
 
 Check these out for real wage bargaining ridities.
 
-Jessica Wachter, 2006. A consumption-based model of the term structure of interest rates.
+Jessica Wachter, 2006. A consumption-based model of the term structure of
+interest rates.
 
-Build on consumption based model of Campbell and Cochrane. Allows for moving risk-free rate, unlike C and C. The precautionary savings rate does automatically cancel out the inter-temporal smoothing effect. In order to get upward sloping yield curve, need real riskfree rate to be negatively correlated with consumption (15). Check out Gregory Duffee's webpage!! The model can fit the equity premium puzzle of Mehra and Prescott (17). Reference other affine models of the term structure (22). Interesting test for the models fit to actual term premia (24).
+Build on consumption based model of Campbell and Cochrane. Allows for moving
+risk-free rate, unlike C and C. The precautionary savings rate does
+automatically cancel out the inter-temporal smoothing effect. In order to get
+upward sloping yield curve, need real riskfree rate to be negatively correlated
+with consumption (15). Check out Gregory Duffee's webpage!! The model can fit
+the equity premium puzzle of Mehra and Prescott (17). Reference other affine
+models of the term structure (22). Interesting test for the models fit to
+actual term premia (24).
 
 Blanchard and Gali, 2005. Real wage rigidities and new keynesian model.
 
-New Keynesian DSGE with real wage rigidities. Natural - welfare optimal output not constant as in standard New Keynesian model. Examines alternative waves of introducing inconsistencies between natural output and welfare optimal output. Real wage rigidities lead to inflation intertia. Also generates endogenous representation of current inflation has function of lagged and expected inflation.
+New Keynesian DSGE with real wage rigidities. Natural - welfare optimal output
+not constant as in standard New Keynesian model. Examines alternative waves of
+introducing inconsistencies between natural output and welfare optimal output.
+Real wage rigidities lead to inflation intertia. Also generates endogenous
+representation of current inflation has function of lagged and expected
+inflation.
 
 Cochrane, 2007. Financial Markets and the Real Economy.
 
-Aims to get at the determinants of all asset prices as representing the marginal value of wealth, connecting to the marginal consumption as driven by macroeconomic variables. "Asset markets are the mechanism that does all of the equating" (242). Makes interesting link between portfolio models and macro models of asset prices: portfolio models link asset prices to a few sources of movement and then macro models try to understand how underlying movement is priced (244). Many variables can be used to forecast returns (245). The term spread forecasts stock returns as much as it forecasts bond returns (248). There are a number of specific macroeconomic variables that can forecast stock returns (249). Investigates the Fama-French three factor model (253-254). Notes Fama-French's leaving out momentum effect, but keeping sml (small market capitaliziation minus big) and hml (high book-to-market ratio minus low). Also discussses Mehra-Prescott puzzle as not originally discovered by M and P but instead of Shiller (262). Discusses different options for utility functions (271). Nice explanation of moving habit (276). Recurring theme in consumption models with external, moving habit: people fear stocks because they decline when consumption falls relative to habit (277). Mentions interesting housing model of Piazzesi, Schneider, and Tuzel (2004) (279). Non-separability across states induces non-separability across goods (285). Addresses consumption factor models (286). Time series relating investment to stock prices (291). Production models of investment, requires state-separable production functions (293). Germann's' GE model of stock prices (294). Boldrin, Eichenbaum, and Fisher (2001) improve fit model's quantity dynamics (295). Tallerini shows that with separate risk aversion and intertemporal subsitution parameters, you can get equity premium wihtout changing quantity dunamics (296). Seems like he is describing bubbles with intangible capital (298). GE models force us to stop treating tomorrow's price as an exogenous variable (301). Labor income% total income as returns forecaster (307). Cross-sectional idiosyncraic risk can be important factor (308). Should aggregates be used over micro data? (313).
+Aims to get at the determinants of all asset prices as representing the
+marginal value of wealth, connecting to the marginal consumption as driven by
+macroeconomic variables. "Asset markets are the mechanism that does all of the
+equating" (242). Makes interesting link between portfolio models and macro
+models of asset prices: portfolio models link asset prices to a few sources of
+movement and then macro models try to understand how underlying movement is
+priced (244). Many variables can be used to forecast returns (245). The term
+spread forecasts stock returns as much as it forecasts bond returns (248).
+There are a number of specific macroeconomic variables that can forecast stock
+returns (249). Investigates the Fama-French three factor model (253-254). Notes
+Fama-French's leaving out momentum effect, but keeping sml (small market
+capitaliziation minus big) and hml (high book-to-market ratio minus low). Also
+discussses Mehra-Prescott puzzle as not originally discovered by M and P but
+instead of Shiller (262). Discusses different options for utility functions
+(271). Nice explanation of moving habit (276). Recurring theme in consumption
+models with external, moving habit: people fear stocks because they decline
+when consumption falls relative to habit (277). Mentions interesting housing
+model of Piazzesi, Schneider, and Tuzel (2004) (279). Non-separability across
+states induces non-separability across goods (285). Addresses consumption
+factor models (286). Time series relating investment to stock prices (291).
+Production models of investment, requires state-separable production functions
+(293). Germann's' GE model of stock prices (294). Boldrin, Eichenbaum, and
+Fisher (2001) improve fit model's quantity dynamics (295). Tallerini shows that
+with separate risk aversion and intertemporal subsitution parameters, you can
+get equity premium wihtout changing quantity dunamics (296). Seems like he is
+describing bubbles with intangible capital (298). GE models force us to stop
+treating tomorrow's price as an exogenous variable (301). Labor income% total
+income as returns forecaster (307). Cross-sectional idiosyncraic risk can be
+important factor (308). Should aggregates be used over micro data? (313).
 
 
-Boldrin, Christiano, and Fisher, 2001. Habit Persistence, Asset Returns, and the Business Cycle.
+Boldrin, Christiano, and Fisher, 2001. Habit Persistence, Asset Returns, and
+the Business Cycle.
 
-Two failures of GE models: equity premium is too high and risk-free rate is too low on average (149). Introducing habit preference into the standard RBC model has no impact on the equity premium (150). Two sector model with intersectoral rigidities (151). Does better than RBC model in predicting mean risk-free rate, equity premium, and Sharpe ratio (154). Risk-free rate volatility not well predicted (154). Variations in b (weight on previous consumption) have impact on equity return volatility through capital factor market inflexibilities (155). Sectors move together (156). Model also lowers estimate of risk-free rate impact on consumption (in line with data) and increases predictability of income to consumption (159). Interest rate increase also predicts lower future output (160). Superior to time-to-plan model in rational justification and consumption volatility (161-162). Adjustment-costs model understates equity premium and if adjusted for, employment is countercyclical(162). Looking for data to show that consumption response is smooth (163). Higher correlation between consumption growth and rate of return on equity than in data (163). Model with inclusion of inventories could have smoothing effect (164).
+Two failures of GE models: equity premium is too high and risk-free rate is too
+low on average (149). Introducing habit preference into the standard RBC model
+has no impact on the equity premium (150). Two sector model with intersectoral
+rigidities (151). Does better than RBC model in predicting mean risk-free rate,
+equity premium, and Sharpe ratio (154). Risk-free rate volatility not well
+predicted (154). Variations in b (weight on previous consumption) have impact
+on equity return volatility through capital factor market inflexibilities
+(155). Sectors move together (156). Model also lowers estimate of risk-free
+rate impact on consumption (in line with data) and increases predictability of
+income to consumption (159). Interest rate increase also predicts lower future
+output (160). Superior to time-to-plan model in rational justification and
+consumption volatility (161-162). Adjustment-costs model understates equity
+premium and if adjusted for, employment is countercyclical(162). Looking for
+data to show that consumption response is smooth (163). Higher correlation
+between consumption growth and rate of return on equity than in data (163).
+Model with inclusion of inventories could have smoothing effect (164).
 
 Mehra and Prescott, 1985. The Equity Premium: A Puzzle.
 
-Use standard Lucas consumption model to examine lack of empirically supported low equity premium. Consumption follows Markov process (154). "Realistic" risk aversion parameters are not line with data. Equity premium too low relative to actual equity premium in data. Actual stock may be riskier than those available in this model, but this correction doesn't help much (159). Lack of copmlete competition in financial markets may be reason for model's poor performance in generating the equity premium (159).
+Use standard Lucas consumption model to examine lack of empirically supported
+low equity premium. Consumption follows Markov process (154). "Realistic" risk
+aversion parameters are not line with data. Equity premium too low relative to
+actual equity premium in data. Actual stock may be riskier than those available
+in this model, but this correction doesn't help much (159). Lack of copmlete
+competition in financial markets may be reason for model's poor performance in
+generating the equity premium (159).
 
 Piazzesi and Schneider, 2006. Equilibrium yield curves.
 
-Studies the effect of inflation as bad news in a simple representative agent asset pricing model with recursive utility as investor preferences and different specifications of investors' beliefs of how consumption and inflation evolve over time (389-390). In the "standard" model, asset premium's exist over other assets when they covary more with consumption growth (390). In stochastic model, inflation itself is the key predictor of future consumption, inflation, and yields that generates interest rate volatility (391). Exogenous consumption and inflation in baseline model (393). Lots of background work on Epstein and Zin preferences (393). Nice explanation of the meaning of the risk aversion parameter (394-395). Explicit risk premium derived in model (400). Real term premia are driven by covariance of marginal utility with expected consumption growth (401). Use a state-space system to summarize investors beliefs about fundamentals (402). High inflation is a leading recession indicator (404). Conditional and unconditional results of growth and inflation shocks result in very different results (404-405). Use differing results of growth and inflation shocks to generate explanations of what shocks actually took place in history (405-406). Match average short and long end of yield curve with \beta and \gamma: \beta = 1.00 and \gamma = 59 (406). Generates upward sloping yield curve (406). Recursive utility generates upward sloping yield curve while expected utility generates downward sloping (408). If long-term bond yields are correlated with good times then they require premium (410). Real YC downward sloping in UK, but using TIPS in US is upward sloping (410-411). Volatility puzzle still exists, where long-term bond yields are not volatile enough in model (412). Model's expectations move too quickly as shown in drop in inflation in data with slow data reaction by short rate but quick reaction in model (413). Add more variables into state space system and see if it adds important information to investor expectation, but it doesn't seem to (415). Plus, with more info need higher \gamma to generate long-term high yields (416). Re-estimate model with data only available up to time \t at each time \t, given people's lack of knowledge about future model parameters (421-422). Impact of inflation or growth surprises has different degree of impact depending on period (423). Inflation as an indicator of bad times became worse in 70s (424). Use Bayesian learning to generate parameter uncertainty (425). Parameter uncertainty can generate the sluggish response of yields (429). Excess sensitivity of long-rates to news (Gurknayek, Sack, and Swanson (2005)) (430). Bond premium puzzle (Backus, Gregory, and Zin (1989)) (431). Abel's "catching up with the Joneses" model (432). Adaptive learning literature summarized by Evans and Honkapohja (2001) (434). Two tasks for research: 1) understand better the source of yield volatility at business cycle frequencies and 2) develop further models in which changes in uncertainty have first order effects on interest rates (436). Comments by Benigno, Campbell, and overall discussion.
+Studies the effect of inflation as bad news in a simple representative agent
+asset pricing model with recursive utility as investor preferences and
+different specifications of investors' beliefs of how consumption and inflation
+evolve over time (389-390). In the "standard" model, asset premium's exist over
+other assets when they covary more with consumption growth (390). In stochastic
+model, inflation itself is the key predictor of future consumption, inflation,
+and yields that generates interest rate volatility (391). Exogenous consumption
+and inflation in baseline model (393). Lots of background work on Epstein and
+Zin preferences (393). Nice explanation of the meaning of the risk aversion
+parameter (394-395). Explicit risk premium derived in model (400). Real term
+premia are driven by covariance of marginal utility with expected consumption
+growth (401). Use a state-space system to summarize investors beliefs about
+fundamentals (402). High inflation is a leading recession indicator (404).
+Conditional and unconditional results of growth and inflation shocks result in
+very different results (404-405). Use differing results of growth and inflation
+shocks to generate explanations of what shocks actually took place in history
+(405-406). Match average short and long end of yield curve with \beta and
+\gamma: \beta = 1.00 and \gamma = 59 (406). Generates upward sloping yield
+curve (406). Recursive utility generates upward sloping yield curve while
+expected utility generates downward sloping (408). If long-term bond yields are
+correlated with good times then they require premium (410). Real YC downward
+sloping in UK, but using TIPS in US is upward sloping (410-411). Volatility
+puzzle still exists, where long-term bond yields are not volatile enough in
+model (412). Model's expectations move too quickly as shown in drop in
+inflation in data with slow data reaction by short rate but quick reaction in
+model (413). Add more variables into state space system and see if it adds
+important information to investor expectation, but it doesn't seem to (415).
+Plus, with more info need higher \gamma to generate long-term high yields
+(416). Re-estimate model with data only available up to time \t at each time
+\t, given people's lack of knowledge about future model parameters (421-422).
+Impact of inflation or growth surprises has different degree of impact
+depending on period (423). Inflation as an indicator of bad times became worse
+in 70s (424). Use Bayesian learning to generate parameter uncertainty (425).
+Parameter uncertainty can generate the sluggish response of yields (429).
+Excess sensitivity of long-rates to news (Gurknayek, Sack, and Swanson (2005))
+(430). Bond premium puzzle (Backus, Gregory, and Zin (1989)) (431). Abel's
+"catching up with the Joneses" model (432). Adaptive learning literature
+summarized by Evans and Honkapohja (2001) (434). Two tasks for research: 1)
+understand better the source of yield volatility at business cycle frequencies
+and 2) develop further models in which changes in uncertainty have first order
+effects on interest rates (436). Comments by Benigno, Campbell, and overall
+discussion.
 
-Ravenna and Seppaelae, 2006. Monetary Policy and the Term Structure of Interest Rates.
+Ravenna and Seppaelae, 2006. Monetary Policy and the Term Structure of Interest
+Rates.
 
-RBC, sticky price and liquidy effect models unable to generate pro-cyclical i-rates and counter-cyclical term spread (2). In Donaldson, Johnson, and Mehra (DJM) (1990), at peak, agents save more because lower output expected so i-rates are lower and vice versa (3). But DJM compare real i-rates to nominal (3). (Piazzesi and Schneider compare nominal to nominal andg have very different results for real and nominal yield curves). Backus, Gregory, and Zin (BGZ) show that standard asset pricing model unable to generate sign or magnitude of average risk premiums in forward prices and holding period treturns (4). Related literature (4-5). Set-up New Keynesian DSGE model with Taylor rule with differentiated consumers and firms and an option of assets to choose from with different maturities (6-11). Solve using third order regression, not direct approximation with Swanson (11) (This could be a place for research). Do not use any weight on output gap in standard specification (12). Shocks to preferences, technology, and taylor rule (13). A little confused about specification of forward price (15). Procyclical real and nominal interest rates in data (15). In data, short maturities are procycical and long maturities counter-cycical (15). Convexity premium (16). Habit formation is a necessary condition for the expectations hypothesis to fail (18), but monetary policy also plays an important role (18). Expectations hypothesis is rejected and with different tests (20). Explanatory power of term structure slop increases with forecast horizon (21). Introduced "inflation risk premium" (22). Inflation risk premium is negative always in model (more negative means lower long-term bond price -> higher yields) (22). WIth more aggresive monetary policy smaller (absolute value) inflation premium (23). Expecatations hypothesis is rejected more often with more aggressive monetary policy (27).
+RBC, sticky price and liquidy effect models unable to generate pro-cyclical
+i-rates and counter-cyclical term spread (2). In Donaldson, Johnson, and Mehra
+(DJM) (1990), at peak, agents save more because lower output expected so
+i-rates are lower and vice versa (3). But DJM compare real i-rates to nominal
+(3). (Piazzesi and Schneider compare nominal to nominal andg have very
+different results for real and nominal yield curves). Backus, Gregory, and Zin
+(BGZ) show that standard asset pricing model unable to generate sign or
+magnitude of average risk premiums in forward prices and holding period
+treturns (4). Related literature (4-5). Set-up New Keynesian DSGE model with
+Taylor rule with differentiated consumers and firms and an option of assets to
+choose from with different maturities (6-11). Solve using third order
+regression, not direct approximation with Swanson (11) (This could be a place
+for research). Do not use any weight on output gap in standard specification
+(12). Shocks to preferences, technology, and taylor rule (13). A little
+confused about specification of forward price (15). Procyclical real and
+nominal interest rates in data (15). In data, short maturities are procycical
+and long maturities counter-cycical (15). Convexity premium (16). Habit
+formation is a necessary condition for the expectations hypothesis to fail
+(18), but monetary policy also plays an important role (18). Expectations
+hypothesis is rejected and with different tests (20). Explanatory power of term
+structure slop increases with forecast horizon (21). Introduced "inflation risk
+premium" (22). Inflation risk premium is negative always in model (more
+negative means lower long-term bond price -> higher yields) (22). WIth more
+aggresive monetary policy smaller (absolute value) inflation premium (23).
+Expecatations hypothesis is rejected more often with more aggressive monetary
+policy (27).
 
 Wu, 2005. Macro Factors and the Affine Term Structure of Interest Rates.
 
-Use 7 variable VAR with R_t last in order to generate stylized facts (3-4). Various measurements of R_t used with yields on bonds of different maturity and "slope" and "level" of term structure. Realistic shock responses except for Sim's "price puzzle" in VAR (4). VAR with different R_t shows that effect on R_t of increase in federal funds rate decreases with maturity and trails off quicker with maturity (5). Magnitude of output shock to relatively equal across maturities (5). Standard NK model with sticky prices (through price adjustment costs) and capital adjustment costs (6). Monetary policy different from Taylor rule in that 1) includes lagged short-rate and 2) output gap measured in perceived rather than actual flexible price output (10). Use affine model to define movements in all variables where both dynamics of state variables and those of term structure are endogenously derived from a rational expectations general equilibrium (14). Most of the literature views term structure movement as controlled by some unobservable latent factors (14). Wu's approach limits the pricing kernal to be conditional homo-skedastic. (15). Calibrated model has monetary policy shock decreases inflation significantly, but effect is transitory (17). Risk premium lowers in model with contractionary monetary shock because yield on this asset goes up in bad times (18). Monetary policy shock in model has much larger effect on short-rates than long-, but tech shock has more uniform effect on all i-rates, so monetary shock could be "slope" factor and tech shock could be "level" factor. Monetary shocks are also much more transient than tech shocks. In less than two years, most of the monetary shock has subsided in term structure, while most of tech shock remains 2 years (24 periods) in (20). Results are backed with variance decomposition (model vs. VAR) (21). Also perform time-series regressions on IRF from model (22). Rudebusch and Wu attribute "slope" effect to cyclical Fed responses, but "level" to time-varying inflation target, so actually not that different (23). Future avenues for research, including incorporating financial frictions and justifying affine models of term structure theoretically (24).
+Use 7 variable VAR with R_t last in order to generate stylized facts (3-4).
+Various measurements of R_t used with yields on bonds of different maturity and
+"slope" and "level" of term structure. Realistic shock responses except for
+Sim's "price puzzle" in VAR (4). VAR with different R_t shows that effect on
+R_t of increase in federal funds rate decreases with maturity and trails off
+quicker with maturity (5). Magnitude of output shock to relatively equal across
+maturities (5). Standard NK model with sticky prices (through price adjustment
+costs) and capital adjustment costs (6). Monetary policy different from Taylor
+rule in that 1) includes lagged short-rate and 2) output gap measured in
+perceived rather than actual flexible price output (10). Use affine model to
+define movements in all variables where both dynamics of state variables and
+those of term structure are endogenously derived from a rational expectations
+general equilibrium (14). Most of the literature views term structure movement
+as controlled by some unobservable latent factors (14). Wu's approach limits
+the pricing kernal to be conditional homo-skedastic. (15). Calibrated model has
+monetary policy shock decreases inflation significantly, but effect is
+transitory (17). Risk premium lowers in model with contractionary monetary
+shock because yield on this asset goes up in bad times (18). Monetary policy
+shock in model has much larger effect on short-rates than long-, but tech shock
+has more uniform effect on all i-rates, so monetary shock could be "slope"
+factor and tech shock could be "level" factor. Monetary shocks are also much
+more transient than tech shocks. In less than two years, most of the monetary
+shock has subsided in term structure, while most of tech shock remains 2 years
+(24 periods) in (20). Results are backed with variance decomposition (model vs.
+VAR) (21). Also perform time-series regressions on IRF from model (22).
+Rudebusch and Wu attribute "slope" effect to cyclical Fed responses, but
+"level" to time-varying inflation target, so actually not that different (23).
+Future avenues for research, including incorporating financial frictions and
+justifying affine models of term structure theoretically (24).
 
-Bekaert, Cho, and Moreno, 2005. New-Keynesian Macroeconomics and the Term Structure.
+Bekaert, Cho, and Moreno, 2005. New-Keynesian Macroeconomics and the Term
+Structure.
 
-Most NK models limit information set available to monetary authority and private sector, but his paper uses term structure which efficiently summarizes a lot of information (1). Term structure (TS) helps to recover structural parameter, so can estimate using GMM (2). Generates more persistence than most NK models through additional observable variables (2). Model set-up (5). Employ different monetary policy specifications (8-9). Also use two different inflation target specifications (10-11). Rewrite system as first-order VAR with "0" restrictions and two unobserved macro factors (12). Homo-skedastic affine model implies constant risk premium, while Gaussian prices of risk and square root model imply time-varying risk premiums (13). Inflation risk premium determined by (time-varying) covariance between inflation and the real pricing kernel (13). The macro variables and the term spreads follow a first-order VAR with complex cross-equation restrictions (16). Baseline VAR evidence seems to indicate that macro variables show more causality for term spreads but less so for term spreads causing macro variables (17). Including term spreads in VAR decrease optimal lags from 3 to 1, so including this may provide the persistence needed without extra lags (19). Cool method for determining how different model specifications match up with data (22). Inflation difficult to fit, output gap also hard, interest rate dynamics easier to fit and certain models do well with term spread. The constant real rate, expected inflation, new inflation specification had the best overall fit and is the focus of the rest of the paper (22). While the signs of the coefficients don't always match up, the joint dynamics seem to match the unconstrained VAR(1) system well (23). Tables at end have nice summary for specifications perform nicely when (24). The Phillips curve parameter is significant, which differs from previous studies (25). The utility curvature parameter is never higher than 5, in line with Lucas (2003) (26). Model implied output gap, natural rate of output and inflation target seems to coincide well with historical intuition (29-30). Difference between supply and demand shock (30-31). Dai and Singleton (2000) investigate different numbers of unobserved variables (34). One year yield fits data much better than 10 year yield (35). Inflation target shock has big effect on yield curve "level" (37). Monetary policy shock is dominant factor in slope and curvature of yield curve (37). Other authors have to use more lags to explain persistence (39).
+Most NK models limit information set available to monetary authority and
+private sector, but his paper uses term structure which efficiently summarizes
+a lot of information (1). Term structure (TS) helps to recover structural
+parameter, so can estimate using GMM (2). Generates more persistence than most
+NK models through additional observable variables (2). Model set-up (5). Employ
+different monetary policy specifications (8-9). Also use two different
+inflation target specifications (10-11). Rewrite system as first-order VAR with
+"0" restrictions and two unobserved macro factors (12). Homo-skedastic affine
+model implies constant risk premium, while Gaussian prices of risk and square
+root model imply time-varying risk premiums (13). Inflation risk premium
+determined by (time-varying) covariance between inflation and the real pricing
+kernel (13). The macro variables and the term spreads follow a first-order VAR
+with complex cross-equation restrictions (16). Baseline VAR evidence seems to
+indicate that macro variables show more causality for term spreads but less so
+for term spreads causing macro variables (17). Including term spreads in VAR
+decrease optimal lags from 3 to 1, so including this may provide the
+persistence needed without extra lags (19). Cool method for determining how
+different model specifications match up with data (22). Inflation difficult to
+fit, output gap also hard, interest rate dynamics easier to fit and certain
+models do well with term spread. The constant real rate, expected inflation,
+new inflation specification had the best overall fit and is the focus of the
+rest of the paper (22). While the signs of the coefficients don't always match
+up, the joint dynamics seem to match the unconstrained VAR(1) system well (23).
+Tables at end have nice summary for specifications perform nicely when (24).
+The Phillips curve parameter is significant, which differs from previous
+studies (25). The utility curvature parameter is never higher than 5, in line
+with Lucas (2003) (26). Model implied output gap, natural rate of output and
+inflation target seems to coincide well with historical intuition (29-30).
+Difference between supply and demand shock (30-31). Dai and Singleton (2000)
+investigate different numbers of unobserved variables (34). One year yield fits
+data much better than 10 year yield (35). Inflation target shock has big effect
+on yield curve "level" (37). Monetary policy shock is dominant factor in slope
+and curvature of yield curve (37). Other authors have to use more lags to
+explain persistence (39).
 
-Doh, 2007. What Moves the Yield Curve? Lessons from an Estimated Non-Linear Macro Model.
+Doh, 2007. What Moves the Yield Curve? Lessons from an Estimated Non-Linear
+Macro Model.
 
-Uses closed form solution for bond yields, which differs from most NK DSGE papers where log-linearizing to second order cannot generate time-varying term premium (1). Findings are that inflation too high or term premium too low when trying to match to the data (2). Model doesn't generate high enough term premium, but the parameter estimates of high persistence in Hoerdahl (2005) and Ravana and Sepaellae (2006) are not realistic given the data, as Doh will show (3). Model (4). Quadratic price adjustment costs (5). Complete asset markets of state contingent claims (6). Condense model into control variable/state variable system which is assumed stable so that it can be solved (9). Discuss how exactly linear approximation differs from quadratic approximation (11). Discusses matching model outcomes to data, specifically, GDP, inflation, and the interest rate (27). They compute the conditional expectations of the discount factor (through which bond yields are generated) by derivation of approximate stochastic discount factor, rather than estimating the conditional expectations (12-13). Discuss issues with iterating forward estimations of discount factor (13). Use Bayesian methods with particle filtering to estimate the model (14). Summarize entire system in state-space model (15). Before taking the model to the data, investigate how model does in generating Den Haan's (1995) stylized facts (20). RBC model generates negative term premiums(21). Empirical proxies of "level", "slope", and "curvature" generated from model are highly correlated with three latent factors generated by principal component analysis (23). Test linear model, non-linear model without ARCH effect and non-linear model with ARCH effect (23). All of the models do not generate a flat shape of the term structure of volatility (23). Inflation is too volatile in all three models (24). Non-linear model much better identifies posterior regions of persistence parameters (25). In overall time-series fit, the non-linear model is marginally better than the linear model (27). Posterior analysis shows that mean slope and mean curvature of the yield curve do not match the data, but the magnitude of ex-post measurement errors are small compared to other results in the literature (28). In order to get at meaning of term structure factors, instead of regressing latent term structure values on DSGE generated model shocks, Doh regresses actual empirical estimates of these term structure factors on the model shocks (29). Analysis associates "level" with target inflation, "slope" with the mark-up, and "curvature" with the transitory monetary shock (30). Other papers link "slope" with capacity utilization (this could integrate PK lit) (30). Monetary policy reaction to real disturbances is found to be singificantly positive during our sample period (31). Increases in target inflation are most persistent in their effect on interest rates, while markup is less so, and transitory monetary policy even less (32). Show that implied term premium is highly correlated with macro factors, unlike Duffee (2006) (32). Model cannot explain magnitude of TP, but when average values of term premium structure variables are taken jout as free parameters, model captures time variation in TP well (33).
+Uses closed form solution for bond yields, which differs from most NK DSGE
+papers where log-linearizing to second order cannot generate time-varying term
+premium (1). Findings are that inflation too high or term premium too low when
+trying to match to the data (2). Model doesn't generate high enough term
+premium, but the parameter estimates of high persistence in Hoerdahl (2005) and
+Ravana and Sepaellae (2006) are not realistic given the data, as Doh will show
+(3). Model (4). Quadratic price adjustment costs (5). Complete asset markets of
+state contingent claims (6). Condense model into control variable/state
+variable system which is assumed stable so that it can be solved (9). Discuss
+how exactly linear approximation differs from quadratic approximation (11).
+Discusses matching model outcomes to data, specifically, GDP, inflation, and
+the interest rate (27). They compute the conditional expectations of the
+discount factor (through which bond yields are generated) by derivation of
+approximate stochastic discount factor, rather than estimating the conditional
+expectations (12-13). Discuss issues with iterating forward estimations of
+discount factor (13). Use Bayesian methods with particle filtering to estimate
+the model (14). Summarize entire system in state-space model (15). Before
+taking the model to the data, investigate how model does in generating Den
+Haan's (1995) stylized facts (20). RBC model generates negative term
+premiums(21). Empirical proxies of "level", "slope", and "curvature" generated
+from model are highly correlated with three latent factors generated by
+principal component analysis (23). Test linear model, non-linear model without
+ARCH effect and non-linear model with ARCH effect (23). All of the models do
+not generate a flat shape of the term structure of volatility (23). Inflation
+is too volatile in all three models (24). Non-linear model much better
+identifies posterior regions of persistence parameters (25). In overall
+time-series fit, the non-linear model is marginally better than the linear
+model (27). Posterior analysis shows that mean slope and mean curvature of the
+yield curve do not match the data, but the magnitude of ex-post measurement
+errors are small compared to other results in the literature (28). In order to
+get at meaning of term structure factors, instead of regressing latent term
+structure values on DSGE generated model shocks, Doh regresses actual empirical
+estimates of these term structure factors on the model shocks (29). Analysis
+associates "level" with target inflation, "slope" with the mark-up, and
+"curvature" with the transitory monetary shock (30). Other papers link "slope"
+with capacity utilization (this could integrate PK lit) (30). Monetary policy
+reaction to real disturbances is found to be singificantly positive during our
+sample period (31). Increases in target inflation are most persistent in their
+effect on interest rates, while markup is less so, and transitory monetary
+policy even less (32). Show that implied term premium is highly correlated with
+macro factors, unlike Duffee (2006) (32). Model cannot explain magnitude of TP,
+but when average values of term premium structure variables are taken jout as
+free parameters, model captures time variation in TP well (33).
 
-Hoerdahl, Tristani, and Vestin, 2007. The Yield Curve and Macroeconomic Dynamics.
+Hoerdahl, Tristani, and Vestin, 2007. The Yield Curve and Macroeconomic
+Dynamics.
 
-Demonstrate that market prices of risk are smaller(!) in a plain-vanilla model with nominal rigidities than in corresponding flexible price model. Flexible prices help by giving monetary policy a real impact and additional help with inflation indexation added (3). Four important stylzed facts, upward sloping yield curve in data, slightly downward sloping yield volatilities, highly persistenct yields, and realised excess holding period returns tends to increase with maturity (5). Model (7). Utility with habit persistence (7). Complete portfolio of state contingent assets available (7). Production function with only labor (8). Calvo contracts with inflation indexation among firms not changing prices (8). Taylor rule with interest rate indexing to previous period's rate (10). Solve the model using second-order approximation of nonlinear relationships linking logs of endogenous variables to logs of predetermined variables (11). Nominal stochastic discount factor is completely determined by (change in) marginal utility of consumption and inflation (11-12). The determinants of bond prices can they be directly decomposed (12-13). Focus on the difference between holding a bond of maturity $n$ for 3 months and the three month rate as a measurement of the term premium because the time period is the same (14). Experiment with different values of risk vaersion but only report on \gamma=6 (15). Two shocks, tech and mon policy, make model broady consistent with the empriical results (16). Show the importance of non-zero values for certain parameters, conclude that all features of the model are important (16). Price stickiness alone does not generate vast improvement in model fit (16). Standard deviation of bond yields is broadly in line with data and while excess holding returns are smaller, they generally follow the same pattern (17). For Backus, Gregory, and Zin (1989) puzzle of needed highly autocorrelated consumtpion shocks (19-20). Simple RBC model cannot generate excess holding period returns and the variance of yields at the same time (21-22). Habit formation in RBC model can solve BGZ puzzle (23-24). Need extremely high persistence of shocks to generate high long-term bond yield volatility relative to short-rate (25). Improved performance of variance of yields leads to worse performance in expected ytm (26). Differentiates between the nominal price of risk and the real price of risk (28). Show that the market price of technology risk is always lower in a sticky-price equilibrium than in a flex price equilbrium (29). Show that both habit persistence and sticky prices matter for significant term premium (31). Excess holding period returns are dominated by real premium component rather than inflation premium component (34). This is supported by TIPS data referenced from a Roll (2004) paper (35). Model is silent in time variation of risk premia (36).
+Demonstrate that market prices of risk are smaller(!) in a plain-vanilla model
+with nominal rigidities than in corresponding flexible price model. Flexible
+prices help by giving monetary policy a real impact and additional help with
+inflation indexation added (3). Four important stylzed facts, upward sloping
+yield curve in data, slightly downward sloping yield volatilities, highly
+persistenct yields, and realised excess holding period returns tends to
+increase with maturity (5). Model (7). Utility with habit persistence (7).
+Complete portfolio of state contingent assets available (7). Production
+function with only labor (8). Calvo contracts with inflation indexation among
+firms not changing prices (8). Taylor rule with interest rate indexing to
+previous period's rate (10). Solve the model using second-order approximation
+of nonlinear relationships linking logs of endogenous variables to logs of
+predetermined variables (11). Nominal stochastic discount factor is completely
+determined by (change in) marginal utility of consumption and inflation
+(11-12). The determinants of bond prices can they be directly decomposed
+(12-13). Focus on the difference between holding a bond of maturity $n$ for
+3 months and the three month rate as a measurement of the term premium because
+the time period is the same (14). Experiment with different values of risk
+vaersion but only report on \gamma=6 (15). Two shocks, tech and mon policy,
+make model broady consistent with the empriical results (16). Show the
+importance of non-zero values for certain parameters, conclude that all
+features of the model are important (16). Price stickiness alone does not
+generate vast improvement in model fit (16). Standard deviation of bond yields
+is broadly in line with data and while excess holding returns are smaller, they
+generally follow the same pattern (17). For Backus, Gregory, and Zin (1989)
+puzzle of needed highly autocorrelated consumtpion shocks (19-20). Simple RBC
+model cannot generate excess holding period returns and the variance of yields
+at the same time (21-22). Habit formation in RBC model can solve BGZ puzzle
+(23-24). Need extremely high persistence of shocks to generate high long-term
+bond yield volatility relative to short-rate (25). Improved performance of
+variance of yields leads to worse performance in expected ytm (26).
+Differentiates between the nominal price of risk and the real price of risk
+(28). Show that the market price of technology risk is always lower in
+a sticky-price equilibrium than in a flex price equilbrium (29). Show that both
+habit persistence and sticky prices matter for significant term premium (31).
+Excess holding period returns are dominated by real premium component rather
+than inflation premium component (34). This is supported by TIPS data
+referenced from a Roll (2004) paper (35). Model is silent in time variation of
+risk premia (36).
 
 Jermann, 1998. Asset Pricing in Production Economies.
 
-Tries to answer question: "What version of RBC model can reproduce business cycle fluctuations and asset market facts?" (257). Difficult to explain both consumption and asset prices because increase in risk aversion parameter leads to consumption smoothing (258). Habit formation and capital adjustment costs required for replication of business cycle frequencies and equity premium (258). Model (259). Capital adjustment costs (260). Use two utility specifications with and without habit (260). Use loglinear-lognormal approach (261). Use a priori knowledge to value all parameters except for those governing habit persistence, capital adjustment costs, time discount factor and shock persistence, which are estimated by matching the moments (264). In addition to habit persistence and capital adjustment costs, there is also shock persistence (264). Model with both habit persistence and capital adjustment costs fits the data best for relative consumption/output volatility and equity premium (265). The equity premium in the model can be divided into "payment uncertainty premium" and "term premium" (267). Adding in capital adjustment costs to habit formation makes equity premium much larger than bond premium rather than bond premium larger than equity premium in habit formation model with no capital adjustment costs (269). Standard deviation of i-rate is too high (269). Add simplistic leverage into the model which increases equity premium (271). Risk premia for long-term bonds are too high relative to equity premium in the model (272).
+Tries to answer question: "What version of RBC model can reproduce business
+cycle fluctuations and asset market facts?" (257). Difficult to explain both
+consumption and asset prices because increase in risk aversion parameter leads
+to consumption smoothing (258). Habit formation and capital adjustment costs
+required for replication of business cycle frequencies and equity premium
+(258). Model (259). Capital adjustment costs (260). Use two utility
+specifications with and without habit (260). Use loglinear-lognormal approach
+(261). Use a priori knowledge to value all parameters except for those
+governing habit persistence, capital adjustment costs, time discount factor and
+shock persistence, which are estimated by matching the moments (264). In
+addition to habit persistence and capital adjustment costs, there is also shock
+persistence (264). Model with both habit persistence and capital adjustment
+costs fits the data best for relative consumption/output volatility and equity
+premium (265). The equity premium in the model can be divided into "payment
+uncertainty premium" and "term premium" (267). Adding in capital adjustment
+costs to habit formation makes equity premium much larger than bond premium
+rather than bond premium larger than equity premium in habit formation model
+with no capital adjustment costs (269). Standard deviation of i-rate is too
+high (269). Add simplistic leverage into the model which increases equity
+premium (271). Risk premia for long-term bonds are too high relative to equity
+premium in the model (272).
 
-Gallmeyer, Hollifield, and Zin, 2005. Taylor Rules, McCallum Rules and the Term Structure of Interest Rates.
+Gallmeyer, Hollifield, and Zin, 2005. Taylor Rules, McCallum Rules and the Term
+Structure of Interest Rates.
 
-McCallum (1994) investigation into failure of expecatations hypothesis with short-rate vs. term structure (921). McCallum showed that by augmenting the expectations model with a monetary policy rule where the i-rate is sensitive to the slope of the yield curve, the model is able to match empirical facts more closely (923). "McCallum rule" (923). Ang and Piazzessi (2003) show that imposing no-arbitrage conditions in an empirical macro model can fit the data better than a model with unobserved/laten factor variables alone (923). Is a Taylor rule, responding to inflation and fundamentals equivalent to MacCullum rule responding to the term structure (924). Restate McCallum (1994) rule derviation (925). Quick derivation of yield to price relation (!!) (925). Exact McCallum rule (926). McCallum rule can account for Fama-Bliss empirical finding (927). McCallum's risk premium is exogenous, so models following his have tried to explain the risk premium (927). Use two separate models to examine theoretical underpinnings of McCallum's model: 1) Backus et. al (2001) with stochastic volatility of state variables and 2) Duffee (2002) which allows for state dependent "price of risk". Backus model (actually Duffie and Kan (1996), derive affine parameters A(n) and B(n) in terms of model parameters (929). Derive McCallum rule as a set of restrictions on the values of the parameters in the re-arranged state variables in the first order VAR (930). Stochastic volatility model (931). In stochastic model, state-dependent risk premium comes from state-dependent conditional variance of the state variables and the pricing kernal (933). In the stochastic volatility model, the risk-premium solves to an AR(1) process, just as in McCallum's specification (933). Also have stochastic "price-of-risk" model, where the price of risk itself is a function of the state variables. This is the method more akin to Bernanke and Ang and Piazzesi (2003) (934). Use NK model ala Clarida et. al (1999) to give structural relationships to state variables (936). First model is with stochastic volatility, so state variables derived are a three variable system made up of the change in the natural level of output, a state variable that can help predict the conditional volatility of the cost-push shock, and the cost-push shock (937). Monetary policy implied by this NK model leads to output gap and inflation being perfectly correlated, meaning a Taylor rule with only one factor (939). In this first model with stochastic volatility, interest rate risk premium depends on linear policy goal (939). Second macro NK model as time-varying price of risk (940). State vector in second model with stochastic price of risk is four variables, the same as the three previously mentioned, and also the previous period cost-push shock (941). In this model, the time-variation in the risk premium depends on the current growth rate in the natural level of output, the current and lagged level of the cost-push shock and the current value of the exogenous variable (943). One can re-write the interest rate response in the stochastic volatility model to a Taylor rule that is a function of expected inflation and expected natural output (943). One can do the same thing in the time-varying price of risk model, except Taylor rule also includes lagged inflation (944). The relationship between McCallum rule and the structural parameters was already laid out, so there is some connection (945). Connection is examined numerically (945). They estimate Taylor rules and McCallum's rules based on the model outcomes (945). In stochastic volatility model, can find an economy in which the McCallum rule and Taylor rule implement the same monetary policy with reasonable parameters (946). The stochastic price-of-risk model also does well, but parameters for McCallum rule are "incredible" (946). Leave this investigation to future research (!!!) (947).
+McCallum (1994) investigation into failure of expecatations hypothesis with
+short-rate vs. term structure (921). McCallum showed that by augmenting the
+expectations model with a monetary policy rule where the i-rate is sensitive to
+the slope of the yield curve, the model is able to match empirical facts more
+closely (923). "McCallum rule" (923). Ang and Piazzessi (2003) show that
+imposing no-arbitrage conditions in an empirical macro model can fit the data
+better than a model with unobserved/laten factor variables alone (923). Is
+a Taylor rule, responding to inflation and fundamentals equivalent to MacCullum
+rule responding to the term structure (924). Restate McCallum (1994) rule
+derviation (925). Quick derivation of yield to price relation (!!) (925). Exact
+McCallum rule (926). McCallum rule can account for Fama-Bliss empirical finding
+(927). McCallum's risk premium is exogenous, so models following his have tried
+to explain the risk premium (927). Use two separate models to examine
+theoretical underpinnings of McCallum's model: 1) Backus et. al (2001) with
+stochastic volatility of state variables and 2) Duffee (2002) which allows for
+state dependent "price of risk". Backus model (actually Duffie and Kan (1996),
+derive affine parameters A(n) and B(n) in terms of model parameters (929).
+Derive McCallum rule as a set of restrictions on the values of the parameters
+in the re-arranged state variables in the first order VAR (930). Stochastic
+volatility model (931). In stochastic model, state-dependent risk premium comes
+from state-dependent conditional variance of the state variables and the
+pricing kernal (933). In the stochastic volatility model, the risk-premium
+solves to an AR(1) process, just as in McCallum's specification (933). Also
+have stochastic "price-of-risk" model, where the price of risk itself is
+a function of the state variables. This is the method more akin to Bernanke and
+Ang and Piazzesi (2003) (934). Use NK model ala Clarida et. al (1999) to give
+structural relationships to state variables (936). First model is with
+stochastic volatility, so state variables derived are a three variable system
+made up of the change in the natural level of output, a state variable that can
+help predict the conditional volatility of the cost-push shock, and the
+cost-push shock (937). Monetary policy implied by this NK model leads to output
+gap and inflation being perfectly correlated, meaning a Taylor rule with only
+one factor (939). In this first model with stochastic volatility, interest rate
+risk premium depends on linear policy goal (939). Second macro NK model as
+time-varying price of risk (940). State vector in second model with stochastic
+price of risk is four variables, the same as the three previously mentioned,
+and also the previous period cost-push shock (941). In this model, the
+time-variation in the risk premium depends on the current growth rate in the
+natural level of output, the current and lagged level of the cost-push shock
+and the current value of the exogenous variable (943). One can re-write the
+interest rate response in the stochastic volatility model to a Taylor rule that
+is a function of expected inflation and expected natural output (943). One can
+do the same thing in the time-varying price of risk model, except Taylor rule
+also includes lagged inflation (944). The relationship between McCallum rule
+and the structural parameters was already laid out, so there is some connection
+(945). Connection is examined numerically (945). They estimate Taylor rules and
+McCallum's rules based on the model outcomes (945). In stochastic volatility
+model, can find an economy in which the McCallum rule and Taylor rule implement
+the same monetary policy with reasonable parameters (946). The stochastic
+price-of-risk model also does well, but parameters for McCallum rule are
+"incredible" (946). Leave this investigation to future research (!!!) (947).
 
-Lettau and Uhlig, 2000. Can Habit Formation Be Reconciled with Business Cycle Facts?
+Lettau and Uhlig, 2000. Can Habit Formation Be Reconciled with Business Cycle
+Facts?
 
-Addresses habit formation as realistic solution to asset pricing in macro models (79). With labor input and habit formation in consumption, agents respond to shocks by adjusting labor dramatically to smooth consumption (80). Adding labor smoothing results in smooth countercyclical labor but still smooth consumption (81). Habit in utility function follows Campbell and Cochrane (1995) (82). Made clear that the habit is very small percentage of consumption in the model (84). With a varying elasticity of inter-temporal substitution (EIS), there is little change in the macro-economic variables, so they fix it at steady state value for analysis (84). Habits in consumption and leisure (85). In models with and without consumption habit formation but without leisure habit, labor input adjusts much less to tech shock when there is consumption habit (88). Higher risk aversion needed to fit model if no habit formation (89). Correlations of real variables not affected much by the habit (90). Low volatility is still a problem with habit formation (90). Making changes to the values of the parameters doesn't help with increasing consumption volatility in the habit case without lessening model fit (92). Consumption increases slightly more to tech shock in model with leisure habit (94). Making consumption and leisure multiplicative in utility lessens the models ability to model asset price variability, because of negative correlation between them (97).
+Addresses habit formation as realistic solution to asset pricing in macro
+models (79). With labor input and habit formation in consumption, agents
+respond to shocks by adjusting labor dramatically to smooth consumption (80).
+Adding labor smoothing results in smooth countercyclical labor but still smooth
+consumption (81). Habit in utility function follows Campbell and Cochrane
+(1995) (82). Made clear that the habit is very small percentage of consumption
+in the model (84). With a varying elasticity of inter-temporal substitution
+(EIS), there is little change in the macro-economic variables, so they fix it
+at steady state value for analysis (84). Habits in consumption and leisure
+(85). In models with and without consumption habit formation but without
+leisure habit, labor input adjusts much less to tech shock when there is
+consumption habit (88). Higher risk aversion needed to fit model if no habit
+formation (89). Correlations of real variables not affected much by the habit
+(90). Low volatility is still a problem with habit formation (90). Making
+changes to the values of the parameters doesn't help with increasing
+consumption volatility in the habit case without lessening model fit (92).
+Consumption increases slightly more to tech shock in model with leisure habit
+(94). Making consumption and leisure multiplicative in utility lessens the
+models ability to model asset price variability, because of negative
+correlation between them (97).
 
-Campbell and Shiller, 1991. Yield spreads and interest rate movements: a bird's eye view.
+Campbell and Shiller, 1991. Yield spreads and interest rate movements: a bird's
+eye view.
 
-Broad facts are generated from yield data: when term spread is large, long-term yields tendd to fall over the life of the short-term bond (counter to expectations theory) and short-term yields tend to rise over the life of the longer-term bond (in line with expecatations theory) (496). Under expectations hypothesis, longer-term rate is the average of all future short-term rates plus a constant (496). Lay out expectation hypothesis (497). Regression tests have overlapping errors (498). Regressions are supposed to investigate whether, using an VAR(p) information set, the expected term spread on average equals the actual (499-500). The expectations hypothesis fails resoundingly, where the slope of the term structure between any two maturities gives the wrong direction of forecast ofr the change in yield of the longer-term bond over the life of the shorter-term bond (501). When term spread is used to forecast changes in short-term rate over life of long-term, the sign is of the correct size, except in comparisons of small maturities (505). Correlation using VAR to forecast theoretical spread and actual spread is often very high (505). But, spread is still too variable to accord with expecdtations model (505). There is a discrepancy, especially in longer-bond yield differences, between regressing expectations based future changes in slope of YC on actual slope and using VAR to generate expected slope and dividing that by standard deviations (505). This error may be a results of different sample sizes because of truncation in first regression or VAR p is too small (505). Run MC experiment where they feed normal errors in VAR system and replace actual term spread with expecatations theory implied term spread and then re-estimate OLS, and see if regression coefficient moves further away from one in same direction or just moves further away from one in either direction (510). Shows that VAR procedures give weak evidence that actual and theoretical spread are imperfectly correlated and stronger evidence that actual spread has higher variability than the theoretical spread (510). Use IV to test results if there is an error term in expecdtations hypothesis prediction of actual term spread (510). IV coefficients are sually more negative (510). Suggest over-reaction model of the term spread (512). Also an underreaction of model of long-rates to short-rates of Campbell and Shiller (1984) (513).
+Broad facts are generated from yield data: when term spread is large, long-term
+yields tendd to fall over the life of the short-term bond (counter to
+expectations theory) and short-term yields tend to rise over the life of the
+longer-term bond (in line with expecatations theory) (496). Under expectations
+hypothesis, longer-term rate is the average of all future short-term rates plus
+a constant (496). Lay out expectation hypothesis (497). Regression tests have
+overlapping errors (498). Regressions are supposed to investigate whether,
+using an VAR(p) information set, the expected term spread on average equals the
+actual (499-500). The expectations hypothesis fails resoundingly, where the
+slope of the term structure between any two maturities gives the wrong
+direction of forecast ofr the change in yield of the longer-term bond over the
+life of the shorter-term bond (501). When term spread is used to forecast
+changes in short-term rate over life of long-term, the sign is of the correct
+size, except in comparisons of small maturities (505). Correlation using VAR to
+forecast theoretical spread and actual spread is often very high (505). But,
+spread is still too variable to accord with expecdtations model (505). There is
+a discrepancy, especially in longer-bond yield differences, between regressing
+expectations based future changes in slope of YC on actual slope and using VAR
+to generate expected slope and dividing that by standard deviations (505). This
+error may be a results of different sample sizes because of truncation in first
+regression or VAR p is too small (505). Run MC experiment where they feed
+normal errors in VAR system and replace actual term spread with expecatations
+theory implied term spread and then re-estimate OLS, and see if regression
+coefficient moves further away from one in same direction or just moves further
+away from one in either direction (510). Shows that VAR procedures give weak
+evidence that actual and theoretical spread are imperfectly correlated and
+stronger evidence that actual spread has higher variability than the
+theoretical spread (510). Use IV to test results if there is an error term in
+expecdtations hypothesis prediction of actual term spread (510). IV
+coefficients are sually more negative (510). Suggest over-reaction model of the
+term spread (512). Also an underreaction of model of long-rates to short-rates
+of Campbell and Shiller (1984) (513).
 
-Rudebusch and Swanson, 2007. "Examining the Bond Premium Puzzle with a DSGE Model".
+Rudebusch and Swanson, 2007. "Examining the Bond Premium Puzzle with a DSGE
+Model".
 
-Additional notes. Bonds are modeled as norminal consoles with a geometric rate of decay and then use Macaulay duration to get price of appropriate bond (9). Bond risk premiums are derived from the inflation risk associated with holding the nominal bonds. If high inflation is correlated with low output (tech shock), then inflation risk premium will be higher (9). Second measure of term premium is similar to Hoerdahl, Tristani, and Vestin (2007) who focus on holding period return as a better measure of the term premium (11). They set the utility curvature higher than typical macro estimates but in line with labor lit to give higher term premium, thus more likely to match data (15). Baseline model results in term premium much smaller than in the data (17-18). Reference Hoedahl, Tristani, and Vestin (2007) and Ravenna and Seppaelae (2006) increasing the size of shocks to generate tp closer to the data (18). Increasing shock sizes to those in HTV, tp is higher and standard deviation is higher, closer to empirical estimates, but other variables suffer (18). Perform "best fit" estimation by estimating over a grid those parameters that seem to matter most to term premium (19-20). Fit is still not good for tp (20). Try replacing utility function with Campbell and Cochrane (1999) preferences rather than original one period back habit (21-22). Still unable to match level and volatility of tp, even though curvature of utility function is much higher in C-C (23). Note how difference between endowment economy and production economy is important to explaining why Wachter (2006) gets good result for C-C utility in maching tp, but RS do not (23). Try adding labor market frictions to prevent labor from adjusting quickly to shocks, making assets less risky (24). Tp level and volatility match better with C-C utility and labor market frictions, but standard deviation of of real wages goes through the roof, way beyond empirical estimates (26). Try adding real wage rigidities, but this has no effect on tp (26). Nominal wage staggering also does not help (28).
+Additional notes. Bonds are modeled as norminal consoles with a geometric rate
+of decay and then use Macaulay duration to get price of appropriate bond (9).
+Bond risk premiums are derived from the inflation risk associated with holding
+the nominal bonds. If high inflation is correlated with low output (tech
+shock), then inflation risk premium will be higher (9). Second measure of term
+premium is similar to Hoerdahl, Tristani, and Vestin (2007) who focus on
+holding period return as a better measure of the term premium (11). They set
+the utility curvature higher than typical macro estimates but in line with
+labor lit to give higher term premium, thus more likely to match data (15).
+Baseline model results in term premium much smaller than in the data (17-18).
+Reference Hoedahl, Tristani, and Vestin (2007) and Ravenna and Seppaelae (2006)
+increasing the size of shocks to generate tp closer to the data (18).
+Increasing shock sizes to those in HTV, tp is higher and standard deviation is
+higher, closer to empirical estimates, but other variables suffer (18). Perform
+"best fit" estimation by estimating over a grid those parameters that seem to
+matter most to term premium (19-20). Fit is still not good for tp (20). Try
+replacing utility function with Campbell and Cochrane (1999) preferences rather
+than original one period back habit (21-22). Still unable to match level and
+volatility of tp, even though curvature of utility function is much higher in
+C-C (23). Note how difference between endowment economy and production economy
+is important to explaining why Wachter (2006) gets good result for C-C utility
+in maching tp, but RS do not (23). Try adding labor market frictions to prevent
+labor from adjusting quickly to shocks, making assets less risky (24). Tp level
+and volatility match better with C-C utility and labor market frictions, but
+standard deviation of of real wages goes through the roof, way beyond empirical
+estimates (26). Try adding real wage rigidities, but this has no effect on tp
+(26). Nominal wage staggering also does not help (28).
 
-Rudebusch and Swanson, 2012. "The Bond-Premium in a DSGE Model with Long-Run Real and Nominal Risks".
+Rudebusch and Swanson, 2012. "The Bond-Premium in a DSGE Model with Long-Run
+Real and Nominal Risks".
 
-Discuss how non-structural consumption-inflation models can fit tp, it is important to invoke a more structural framework to understand what is really driving the term premium (106). Introduce two main changes to standard DSGE model to better model tp: 1) Epstein-zin preferences and 2) long-run real and nominal risk. Relate this to how central bank's long-run inflation objective may vary over time (107). C: Ravenna and Seppaelae (2006) and Piazzeisi and Schneider (2006) make distinction between real and nominal risk also, and find very different results for each. C: Relationship between how "inflation objective" in Wu (2005) and Doh (2007) "level" of yield curve, relates to this paper. Full specification of Epstein and Zin preferences (109). State-contingent security (113). Calvo pricing (114). Taylor rule (116). Relate inflation, consumption correlation to term premium (118). DO NOT use generalized console that is used in 2008 paper (119). use very simple alternative measures of the term premium (119-120). Use AIM perturbation methods to compute third-order approximation again as in 2008 paper (120). Solve in two steps: 1) solve for macro variables including discount factor to third order and then 2) use stochastic discount factor from first step to solve for the bond prices to third order for each mautiry ranging from 1 to 40 quarters (120). Baseline parameters, with CRRA set to 75 (121-122)! High relative risk aversion required to match asset prices (123). Because agents have perfect knowledge of the model equations, risk aversion needs to be set higher to reflect real agents lack of knowledge about the actual model governing the economy (123). Building on model from 2008, but changing utility to Epstein-Zin preferences, the model's fit of macro data is just as good, but the tp is a lot higher (125). High risk-aversion of 110(!) is required for model to fit data in "best-fit" approximation (127). In the model, IRF show that a tech shock results in an increase in consumption but a decrease in inflation, so long-term bond is risky, so term premium goes up (128). The tech-shock is by far the most important of the three shocks for changes in the term premium (129). The yield curve slopes upward (129). Substantial endogenous heteroskedasticity is produced by E-Z preferences, leading to time-varying term premia (130). Third order discount factor is more volatile and more heteroskedsatic than the linearized stochastic discount factor (130). Show that it is the third-order appoximation of the discount factor more than any other variable by using first-order for all of the others (131). Large E-Z coefficient is what drives the heteroskedasticity (132). Adding long-run productivity risk does not help to get tp wihtout high risk-aversion (133). Introduce long-term inflation risk as another explanation (134). Term premium is in fact always higher when long-run inflation risk is introduced (135). Best fit with long-run inflation risk still has really high risk-aversion (136). Note that term premium lessens when central bank no longer responds to output and responds more and more strongly to inflation, flattening the yield curve (137).
+Discuss how non-structural consumption-inflation models can fit tp, it is
+important to invoke a more structural framework to understand what is really
+driving the term premium (106). Introduce two main changes to standard DSGE
+model to better model tp: 1) Epstein-zin preferences and 2) long-run real and
+nominal risk. Relate this to how central bank's long-run inflation objective
+may vary over time (107). C: Ravenna and Seppaelae (2006) and Piazzeisi and
+Schneider (2006) make distinction between real and nominal risk also, and find
+very different results for each. C: Relationship between how "inflation
+objective" in Wu (2005) and Doh (2007) "level" of yield curve, relates to this
+paper. Full specification of Epstein and Zin preferences (109).
+State-contingent security (113). Calvo pricing (114). Taylor rule (116). Relate
+inflation, consumption correlation to term premium (118). DO NOT use
+generalized console that is used in 2008 paper (119). use very simple
+alternative measures of the term premium (119-120). Use AIM perturbation
+methods to compute third-order approximation again as in 2008 paper (120).
+Solve in two steps: 1) solve for macro variables including discount factor to
+third order and then 2) use stochastic discount factor from first step to solve
+for the bond prices to third order for each mautiry ranging from 1 to 40
+quarters (120). Baseline parameters, with CRRA set to 75 (121-122)! High
+relative risk aversion required to match asset prices (123). Because agents
+have perfect knowledge of the model equations, risk aversion needs to be set
+higher to reflect real agents lack of knowledge about the actual model
+governing the economy (123). Building on model from 2008, but changing utility
+to Epstein-Zin preferences, the model's fit of macro data is just as good, but
+the tp is a lot higher (125). High risk-aversion of 110(!) is required for
+model to fit data in "best-fit" approximation (127). In the model, IRF show
+that a tech shock results in an increase in consumption but a decrease in
+inflation, so long-term bond is risky, so term premium goes up (128). The
+tech-shock is by far the most important of the three shocks for changes in the
+term premium (129). The yield curve slopes upward (129). Substantial endogenous
+heteroskedasticity is produced by E-Z preferences, leading to time-varying term
+premia (130). Third order discount factor is more volatile and more
+heteroskedsatic than the linearized stochastic discount factor (130). Show that
+it is the third-order appoximation of the discount factor more than any other
+variable by using first-order for all of the others (131). Large E-Z
+coefficient is what drives the heteroskedasticity (132). Adding long-run
+productivity risk does not help to get tp wihtout high risk-aversion (133).
+Introduce long-term inflation risk as another explanation (134). Term premium
+is in fact always higher when long-run inflation risk is introduced (135). Best
+fit with long-run inflation risk still has really high risk-aversion (136).
+Note that term premium lessens when central bank no longer responds to output
+and responds more and more strongly to inflation, flattening the yield curve
+(137).
 
-Diebold, Rudebusch, and Aruoba, 2006. "The macroeconomy and the yield curve: a dynamic latent factor approach."
+Diebold, Rudebusch, and Aruoba, 2006. "The macroeconomy and the yield curve:
+a dynamic latent factor approach."
 
-Attempts to bridge the gap between macro models of term structure and financial models (related to Cochrane (2005) observation) (310). Latent factor model of term structure (310). Ha both macro-to-yield and yield-to-macro directional causality (310). First introduce 3 factor model with no macro variables of yield curves, summarized using Nelson and Siegel (1987) curve (312). Kalman filter can be used to estimate the Nelson-Siegel form (313). Estimate non-macro model, 36 free parameters (315). Fits yield curve remarkbly well without macro variables (317). Link first factor to YC level, then to inflation, assigned by the factor equation (319). Link second factor to slope and then to capacity utilization, related to cyclical fluctuations (319). Include manufacturing capacity utilization, federal funds rate, and price inflation as three variables (320). Macro-yield system fits just as well (321). Close connection between slope factor and federal funds rate, increase in "slope" leads to increase in federal funds rate (324). Increase in "level" leads to increase in utilization, federal funds rate, and inflation. So, "level" is probably related to long-run inflation expectations (324). Change in macro variables leads to change in "slope" and "level" (324). Increase in federal funds rate leads to increase in "level", calling into question central bank credibility (325). Variance decomposition shows that "slope" is actually macro variables (325). Variance decomposition suggests that impact of yield curve on macro vars is less important than the effect of macro variables on the yield curve (326). But, bidirectional effects are both significant (328). There are large deviations from expectations hypothesis, but they move together most of the time, examined by iterating forward the macro model (332-333). Illiquidity at longer maturities (333).
+Attempts to bridge the gap between macro models of term structure and financial
+models (related to Cochrane (2005) observation) (310). Latent factor model of
+term structure (310). Ha both macro-to-yield and yield-to-macro directional
+causality (310). First introduce 3 factor model with no macro variables of
+yield curves, summarized using Nelson and Siegel (1987) curve (312). Kalman
+filter can be used to estimate the Nelson-Siegel form (313). Estimate non-macro
+model, 36 free parameters (315). Fits yield curve remarkbly well without macro
+variables (317). Link first factor to YC level, then to inflation, assigned by
+the factor equation (319). Link second factor to slope and then to capacity
+utilization, related to cyclical fluctuations (319). Include manufacturing
+capacity utilization, federal funds rate, and price inflation as three
+variables (320). Macro-yield system fits just as well (321). Close connection
+between slope factor and federal funds rate, increase in "slope" leads to
+increase in federal funds rate (324). Increase in "level" leads to increase in
+utilization, federal funds rate, and inflation. So, "level" is probably related
+to long-run inflation expectations (324). Change in macro variables leads to
+change in "slope" and "level" (324). Increase in federal funds rate leads to
+increase in "level", calling into question central bank credibility (325).
+Variance decomposition shows that "slope" is actually macro variables (325).
+Variance decomposition suggests that impact of yield curve on macro vars is
+less important than the effect of macro variables on the yield curve (326).
+But, bidirectional effects are both significant (328). There are large
+deviations from expectations hypothesis, but they move together most of the
+time, examined by iterating forward the macro model (332-333). Illiquidity at
+longer maturities (333).
 
-Rudebusch and Wu, 2004. "A Macro-Finance Model of the Term Structure, Monetary Policy, and the Economy."
+Rudebusch and Wu, 2004. "A Macro-Finance Model of the Term Structure, Monetary
+Policy, and the Economy."
 
-Use two unobserved latent factors rather than 3 in macro-finance and yields-only affine models of the term structure (2). Two seems fine for short-sample 1988-2000 (2). Related two factors to "level" and "slope" (6). Show suggestive evidence that "level" corresponds to inflation expectations and connect this monetary policy inflation target (8). C: could relate this to Diebold, Rudebusch, and Aruoba, 2006, who suggest that monetary policy may not be "credible". Related "slope" factor to cyclical factor that enters Taylor rule in current inflation and output gap factors (10). Integrate structural relationships into estimation of macro-finance model with unobserved latent factors (15). Risk premium components of long rates does not effect output (!!) (15). "Level" and "slope" and macro-finance factors are highly correlated, but have different IRFs (16-17). Important distinction is that monetary policy intertia is not shown to hold, but instead monetary policy responds to persistent, unknown shocks (17). "Level" shock has much more effect on longer maturities and "slope" shock opposite (18-19). C: Avenue for research may be figuring out what the unknown persistent factors are that enter monetary policy decision function (23).
+Use two unobserved latent factors rather than 3 in macro-finance and
+yields-only affine models of the term structure (2). Two seems fine for
+short-sample 1988-2000 (2). Related two factors to "level" and "slope" (6).
+Show suggestive evidence that "level" corresponds to inflation expectations and
+connect this monetary policy inflation target (8). C: could relate this to
+Diebold, Rudebusch, and Aruoba, 2006, who suggest that monetary policy may not
+be "credible". Related "slope" factor to cyclical factor that enters Taylor
+rule in current inflation and output gap factors (10). Integrate structural
+relationships into estimation of macro-finance model with unobserved latent
+factors (15). Risk premium components of long rates does not effect output (!!)
+(15). "Level" and "slope" and macro-finance factors are highly correlated, but
+have different IRFs (16-17). Important distinction is that monetary policy
+intertia is not shown to hold, but instead monetary policy responds to
+persistent, unknown shocks (17). "Level" shock has much more effect on longer
+maturities and "slope" shock opposite (18-19). C: Avenue for research may be
+figuring out what the unknown persistent factors are that enter monetary policy
+decision function (23).
 
-Bauer and Rudebusch, 2011. "The Signaling Channel for Federal Reseve Bond Purchases".
+Bauer and Rudebusch, 2011. "The Signaling Channel for Federal Reseve Bond
+Purchases".
 
-Already been shown that large scale asset purchases (LSAPs) had significant impact on longer-term yields (1). LSAP could have led to decrease in tp (portfolio balance channel) or decrease in average level of short-term risk-free i-rate over the maturity of the bond (signaling channel) (1). C: How does the separation of the different components of the term premium relate to Piazzesi and Schneider (2006) separation of the term premium into real and nominal risk (5). Portfolio balance channel focuses on quantities, thus going against mainstream frictionless finance theory (6). Importance of signalling window period and secrecy of information before release (7). Portfolio balance effect and signalling effect are not mutually exclusive even if the other is ruled out (8). Downward bias in estimate of signalling effet (9). Through non-model event analysis of changes in short-term rates and money-market futures, LSAP events all have significant effect on future interest rate expectations (11). OIS rates respond even more strongly than yields (12). Largest root in AR models for persistent time series is generally under-estimated, so mean reversion is over-estimated, so risk-neutral rates are too stable and too much variation is attributed to the term premium (13). Use Bayesian method of Bauer (2011) to generate risk pricing restrictions (15). Adjusted estimates imply a much larger role played by the expectations component rather than the term premium component (17). All the methods have a lot of uncertainty regarding the contribution of each (17). Median-unbaised method results in much larger role of the expectations component for longer-maturity bond yields than OLS (18). In the end they challenge GRRS's (Gagnon, et al.) conclusion that the Fed's LSAP program has mostly worked through a porfolio balance channel (21).
+Already been shown that large scale asset purchases (LSAPs) had significant
+impact on longer-term yields (1). LSAP could have led to decrease in tp
+(portfolio balance channel) or decrease in average level of short-term
+risk-free i-rate over the maturity of the bond (signaling channel) (1). C: How
+does the separation of the different components of the term premium relate to
+Piazzesi and Schneider (2006) separation of the term premium into real and
+nominal risk (5). Portfolio balance channel focuses on quantities, thus going
+against mainstream frictionless finance theory (6). Importance of signalling
+window period and secrecy of information before release (7). Portfolio balance
+effect and signalling effect are not mutually exclusive even if the other is
+ruled out (8). Downward bias in estimate of signalling effet (9). Through
+non-model event analysis of changes in short-term rates and money-market
+futures, LSAP events all have significant effect on future interest rate
+expectations (11). OIS rates respond even more strongly than yields (12).
+Largest root in AR models for persistent time series is generally
+under-estimated, so mean reversion is over-estimated, so risk-neutral rates are
+too stable and too much variation is attributed to the term premium (13). Use
+Bayesian method of Bauer (2011) to generate risk pricing restrictions (15).
+Adjusted estimates imply a much larger role played by the expectations
+component rather than the term premium component (17). All the methods have
+a lot of uncertainty regarding the contribution of each (17). Median-unbaised
+method results in much larger role of the expectations component for
+longer-maturity bond yields than OLS (18). In the end they challenge GRRS's
+(Gagnon, et al.) conclusion that the Fed's LSAP program has mostly worked
+through a porfolio balance channel (21).
 
-Gagnon, Raskin, Remache, and Sack, 2011. "Large-Scale Asset Purchases by the Federal Reserve: Did They Work?"
+Gagnon, Raskin, Remache, and Sack, 2011. "Large-Scale Asset Purchases by the
+Federal Reserve: Did They Work?"
 
-Find that the LSAPs lowered rates and did this mostly through lowering the term premium rather than lowering expectations of future short term rates (42). Portfolio balance effect (42). Good explanation of portfolio balance risk (42). Liquidity channel played important role atthe beginning stages, but portfolio balance effect was probably primary role throughout all events (43). Purchases were not intended to distort the yield curve (45). Rates tend to move as expected in event study analysis (50). Ten-year treasury rate responds much more strongly than 2-year treasury rate, so they make the case that the term premium was the path of rate reduction (50). Results are sensitive to expanding response window to 2-days and expanding relevant windows (50-51). Regression results support results (55-56).
+Find that the LSAPs lowered rates and did this mostly through lowering the term
+premium rather than lowering expectations of future short term rates (42).
+Portfolio balance effect (42). Good explanation of portfolio balance risk (42).
+Liquidity channel played important role atthe beginning stages, but portfolio
+balance effect was probably primary role throughout all events (43). Purchases
+were not intended to distort the yield curve (45). Rates tend to move as
+expected in event study analysis (50). Ten-year treasury rate responds much
+more strongly than 2-year treasury rate, so they make the case that the term
+premium was the path of rate reduction (50). Results are sensitive to expanding
+response window to 2-days and expanding relevant windows (50-51). Regression
+results support results (55-56).
 
-D'Amico and King, 2011. "Flow and Stock Effects of Large-Scale Treasury Purchases."
+D'Amico and King, 2011. "Flow and Stock Effects of Large-Scale Treasury
+Purchases."
 
-LSAP program rested in part on assumption that prices were influenced by asset quantities available to the public (2). Use CUSIP level data (2). Also able to distinguish between the flow and stock effects of LSAP interventions (3). LSAP purchases seemed to target "underpriced" securities (6). Affine function derived from Brownian motion (7). Offer preferred habitat as driver of term premium in LSAP intervention, where investors have demand for assets of specific maturity (10). Define three different substitute buckets for securities (12). Use 2SLS to correct for specific targeting of assets that had low yields (14). Stock effects are statistically significant (15). Present counter-factual yield curve (17). Flow effects were significant but short-lived for notes but significant and longer-lived for bonds (21). Importance of preferred habitat and portfolio-balance effect for statistically signficant coefficients and success of LSAP program (23).
+LSAP program rested in part on assumption that prices were influenced by asset
+quantities available to the public (2). Use CUSIP level data (2). Also able to
+distinguish between the flow and stock effects of LSAP interventions (3). LSAP
+purchases seemed to target "underpriced" securities (6). Affine function
+derived from Brownian motion (7). Offer preferred habitat as driver of term
+premium in LSAP intervention, where investors have demand for assets of
+specific maturity (10). Define three different substitute buckets for
+securities (12). Use 2SLS to correct for specific targeting of assets that had
+low yields (14). Stock effects are statistically significant (15). Present
+counter-factual yield curve (17). Flow effects were significant but short-lived
+for notes but significant and longer-lived for bonds (21). Importance of
+preferred habitat and portfolio-balance effect for statistically signficant
+coefficients and success of LSAP program (23).
 
-Kozicki, Santor, and Suchanek, prelim 2012. "The Impact of Large Scale Asset Purchases on Commodity Prices".
+Kozicki, Santor, and Suchanek, prelim 2012. "The Impact of Large Scale Asset
+Purchases on Commodity Prices".
 
-Conclude that LSAP's do not appear to have a measurable impact on overall commodity prices, positive spill-over effects into commodity exporter currencies and stock markets, and commodity prices have becomes more sensitive to macroeconomic shocks during LSAP periods (3). Five transmission channels from monetary policy to commodity prices, including portfolio re-allocation, inventory demand, exchange rate depreciation, supply restrictions, and economic growth (4). Event study approach complicated by contemporaneous measures and effects, ongoing nature of the crisis, (country) selection bias, policy lags, and fiscal policy (amplified through abnormal monetary policy conditions) (6). Use constant mean return model to investigate abnormal returns on event announcement dates (6-7). Use futures prices rather than spot prices because of 1) London time-lag trading of commodity spot prices and 2) spot prices are correlated with futures price on following day (7). Use daily data and log of change in commodity prices (return) to measure announcement effects (8). LSAP round 1 had no measurable effect on commodity prices, with only 13 out 80 commodities and events with effect significantly different from zero (10). Similar conclusion for LSAP round 2 and round 3 (11). Also examine movement of exchange rates (12). Effects are mostly as expected and significant (13). Because of expectations of relaxes monetary policy, macroeconomic surprises will have a potentially larger impact on commodity prices (13). Oil prices seem to respond more drastically during LSAP period (14).
+Conclude that LSAP's do not appear to have a measurable impact on overall
+commodity prices, positive spill-over effects into commodity exporter
+currencies and stock markets, and commodity prices have becomes more sensitive
+to macroeconomic shocks during LSAP periods (3). Five transmission channels
+from monetary policy to commodity prices, including portfolio re-allocation,
+inventory demand, exchange rate depreciation, supply restrictions, and economic
+growth (4). Event study approach complicated by contemporaneous measures and
+effects, ongoing nature of the crisis, (country) selection bias, policy lags,
+and fiscal policy (amplified through abnormal monetary policy conditions) (6).
+Use constant mean return model to investigate abnormal returns on event
+announcement dates (6-7). Use futures prices rather than spot prices because of
+1) London time-lag trading of commodity spot prices and 2) spot prices are
+correlated with futures price on following day (7). Use daily data and log of
+change in commodity prices (return) to measure announcement effects (8). LSAP
+round 1 had no measurable effect on commodity prices, with only 13 out 80
+commodities and events with effect significantly different from zero (10).
+Similar conclusion for LSAP round 2 and round 3 (11). Also examine movement of
+exchange rates (12). Effects are mostly as expected and significant (13).
+Because of expectations of relaxes monetary policy, macroeconomic surprises
+will have a potentially larger impact on commodity prices (13). Oil prices seem
+to respond more drastically during LSAP period (14).
 
-Kim and Orphanides, 2005. "Term Structure Estimation with Survey Data on Interest Rate Forecasts."
+Kim and Orphanides, 2005. "Term Structure Estimation with Survey Data on
+Interest Rate Forecasts."
 
-Find that adding in survey forecasts of short-run interest rate help produce stable and sensible results for 3-factor Gaussian model, alleviating common problems of estimating conventional model (2). Small sample issues in estimating term structure (3). Perceptions of the long-run neutral ff rate have changed significantly over time (4). Sample used (going back to 1990 vs. 1965) leads to very different affine model estimates of the expected path of the short-rate, with 1990s data contributing to much more stable path estimate vs. 1965 (9). In estimation, set some of the parameters with large standard errors to zero (11). The risk is real that different researchers could arrive at different model specifications with minor differences in data, differences in initial parameter guesses, and different choices in reducing dimensionality (11). Advocate using survey data to supplant restricted sample to more robustly estimate model parameters (13). Using survey estimates from Blue-Chip survey, expectations hypothesis results in larger forecasting errors relative to survey results than random walk forecast (15). Add two survey measures to observation vector (17). Adding survey estimates increases robustness of estimates and also decreases necessary size of sample (21). There are a lot of similarities between the model estimated with the 1990 data with survey estimates and the model estimated without survey information using data going back to 1965 (23). Deviations from the Expectations Hypothesis are reinforced by simulations in the model (29-30). Expectations implied by survey are in line with model but not in line expectations hypothesis (31). Generate Monte Carlo simulations of survey values to test model (33). Their conclusion that survey estimates improve the ability of the model to match empirical estimates of expectations holds to these tests (34-36). C: Maybe cool to use real-time macro variables instead of survey rate expectations to test ability of model to match moments of data (36).
+Find that adding in survey forecasts of short-run interest rate help produce
+stable and sensible results for 3-factor Gaussian model, alleviating common
+problems of estimating conventional model (2). Small sample issues in
+estimating term structure (3). Perceptions of the long-run neutral ff rate have
+changed significantly over time (4). Sample used (going back to 1990 vs. 1965)
+leads to very different affine model estimates of the expected path of the
+short-rate, with 1990s data contributing to much more stable path estimate vs.
+1965 (9). In estimation, set some of the parameters with large standard errors
+to zero (11). The risk is real that different researchers could arrive at
+different model specifications with minor differences in data, differences in
+initial parameter guesses, and different choices in reducing dimensionality
+(11). Advocate using survey data to supplant restricted sample to more robustly
+estimate model parameters (13). Using survey estimates from Blue-Chip survey,
+expectations hypothesis results in larger forecasting errors relative to survey
+results than random walk forecast (15). Add two survey measures to observation
+vector (17). Adding survey estimates increases robustness of estimates and also
+decreases necessary size of sample (21). There are a lot of similarities
+between the model estimated with the 1990 data with survey estimates and the
+model estimated without survey information using data going back to 1965 (23).
+Deviations from the Expectations Hypothesis are reinforced by simulations in
+the model (29-30). Expectations implied by survey are in line with model but
+not in line expectations hypothesis (31). Generate Monte Carlo simulations of
+survey values to test model (33). Their conclusion that survey estimates
+improve the ability of the model to match empirical estimates of expectations
+holds to these tests (34-36). C: Maybe cool to use real-time macro variables
+instead of survey rate expectations to test ability of model to match moments
+of data (36).
 
-Kim and Wright, 2005. "An arbitrage-free three-factor term structure model and the recent behavior of long-term yields and distant-horizon forward rates".
+Kim and Wright, 2005. "An arbitrage-free three-factor term structure model and
+the recent behavior of long-term yields and distant-horizon forward rates".
 
-Attribute increase in demand for longer-term securities that accompanied federal funds rate increases leading to flattening of yield curve to 1) better anchored inflation expectations and a reduction of volatility of real activity, 2) increased international interest in long-term safe securities 3) pension reform leading to higher demand for duration 4) lower business capital spending relative to profits 5) aging demographic seeking safer yields 6) low supply of corporate longer-term fixed income securities (2-5). 3-Factor arbitrage free term structure model (5). C: Use of the Kalman filter does not require the assumption that some of the yields are matched without error (10-11). Estimated forward term premium has been falling since 1990 (12). Correlation between their term premium estimate and other empirical estimates (13). Introduce specification that connects inflation to the factors (15-16). Using the model, find that both the real term premium and the nominal term premium have gotten much lower (17).
+Attribute increase in demand for longer-term securities that accompanied
+federal funds rate increases leading to flattening of yield curve to 1) better
+anchored inflation expectations and a reduction of volatility of real activity,
+2) increased international interest in long-term safe securities 3) pension
+reform leading to higher demand for duration 4) lower business capital spending
+relative to profits 5) aging demographic seeking safer yields 6) low supply of
+corporate longer-term fixed income securities (2-5). 3-Factor arbitrage free
+term structure model (5). C: Use of the Kalman filter does not require the
+assumption that some of the yields are matched without error (10-11). Estimated
+forward term premium has been falling since 1990 (12). Correlation between
+their term premium estimate and other empirical estimates (13). Introduce
+specification that connects inflation to the factors (15-16). Using the model,
+find that both the real term premium and the nominal term premium have gotten
+much lower (17).
 
-Ang and Piazzesi, 2003. "A no-arbitrage vector autoregression of term structure dynamics with macroeconomic and latent variables".
+Ang and Piazzesi, 2003. "A no-arbitrage vector autoregression of term structure
+dynamics with macroeconomic and latent variables".
 
-Use a combination of three unobserved latent factors and two "macro" variables that are based on principal components of a group of inflation variables and real activity variables (751).
+Use a combination of three unobserved latent factors and two "macro" variables
+that are based on principal components of a group of inflation variables and
+real activity variables (751).
 
-Orphanides and Wei, 2010. "Evolving Macroeconomic perceptions and the Term Structure of Interest Rates".
+Orphanides and Wei, 2010. "Evolving Macroeconomic perceptions and the Term
+Structure of Interest Rates".
 
-Use multiple models VAR-based affine models of the term structure to investigate role of moving perceptions of macro vars and their influence on the term structure. Make the case that a fixed coefficient system is the reason that simple regressions of lagged term structure variables are unable to fit output and inflation well (4). Using expected values increases the explanative power of the term structure regression significantly (4). VAR model and term structure model (6). Estimate the VAR mean and other parameters in two separate steps (6). Examine both models with all observed factors and same observed factors with one unobserved latent factor, but latent factor can only influence yields through the term premium component, not expectations of future yields (8). Test several different models, including only measuring the drift term using the rolling sample (rather than both drift, parameter, and volatility estimates), and one with latent factors, a base-line model, the model mentioned above, and a model supplemented with survey data (9). Two-step estimation procedure (9). While VAR parameter estimates are similar between baseline model and suggested model, the prices of risk are generally negative in baseline model (strange) but positive in suggested model (11). Model short-horizon results much better results baseline model, but long-horizon better in suggested model, while survey-adjusted suggested model further aligns model at all horizons and sample periods (12). The baseline model (FC) also exhibits mean-reversion that is too quick to predict longer-maturity yields, while suggested model (TVC) and survey-adjusted suggested model (TVC-S) do not exhibit this mean reversion (13). Out of sample forecasting (14). Differential responses to real growth and inflation shocks depending on period result in differential estimates of roles of EH and term premium components (15). Analysis of PVC model show that time variation in both drift and paramters/volatility is important to fitting data (17-18). Single latent factor improves the fit of the TVC model (TVC-L). Term premium shows more high frequency variation in TVC-L model (18). The latent factor absorbs much more of the variation in the FC model compared to the TVC model (-L).
+Use multiple models VAR-based affine models of the term structure to
+investigate role of moving perceptions of macro vars and their influence on the
+term structure. Make the case that a fixed coefficient system is the reason
+that simple regressions of lagged term structure variables are unable to fit
+output and inflation well (4). Using expected values increases the explanative
+power of the term structure regression significantly (4). VAR model and term
+structure model (6). Estimate the VAR mean and other parameters in two separate
+steps (6). Examine both models with all observed factors and same observed
+factors with one unobserved latent factor, but latent factor can only influence
+yields through the term premium component, not expectations of future yields
+(8). Test several different models, including only measuring the drift term
+using the rolling sample (rather than both drift, parameter, and volatility
+estimates), and one with latent factors, a base-line model, the model mentioned
+above, and a model supplemented with survey data (9). Two-step estimation
+procedure (9). While VAR parameter estimates are similar between baseline model
+and suggested model, the prices of risk are generally negative in baseline
+model (strange) but positive in suggested model (11). Model short-horizon
+results much better results baseline model, but long-horizon better in
+suggested model, while survey-adjusted suggested model further aligns model at
+all horizons and sample periods (12). The baseline model (FC) also exhibits
+mean-reversion that is too quick to predict longer-maturity yields, while
+suggested model (TVC) and survey-adjusted suggested model (TVC-S) do not
+exhibit this mean reversion (13). Out of sample forecasting (14). Differential
+responses to real growth and inflation shocks depending on period result in
+differential estimates of roles of EH and term premium components (15).
+Analysis of PVC model show that time variation in both drift and
+paramters/volatility is important to fitting data (17-18). Single latent factor
+improves the fit of the TVC model (TVC-L). Term premium shows more high
+frequency variation in TVC-L model (18). The latent factor absorbs much more of
+the variation in the FC model compared to the TVC model (-L).
 
 Duffie and Kan, 1996. "A yield-factor model of interest rates".
 
-Full derivation of assumptions needed for unique solution to affine model of term structure (383-386). Ricatti equation (385). Gauss-Markov process (387). Need sufficient positive drift in order for weights on shock process to never be zerio (388). This leads to theorem where there is a unique (strong) solution X in D to the stochastic differential equation governing the process that governs the yields (388). Definitions of different types of term structure models (388-389). "In practice, however, we have encountered no problem in fixing the coefficients in \sigma and then adjusting the drift coefficients so as to obtain consistency, at least in two-factor implementations" (389). Equivalent martingale measure is also known as risk-neutral measure (392, from wiki). Solution method (394). Use a combination of Newton-Raphsoin and the ADI alogrithm to attempt to solve the system (395). Jump-diffusion state process (397).
+Full derivation of assumptions needed for unique solution to affine model of
+term structure (383-386). Ricatti equation (385). Gauss-Markov process (387).
+Need sufficient positive drift in order for weights on shock process to never
+be zerio (388). This leads to theorem where there is a unique (strong) solution
+X in D to the stochastic differential equation governing the process that
+governs the yields (388). Definitions of different types of term structure
+models (388-389). "In practice, however, we have encountered no problem in
+fixing the coefficients in \sigma and then adjusting the drift coefficients so
+as to obtain consistency, at least in two-factor implementations" (389).
+Equivalent martingale measure is also known as risk-neutral measure (392, from
+wiki). Solution method (394). Use a combination of Newton-Raphsoin and the ADI
+alogrithm to attempt to solve the system (395). Jump-diffusion state process
+(397).
 
-Bauer, Rudebusch, and Wu, 2012. "Correcting Estimation Bias in Dynamic Term Structure Models".
+Bauer, Rudebusch, and Wu, 2012. "Correcting Estimation Bias in Dynamic Term
+Structure Models".
 
-References many local optima found in ML estimated solutions to dynamic term structure models (DTSM) (454). Use Joslin, Singleton, and Zhu (2011) as a reference model (455). They are essentially trying to overcome the small sample bias found in estimation of DTSM that results in underestimation of the persistence of the data generating process (455). Define affine model setup and general solution approach (456).
+References many local optima found in ML estimated solutions to dynamic term
+structure models (DTSM) (454). Use Joslin, Singleton, and Zhu (2011) as
+a reference model (455). They are essentially trying to overcome the small
+sample bias found in estimation of DTSM that results in underestimation of the
+persistence of the data generating process (455). Define affine model setup and
+general solution approach (456).
 
 ABM papers
 
-Goldstein, Jon. "An Agent-Based Model of the Interaction between the Housing and RMBS Markets".
+Goldstein, Jon. "An Agent-Based Model of the Interaction between the Housing
+and RMBS Markets".
 
-Multiple hypothesis for main problem behind crisis: originate-to-distribute hypothesis, subprime mortgage terms hypothesis, and a hypothesis based on lack of regulation of the banking sector (1). Agents in the model are households, investors, a central bank, and financial institutions. Model also contains other objects which are houses, loans, RMBS, and RMBS shares (4). Model logic for households (5). Loan approval process (7). RMBS have two tranches: senior and junior (7). Investors look back to determine average rate of return on RMBS, influencing decision to purchase RMBS for their portfolio (8). In model, housing prices do spike with general downward movement in federal funds rate (10). RMBS shares have higher rates of return during housing price appreciation, but become negative after bubble bursts (12). Remove RMBS market and find that market loses liquidity, household leverage is lower, and housing pricing bubble increase is much less (12-13). In the model, the easy access to liquid assets through securitization is the primary driver of the large housing price bubble, not a decrease in lending standards (14). Suggestions for extensions, including more accurate modeling of lending standards  (14).
+Multiple hypothesis for main problem behind crisis: originate-to-distribute
+hypothesis, subprime mortgage terms hypothesis, and a hypothesis based on lack
+of regulation of the banking sector (1). Agents in the model are households,
+investors, a central bank, and financial institutions. Model also contains
+other objects which are houses, loans, RMBS, and RMBS shares (4). Model logic
+for households (5). Loan approval process (7). RMBS have two tranches: senior
+and junior (7). Investors look back to determine average rate of return on
+RMBS, influencing decision to purchase RMBS for their portfolio (8). In model,
+housing prices do spike with general downward movement in federal funds rate
+(10). RMBS shares have higher rates of return during housing price
+appreciation, but become negative after bubble bursts (12). Remove RMBS market
+and find that market loses liquidity, household leverage is lower, and housing
+pricing bubble increase is much less (12-13). In the model, the easy access to
+liquid assets through securitization is the primary driver of the large housing
+price bubble, not a decrease in lending standards (14). Suggestions for
+extensions, including more accurate modeling of lending standards  (14).
 
-Thurner, Stefan. "Systemic financial risk: agent based models to understand the leverage cycle on national scales and its consequences."
+Thurner, Stefan. "Systemic financial risk: agent based models to understand the
+leverage cycle on national scales and its consequences."
 
-Measurements of leverage (12-13). Dangers of leverage especially during bubbles (13-14). Crowd behavior and price movements in financial markets (14). Use ABM to model movements in shares of value vs. trend investors (15). Hedging collateral and hedging credit (17). Leverage cycle occuring from 1999 to 2006 (18). Three ways for governments to de-leverage 1) default, 2) inflate their debt away, or 3) decrease spending and increase production and efficiency (19). Difficult to model systemic risk resulting agglomerated agent decisions in models dependent only on past behavior (21). Basle I and II both ignore systemic effects such as synchronization and feedback (22). Model assumes a collection of agents: investors in financial assets, banks, investors to investment companies and regulators (23). Three types of investors: informed investors, poorly uninformed investors, and investors in investment companies (23). Informed investors are hedge funds, mutual funds, or investment banks that base their investment decisions on research (23). Second type of investors, poorly- or uninformed investors place basically random orders (demands) but trends towards the 'true price' of the asset (24). Third kind of investors invest in investment firms such as mutual funds or hedge funds (24). Banks offer credit to investors to leverage speculative investments (25). Regulators are modelled as a framework which governs maximum leverage amount (25). The hedge funds (first type of investor) in the model are long only (27). Funds that default exit the scenario, but are replaced by a new fund a certain number of time periods later (32). Values of parameters, fixed and varying (33-34). Simulation results, showing that up to leverage threshold, more aggressive funds perform better, but not true if leverage threshold is increased (35). As shown by example fund, market impact begins to become a factor when fund become sufficiently large (36). Model produces clustered volatility in prices (41). An increase in the maximum leverage, \lambda^{MAX}, increase autocorrelation of fluctuations (41). In example, a crash is triggered by a trivial seemingly irrelevant event (44). Regulation helps to increase returns (45-46). Math for how increased leverage increases volatility (48). Examine lender monitoring volitility of collateral (48). Active managing of leverage as a function of collateral volatility leads to fewer defaults and smaller total losses of system (52). The defaults actually increase with the active managing when \lambda^{MAX} is high (52). Implement regulatory capital requirements (52). For unaggressive funds, regulation lowers default rates, but for aggressive funds, regulation increases default rates because of aggressive funds suffering more severely from loan re-calls (53). High leverage in general leads to more volatility in the market (55). Future research questions (56). Linking economic outcomes with social unrest (57). Full information of all market portfolios and lender-lendee decisions must be made public to break up synchonization of events (59). Central banks could serve as the role of communicating this information to all parties (60).
+Measurements of leverage (12-13). Dangers of leverage especially during bubbles
+(13-14). Crowd behavior and price movements in financial markets (14). Use ABM
+to model movements in shares of value vs. trend investors (15). Hedging
+collateral and hedging credit (17). Leverage cycle occuring from 1999 to 2006
+(18). Three ways for governments to de-leverage 1) default, 2) inflate their
+debt away, or 3) decrease spending and increase production and efficiency (19).
+Difficult to model systemic risk resulting agglomerated agent decisions in
+models dependent only on past behavior (21). Basle I and II both ignore
+systemic effects such as synchronization and feedback (22). Model assumes
+a collection of agents: investors in financial assets, banks, investors to
+investment companies and regulators (23). Three types of investors: informed
+investors, poorly uninformed investors, and investors in investment companies
+(23). Informed investors are hedge funds, mutual funds, or investment banks
+that base their investment decisions on research (23). Second type of
+investors, poorly- or uninformed investors place basically random orders
+(demands) but trends towards the 'true price' of the asset (24). Third kind of
+investors invest in investment firms such as mutual funds or hedge funds (24).
+Banks offer credit to investors to leverage speculative investments (25).
+Regulators are modelled as a framework which governs maximum leverage amount
+(25). The hedge funds (first type of investor) in the model are long only (27).
+Funds that default exit the scenario, but are replaced by a new fund a certain
+number of time periods later (32). Values of parameters, fixed and varying
+(33-34). Simulation results, showing that up to leverage threshold, more
+aggressive funds perform better, but not true if leverage threshold is
+increased (35). As shown by example fund, market impact begins to become
+a factor when fund become sufficiently large (36). Model produces clustered
+volatility in prices (41). An increase in the maximum leverage, \lambda^{MAX},
+increase autocorrelation of fluctuations (41). In example, a crash is triggered
+by a trivial seemingly irrelevant event (44). Regulation helps to increase
+returns (45-46). Math for how increased leverage increases volatility (48).
+Examine lender monitoring volitility of collateral (48). Active managing of
+leverage as a function of collateral volatility leads to fewer defaults and
+smaller total losses of system (52). The defaults actually increase with the
+active managing when \lambda^{MAX} is high (52). Implement regulatory capital
+requirements (52). For unaggressive funds, regulation lowers default rates, but
+for aggressive funds, regulation increases default rates because of aggressive
+funds suffering more severely from loan re-calls (53). High leverage in general
+leads to more volatility in the market (55). Future research questions (56).
+Linking economic outcomes with social unrest (57). Full information of all
+market portfolios and lender-lendee decisions must be made public to break up
+synchonization of events (59). Central banks could serve as the role of
+communicating this information to all parties (60).
 
 Leijonhufvud, 2009. "Out of the corridor: Keynes and the crisis."
 
-Keynes presupposition of the events leading up to a crisis were quite different from the current crisis. Keynes saw a decreasing return to investment with high interests leading to decreasing returns. Instead, in the current crisis, interest rates were too low for too long, resulting in inflation of asset prices (742). Minksy believed that speculative booms were ever-present and there wasn't the tie to real activity that Keynes believed (742). Hedge, speculative, and Ponzi finance are all central to Minsky's systemic fragility (743). Keynes did speculate in the Treatise on Money that negative forecasts of future returns could lead to a decrease in the share of money held by the non-bank sector, because banks choose not to relend all funds (743). In this theory, deleveraging is part of a business downtown, not the driver of economic conteraction as in the 2008 crisis (744). Self-reinforcing dynamics of asset price drops and market 'freeze' (744). Because of bad balance sheets, Japanese Keynesian stimulus policies were inneffective at increasing growth rates (746). In Sweden and Norway in 1990s and US post WWII showed the state of balance sheets were very important to returning to private sector growth (746). Tenets of the Great Moderation were inflation targetting and central bank independence (748). Old Neoclassical Synthesis vs New Neoclassical Synthesis (750). Effective polciies to combat a severe recession have to be conducted by solvent governments, where they are willing to pay (and tax) to correct bank balance sheets (752). Overall degree of connectivity between agents is very important to the dynamics of the system (754).
+Keynes presupposition of the events leading up to a crisis were quite different
+from the current crisis. Keynes saw a decreasing return to investment with high
+interests leading to decreasing returns. Instead, in the current crisis,
+interest rates were too low for too long, resulting in inflation of asset
+prices (742). Minksy believed that speculative booms were ever-present and
+there wasn't the tie to real activity that Keynes believed (742). Hedge,
+speculative, and Ponzi finance are all central to Minsky's systemic fragility
+(743). Keynes did speculate in the Treatise on Money that negative forecasts of
+future returns could lead to a decrease in the share of money held by the
+non-bank sector, because banks choose not to relend all funds (743). In this
+theory, deleveraging is part of a business downtown, not the driver of economic
+conteraction as in the 2008 crisis (744). Self-reinforcing dynamics of asset
+price drops and market 'freeze' (744). Because of bad balance sheets, Japanese
+Keynesian stimulus policies were inneffective at increasing growth rates (746).
+In Sweden and Norway in 1990s and US post WWII showed the state of balance
+sheets were very important to returning to private sector growth (746). Tenets
+of the Great Moderation were inflation targetting and central bank independence
+(748). Old Neoclassical Synthesis vs New Neoclassical Synthesis (750).
+Effective polciies to combat a severe recession have to be conducted by solvent
+governments, where they are willing to pay (and tax) to correct bank balance
+sheets (752). Overall degree of connectivity between agents is very important
+to the dynamics of the system (754).
 
 Buttle, 2004. "Credit networks and agent games."
 
-Model of default
-Default dependence through business networks (73). Asymmetrical efault dependence (74). Negative and positive default dependence both possible (74). Successful model should also have default contagion and default clustering (75). Thurner, Hanel, and Pilchler paper of banks trading (76). Newman model of evolution (76). Agents need to be able to adapt to defaults (78). Each iteration involves 1) trading with neighbors then 2) default criteria is checked and finally 3) new potential trading partners are assessed (79). Technology vector is 0, -1, or +1 to determine if producer, consumer, or neither of a technology (80). Two neighbors have to select have to select each other for new connection (82). Score is increased or decreased according to pairing (83). Agents will only choose pairing that are on the whole positive (85). Agents default when score below some level which could go up every period (85). There is what seems to look like constant growth rates of scores over time (86). In more complicated version of model, there are limits to capacity both in buying and selling (88). Technologies can now take any integer value (88). In this more copmlicated version, the default threshold is instead calcuated as a function of past growth so strong past growth decreases the likelihood of default; this is called Score Growth Default (SGD) (93). Also add cost of existing to the model, which is used as a control parameter for any agent's growth (94). Also introduce constant active agent model (CAAM) where the number of active agents is held constant (96). New agents are generated immediately after an old defaults (97). Two different default mechanisms generate different results, where the same two firms will be high performing or default depending on which default rule is used (99-101). Depending on characteristics of new agents that replace defaulting agents, the effects on pre-existing agents can be severe. If agents are identical to previos defaulted agents, eventually no growth results (103). Beneficial and contagious default both possible (104-105). Power law rule for survival over time (107). Clustering coefficient is not that much different that random clustering (113). Clustering is unlikely because of triple pairing (115). There needs to be a combination of copying the best agents and altering the strategy to increase the average lifetime of each agent (117). With SGD and CTD, defaults are not occuring purely at random (119). With CTD default mechanism, time between defaults increases with time, but with SGD default mechanism there are peaks at intervals of 50 (120). The Hurst exponents match well with reality (123-124). Look at dependence matrix (126).
+Model of default Default dependence through business networks (73).
+Asymmetrical efault dependence (74). Negative and positive default dependence
+both possible (74). Successful model should also have default contagion and
+default clustering (75). Thurner, Hanel, and Pilchler paper of banks trading
+(76). Newman model of evolution (76). Agents need to be able to adapt to
+defaults (78). Each iteration involves 1) trading with neighbors then 2)
+default criteria is checked and finally 3) new potential trading partners are
+assessed (79). Technology vector is 0, -1, or +1 to determine if producer,
+consumer, or neither of a technology (80). Two neighbors have to select have to
+select each other for new connection (82). Score is increased or decreased
+according to pairing (83). Agents will only choose pairing that are on the
+whole positive (85). Agents default when score below some level which could go
+up every period (85). There is what seems to look like constant growth rates of
+scores over time (86). In more complicated version of model, there are limits
+to capacity both in buying and selling (88). Technologies can now take any
+integer value (88). In this more copmlicated version, the default threshold is
+instead calcuated as a function of past growth so strong past growth decreases
+the likelihood of default; this is called Score Growth Default (SGD) (93). Also
+add cost of existing to the model, which is used as a control parameter for any
+agent's growth (94). Also introduce constant active agent model (CAAM) where
+the number of active agents is held constant (96). New agents are generated
+immediately after an old defaults (97). Two different default mechanisms
+generate different results, where the same two firms will be high performing or
+default depending on which default rule is used (99-101). Depending on
+characteristics of new agents that replace defaulting agents, the effects on
+pre-existing agents can be severe. If agents are identical to previos defaulted
+agents, eventually no growth results (103). Beneficial and contagious default
+both possible (104-105). Power law rule for survival over time (107).
+Clustering coefficient is not that much different that random clustering (113).
+Clustering is unlikely because of triple pairing (115). There needs to be
+a combination of copying the best agents and altering the strategy to increase
+the average lifetime of each agent (117). With SGD and CTD, defaults are not
+occuring purely at random (119). With CTD default mechanism, time between
+defaults increases with time, but with SGD default mechanism there are peaks at
+intervals of 50 (120). The Hurst exponents match well with reality (123-124).
+Look at dependence matrix (126).
 
-Model of Feedback Effects of dynamic hedging
-Minority game is where agents make choices between two states and those who choose the state in the minority are rewarded (138). Easy to see how minority game of buying and selling can be extended to financial markets (140-141). Brownian motion (142). Delta hedging (143). Delta hedging is basically a bet that volatility will go up. Agents in the model back a binary decision based on the history of decisions chosen the minority at each iteration (145). Strategies are randomly allocated but correspond to a given history (146). Generate price movements from sum of choices to but (+1) or sell (-1), modified by an exponential to prevent the price from going negative (146-147). There is exploitable information if H, a measure of the mean of the A (the average overall change in price in a period), is non-zero. It is zero for the entire time period but can be non-zero for certain strecthes (148-149). Small volatility in outcomes (the sum of the buys and sells close to zero) means good coordination (149). With larger m, the chance of any one agent having the perfect strategy is low, so the volatility approaches the same value as if the agents were randomly choosing a state based on the flip of a coin (151). In simple game, game will fluctuate between two strategies as being the best strategies (154). Attempt to expand model to reflect stylized facts of fat-tailed return distributions and volatility clutsering (158). Grand Canonical Minority Game (GCMG) introduced where the number of agents at each iteration is not fixed (159). Use reward which depends on previous value, the gain, and the number of agents making the same choice (159). Only some agents speculate depending if their return is above some threshold (159). Add in producers as agents that have one strategy, providing information to speculators (160). There is a less obvious pattern to the price changes relative to the vanilla game (163). Introduce delta hedging into game (168). Presence of option hedger increase the volatility of the underlying asset (174).
+Model of Feedback Effects of dynamic hedging Minority game is where agents make
+choices between two states and those who choose the state in the minority are
+rewarded (138). Easy to see how minority game of buying and selling can be
+extended to financial markets (140-141). Brownian motion (142). Delta hedging
+(143). Delta hedging is basically a bet that volatility will go up. Agents in
+the model back a binary decision based on the history of decisions chosen the
+minority at each iteration (145). Strategies are randomly allocated but
+correspond to a given history (146). Generate price movements from sum of
+choices to but (+1) or sell (-1), modified by an exponential to prevent the
+price from going negative (146-147). There is exploitable information if H,
+a measure of the mean of the A (the average overall change in price in
+a period), is non-zero. It is zero for the entire time period but can be
+non-zero for certain strecthes (148-149). Small volatility in outcomes (the sum
+of the buys and sells close to zero) means good coordination (149). With larger
+m, the chance of any one agent having the perfect strategy is low, so the
+volatility approaches the same value as if the agents were randomly choosing
+a state based on the flip of a coin (151). In simple game, game will fluctuate
+between two strategies as being the best strategies (154). Attempt to expand
+model to reflect stylized facts of fat-tailed return distributions and
+volatility clutsering (158). Grand Canonical Minority Game (GCMG) introduced
+where the number of agents at each iteration is not fixed (159). Use reward
+which depends on previous value, the gain, and the number of agents making the
+same choice (159). Only some agents speculate depending if their return is
+above some threshold (159). Add in producers as agents that have one strategy,
+providing information to speculators (160). There is a less obvious pattern to
+the price changes relative to the vanilla game (163). Introduce delta hedging
+into game (168). Presence of option hedger increase the volatility of the
+underlying asset (174).
 
-Markose, et al, 2010 (WP). "Too interconnected to fail: financial contagion and systemic risk in network model of CDS and other credit enhancement obligations of US banks".
+Markose, et al, 2010 (WP). "Too interconnected to fail: financial contagion and
+systemic risk in network model of CDS and other credit enhancement obligations
+of US banks".
 
-CDS spreads of major banks (6-7). Seeking a structural model based on default causallity of chain reactions governed by the network connections of the financial entities (9). Conflation of representative agent with a sector or a system as a whole has dogged neoclassical economics rendering it useless for analysis of stability of systems that arise form interactions between a multiplicity of heterogeneous agents (11). Haldane (2009) adds import network topology framework to spread of financial contagion (13). Correlations of CDS premia across different asset classes of firms such as non-financial, financial, and also sovereign debt give indication of the extent to which economic contagion has spread (14). Two arguments given for existence of CDS: protection against default risk and support for raising capital and for economizing on capital (16). The periodic payments of premia are based on the CDS spread and quoted as a percentage of the gross national value for the CDS at the start of the contract (17). Buyer of a CDS doesn't have to own the underlying security or have any credit exposure to the reference entity (17). Some CDS dealers will only post mark-to-market changes in the collateral and don't post initial collateral (18). If each entity sells to the next entity in a circle, then the default of one of the entities can cause a default of all of the entities (19). In order for there to be a net benefit to some of the CDS participants, there has to be some asymmetry of deals (19). Smaller net notional amounts in a chain results in a reduction of the aggregate capacity of the CDS market to hedge the underlying (20). In the event of a default, there a few options: 1) the agreement can be 'torn-up' or terminated, 2) novation, where the CDS obligations are assigned to a new counterparty, 3) large market shares will have to restructure (20-21). Two outcomes of regulatory capital requirement: 1) high percentage of residential mortgages were allowed to be securitized in such large numbers because of underpriced RMBS coupons and 2) balance sheet asset quality deterioration as better quality assets could more easily be securitized (21). Ratings replaced reserves (22). Loans can be taken to purchase CDOs (25). Even though net position for CDS may be small for many of the involved banks in US, the large gross positions can have severe consequences during a downturn, especially when counterparities begin to default on their obligations (29). Small world networks have properties: 1) dense local clusters but globally have properties of a random network 2) the average shortest shortest path between any two randomy chosen agents if found to be "small" and bounded by the logarithm of the total number of nodes and 3) market-share and payoffs are characterized by a highly skewed fat tailed or power law distribution (31). Highly connected CDS nodes have potential to be highly distruptive (32). Agents are banks, other intermediaries, and their customers. Connective links/edges represent flows of liquidity/obligations (33). Rows of adjacency matrix represents CDS cover entity is entitled to. Columns represent CDS obligations to pay (34). May-Wigner stabilty condition implied that greater complexity increases the instability of the network (36). The emprically constructed CDS network using actual bilateral CDS buying and selling is May-Wigner unstable (39-40).
+CDS spreads of major banks (6-7). Seeking a structural model based on default
+causallity of chain reactions governed by the network connections of the
+financial entities (9). Conflation of representative agent with a sector or
+a system as a whole has dogged neoclassical economics rendering it useless for
+analysis of stability of systems that arise form interactions between
+a multiplicity of heterogeneous agents (11). Haldane (2009) adds import network
+topology framework to spread of financial contagion (13). Correlations of CDS
+premia across different asset classes of firms such as non-financial,
+financial, and also sovereign debt give indication of the extent to which
+economic contagion has spread (14). Two arguments given for existence of CDS:
+protection against default risk and support for raising capital and for
+economizing on capital (16). The periodic payments of premia are based on the
+CDS spread and quoted as a percentage of the gross national value for the CDS
+at the start of the contract (17). Buyer of a CDS doesn't have to own the
+underlying security or have any credit exposure to the reference entity (17).
+Some CDS dealers will only post mark-to-market changes in the collateral and
+don't post initial collateral (18). If each entity sells to the next entity in
+a circle, then the default of one of the entities can cause a default of all of
+the entities (19). In order for there to be a net benefit to some of the CDS
+participants, there has to be some asymmetry of deals (19). Smaller net
+notional amounts in a chain results in a reduction of the aggregate capacity of
+the CDS market to hedge the underlying (20). In the event of a default, there
+a few options: 1) the agreement can be 'torn-up' or terminated, 2) novation,
+where the CDS obligations are assigned to a new counterparty, 3) large market
+shares will have to restructure (20-21). Two outcomes of regulatory capital
+requirement: 1) high percentage of residential mortgages were allowed to be
+securitized in such large numbers because of underpriced RMBS coupons and 2)
+balance sheet asset quality deterioration as better quality assets could more
+easily be securitized (21). Ratings replaced reserves (22). Loans can be taken
+to purchase CDOs (25). Even though net position for CDS may be small for many
+of the involved banks in US, the large gross positions can have severe
+consequences during a downturn, especially when counterparities begin to
+default on their obligations (29). Small world networks have properties: 1)
+dense local clusters but globally have properties of a random network 2) the
+average shortest shortest path between any two randomy chosen agents if found
+to be "small" and bounded by the logarithm of the total number of nodes and 3)
+market-share and payoffs are characterized by a highly skewed fat tailed or
+power law distribution (31). Highly connected CDS nodes have potential to be
+highly distruptive (32). Agents are banks, other intermediaries, and their
+customers. Connective links/edges represent flows of liquidity/obligations
+(33). Rows of adjacency matrix represents CDS cover entity is entitled to.
+Columns represent CDS obligations to pay (34). May-Wigner stabilty condition
+implied that greater complexity increases the instability of the network (36).
+The emprically constructed CDS network using actual bilateral CDS buying and
+selling is May-Wigner unstable (39-40).
 
 
 
@@ -162,7 +1045,8 @@ CDS spreads of major banks (6-7). Seeking a structural model based on default ca
 
 Duffee and Stanton, 2004. "Estimation of Dynamic Term Structure Models."
 
-Dai and Singelton, 2000. "Specification analysis of affine term structure models."
+Dai and Singelton, 2000. "Specification analysis of affine term structure
+models."
 
 C: comment
 
@@ -171,9 +1055,11 @@ Next:
 
 Bauer, Rudebusch and Wu. "Unbiased estimation of dynamic term structure model".
 
-Epstein and Zin, 1989. "Substitution, risk aversion, and the temporal behavior of consumption and asset returns: a theoretical framework"
+Epstein and Zin, 1989. "Substitution, risk aversion, and the temporal behavior
+of consumption and asset returns: a theoretical framework"
 
-Focus is on 1) dealing with models that do not fit the data and 2) emphasizing how consumption uncertainty is resolved over time (938-940).
+Focus is on 1) dealing with models that do not fit the data and 2) emphasizing
+how consumption uncertainty is resolved over time (938-940).
 
 
 Barillas, Hansen, and Sargent, 2009. "Doubts or variability?"
