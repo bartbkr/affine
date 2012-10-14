@@ -106,40 +106,43 @@ for a in range(atts):
 
 quant = [0, 10, 25, 50, 75, 90, 100]
 for q in quant:
-    collect_0.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
-    collect_1.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
+    collect_lam_0.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
+    collect_lam_1.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
 
-pickle_file(collect_0, "../temp_res/collect_0_curve_nls")
-pickle_file(collect_1, "../temp_res/collect_1_curve_nls")
+pickle_file(collect_lam_0, "../temp_res/collect_lam_0_nls")
+pickle_file(collect_lam_1, "../temp_res/collect_lam_1_nls")
 
 #use medians to guess for next 50 sims
 atts2 = 50
 print "Second round estimation"
-lam_0_coll = np.zeros((atts2, neqs*k_ar, 1))
-lam_1_coll = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
-cov_coll = np.zeros((atts2, neqs + neqs**2, neqs + neqs**2))
-collect_0_ref = []
-collect_1_ref = []
+lam_0_all  = np.zeros((atts2, neqs*k_ar, 1))
+lam_1_all  = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
+cov_all  = np.zeros((atts2, neqs + neqs**2, neqs + neqs**2))
+collect_lam_0_ref = []
+collect_lam_1_ref = []
 collect_cov_ref = []
 for a in range(atts2):
     print str(a)
     #third element is median
     sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data,
-            lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1],
+            lam_0_g=collect_lam_0[3][1], lam_1_g=collect_lam_1[3][1],
             start_date=start_date, passwd=passwd)
-    lam_0_coll[a] = sim_run[0]
-    lam_1_coll[a] = sim_run[1]
-    cov_coll[a] = sim_run[2]
+    lam_0_all[a] = sim_run[0]
+    lam_1_all[a] = sim_run[1]
+    cov_all[a] = sim_run[2]
 
 #These estimates are getting closer to each other throughout the entire span 
-
 for q in quant:
-    collect_0_ref.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
-    collect_1_ref.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
-    collect_cov_ref.append((str(q), stats.scoreatpercentile(cov_coll[:], q)))
+    collect_lam_0_ref.append((str(q), stats.scoreatpercentile(lam_0_all[:], q)))
+    collect_lam_1_ref.append((str(q), stats.scoreatpercentile(lam_1_all[:], q)))
+    collect_cov_ref.append((str(q), stats.scoreatpercentile(cov_all[:], q)))
 
-pickle_file(collect_0_ref, "../temp_res/collect_0_ref_nls")
-pickle_file(collect_1_ref, "../temp_res/collect_1_ref_nls")
+#Collect results
+pickle_file(lam_0_all, "../temp_res/lam_0_all_nls")
+pickle_file(lam_1_all, "../temp_res/lam_0_all_nls")
+pickle_file(cov_all, "../temp_res/cov_all_nls")
+pickle_file(collect_lam_0_ref, "../temp_res/collect_lam_0_ref_nls")
+pickle_file(collect_lam_1_ref, "../temp_res/collect_lam_1_ref_nls")
 pickle_file(collect_cov_ref, "../temp_res/collect_cov_ref_nls")
 
 #send success email
