@@ -76,7 +76,7 @@ mod_yc_data = to_mth(mod_yc_data)
 # Setup model
 meth = "nls"
 run_groups = []
-atts = 100
+atts = 25
 np.random.seed(101)
 collect_0 = []
 collect_1 = []
@@ -97,6 +97,8 @@ atexit.register(fail_mail, start_date, passwd)
 #generate decent guesses
 lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
+collect_lam_0 = []
+collect_lam_1 = []
 print "Initial estimation"
 for a in range(atts):
     print str(a)
@@ -113,7 +115,7 @@ pickle_file(collect_lam_0, "../temp_res/collect_lam_0_nls")
 pickle_file(collect_lam_1, "../temp_res/collect_lam_1_nls")
 
 #use medians to guess for next 50 sims
-atts2 = 50
+atts2 = 10
 print "Second round estimation"
 lam_0_all  = np.zeros((atts2, neqs*k_ar, 1))
 lam_1_all  = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
@@ -132,6 +134,7 @@ for a in range(atts2):
     cov_all[a] = sim_run[2]
 
 #These estimates are getting closer to each other throughout the entire span 
+
 for q in quant:
     collect_lam_0_ref.append((str(q), stats.scoreatpercentile(lam_0_all[:], q)))
     collect_lam_1_ref.append((str(q), stats.scoreatpercentile(lam_1_all[:], q)))

@@ -97,6 +97,8 @@ atexit.register(fail_mail, start_date, passwd)
 #generate decent guesses
 lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
+collect_lam_0 = []
+collect_lam_1 = []
 print "Initial estimation"
 for a in range(atts):
     print str(a)
