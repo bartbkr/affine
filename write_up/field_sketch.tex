@@ -327,7 +327,8 @@ $t$ as a function of the pricing kernel, combining Eqs. \ref{eq:aff2} and
 where $\bar{A}_n$ and $\bar{B}_n$ are recursively defined as follows:
 
 \begin{eqnarray}
-    \bar{A}_{n+1}=\bar{A}_{n}+\bar{B}_n'(\mu-\Sigma\lambda_0)+\frac{1}{2}\bar{B}_n'\Sigma\Sigma'\bar{B}_n'-\delta_0  \nonumber \\
+    \bar{A}_{n+1}=\bar{A}_{n}+\bar{B}_n'(\mu-\Sigma\lambda_0)+\frac{1}{2}
+                  \bar{B}_n'\Sigma\Sigma'\bar{B}_n'-\delta_0  \nonumber \\
     \bar{B}_{n+1}'=\bar{B}_n'(\Phi-\Sigma\lambda_1)-\delta_1'
     \label{eq:aff6}
 \end{eqnarray}
@@ -381,21 +382,31 @@ factor model of \citet{kim2005arbitrage}.
 
 This section is an attempt to replicate the results of
 \citet{sack2005monetary}, an investigation into the effects of alternative
-monetary policy when a zero-lower bound for the short-rate is a binding
-condition. The second section of their paper involves the estimation of an
-affine model of the term structure using five observed factors: an HP-filtered
-employment gap, inflation over the past year (measured as PCE excluding food
-and energy), expected inflation over the subsequent year from the Blue Chip
-survey, the federal funds rate, and the year-ahead Eurodollar rate. This is the
-section that this small paper will attempt to replicate. They utilize a VAR
-directly estimated on the five macro variables to generate a pricing kernel to
-fit the implied zero-coupon bonds (CRSP Fama files) of maturities six-months
-and one, two, three, four, five, seven and ten years. They use monthly data
-from 1982 to 2004. While the authors do not present the exact parameters
-estimates, they do present graphs of the two-year and ten-year actual,
-predicted, and risk neutral yields on bonds. They also present prediction
-errors for all of the yields used to estimate the model, using an estimated
-model with the Eurodollar and without.
+monetary policy with a binding zero-lower bound (ZLB) for the federal funds rates.
+Their paper is divided into three sections. The first section examines
+suggestive evidence several countries where alternative monetary policy were
+used in the event of a ZLB restriction, using descriptive statistics and
+qualitative narration to describe the actions of the Bank of Japan's
+expectations management in the late 1990s and the Federal Reserve's 'Operation
+Twist' in 1961. The third analysis involves a case study of Japan, using dummy
+variables for central bank announcement along with factor analysis to examine
+the impact of alternative monetary policy during ZLB conditions.
+The second section of their paper, the focus the current paper,  involves the
+estimation of an affine model of the term structure using five observed
+factors: an HP-filtered employment gap, inflation over the past year (measured
+as PCE excluding food and energy), expected inflation over the subsequent year
+from the Blue Chip survey, the federal funds rate, and the year-ahead
+Eurodollar rate. They utilize a VAR directly estimated on the five macro variables to
+generate a pricing kernel to fit the implied zero-coupon bonds (CRSP Fama
+files) of maturities six-months and one, two, three, four, five, seven and ten
+years. They use monthly data from 1982 to 2004. While the authors do not
+present the exact parameters estimates, they do present graphs of the two-year
+and ten-year actual, predicted, and risk neutral yields on bonds. They also
+present prediction errors for all of the yields used to estimate the model,
+using an estimated model with the Eurodollar and without. The implied time
+series of the term premium and the prediction errors are used to show the
+importance of expected policy decisions (through Eurodollar futures) on the
+current yield curve and thus on current economic activity.
 
 Presented in Figure \ref{fig:bern_fig1} are the two graphs presented as they
 appear in \citet{sack2005monetary}[46]. Each graph shows three lines: the
