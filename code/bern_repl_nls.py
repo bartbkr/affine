@@ -8,6 +8,7 @@ import datetime as dt
 import atexit
 import keyring
 import sys
+import pickle
 
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
@@ -142,7 +143,7 @@ for q in quant:
 
 #Collect results
 pickle_file(lam_0_all, "../temp_res/lam_0_all_nls")
-pickle_file(lam_1_all, "../temp_res/lam_0_all_nls")
+pickle_file(lam_1_all, "../temp_res/lam_1_all_nls")
 pickle_file(cov_all, "../temp_res/cov_all_nls")
 pickle_file(collect_lam_0_ref, "../temp_res/collect_lam_0_ref_nls")
 pickle_file(collect_lam_1_ref, "../temp_res/collect_lam_1_ref_nls")
