@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 import pickle
 
 from affine import Affine
+from statsmodels.tsa.api import VAR
+from statsmodels.tsa.filters import hpfilter
+from scipy import stats
+from util import pickle_file, success_mail, fail_mail, to_mth, gen_guesses, \
+                    robust
 
 ########################################
 # Get macro data                       #
@@ -89,29 +94,33 @@ k_ar = bsr.k_ar
 
 lam_0_nr = np.zeros([neqs*k_ar, 1])
 lam_1_nr = np.zeros([neqs*k_ar, neqs*k_ar])
+sigma_zeros = np.zeros_like(bsr.sigma_ols)
+#sigma_zeros[:neqs, :neqs] = bsr.sigma_ols[:neqs, :neqs]
 
-a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0=lam_0_nr, lam_1=lam_1_nr,
-                                   delta_1=bsr.delta_1_nolat, mu=bsr.mu_ols,
-                                   phi=bsr.phi_ols, sigma=bsr.sigma_ols)
 #grab previous run
-pkl_file = open("pkl_file", "rb")
-final_lam_0 = pickle.load(pkl_file)
+pkl_file = open("../results/bern_nls/lam_0_all_nls.pkl", "rb")
+final_lam_0 = pickle.load(pkl_file)[0]
 pkl_file.close()
 
-pkl_file = open("pkl_file2", "rb")
-final_lam_1 = pickle.load(pkl_file)
+pkl_file = open("../results/bern_nls/lam_1_all_nls.pkl", "rb")
+final_lam_1 = pickle.load(pkl_file)[0]
 pkl_file.close()
+
 
 a_rsk, b_rsk = bsr.gen_pred_coef(lam_0=final_lam_0, lam_1=final_lam_1,
                                    delta_1=bsr.delta_1_nolat, mu=bsr.mu_ols,
                                    phi=bsr.phi_ols, sigma=bsr.sigma_ols)
 
+#generate no risk results
+a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0=lam_0_nr, lam_1=lam_1_nr,
+                                   delta_1=bsr.delta_1_nolat, mu=bsr.mu_ols,
+                                   phi=bsr.phi_ols, sigma=sigma_zeros)
 #gen BSR predicted
-X_t = bsr.var_data
-per = bsr.mth_only.index
+X_t = bsr.var_data_vert
+per = bsr.yc_data.index
 act_pred = px.DataFrame(index=per)
 for i in bsr.mths:
-    act_pred[str(i) + '_mth_act'] = bsr.mth_only['l_tr_m' + str(i)]
+    act_pred[str(i) + '_mth_act'] = bsr.yc_data['l_tr_m' + str(i)]
     act_pred[str(i) + '_mth_pred'] = a_rsk[i-1] + \
                                     np.dot(b_rsk[i-1].T, X_t.values.T)[0]
     act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
@@ -137,14 +146,14 @@ ten_yr_plot = ten_yr.reindex(columns = ['120_mth_act',
 fig = ten_yr_plot.plot(legend=False)
 handles, old_labels = fig.get_legend_handles_labels()
 fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
-plt.savefig(path_pre + "../write_up/figures/tenyr_rep.png")
+plt.savefig("../write_up/figures/tenyr_rep.png")
 #two year
 two_yr_plot = two_yr.reindex(columns = ['24_mth_act',
     '24_mth_pred', '24_mth_nrsk'])
 fig = two_yr_plot.plot()
 handles, old_labels = fig.get_legend_handles_labels()
 fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
-plt.savefig(path_pre + "../write_up/figures/twoyr_rep.png")
+plt.savefig("../write_up/figures/twoyr_rep.png")
 
 #generate st dev of residuals
 yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr', 'seven_yr', 
