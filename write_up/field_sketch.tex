@@ -327,7 +327,8 @@ $t$ as a function of the pricing kernel, combining Eqs. \ref{eq:aff2} and
 where $\bar{A}_n$ and $\bar{B}_n$ are recursively defined as follows:
 
 \begin{eqnarray}
-    \bar{A}_{n+1}=\bar{A}_{n}+\bar{B}_n'(\mu-\Sigma\lambda_0)+\frac{1}{2}\bar{B}_n'\Sigma\Sigma'\bar{B}_n'-\delta_0  \nonumber \\
+    \bar{A}_{n+1}=\bar{A}_{n}+\bar{B}_n'(\mu-\Sigma\lambda_0)+\frac{1}{2}
+                  \bar{B}_n'\Sigma\Sigma'\bar{B}_n'-\delta_0  \nonumber \\
     \bar{B}_{n+1}'=\bar{B}_n'(\Phi-\Sigma\lambda_1)-\delta_1'
     \label{eq:aff6}
 \end{eqnarray}
@@ -381,21 +382,31 @@ factor model of \citet{kim2005arbitrage}.
 
 This section is an attempt to replicate the results of
 \citet{sack2005monetary}, an investigation into the effects of alternative
-monetary policy when a zero-lower bound for the short-rate is a binding
-condition. The second section of their paper involves the estimation of an
-affine model of the term structure using five observed factors: an HP-filtered
-employment gap, inflation over the past year (measured as PCE excluding food
-and energy), expected inflation over the subsequent year from the Blue Chip
-survey, the federal funds rate, and the year-ahead Eurodollar rate. This is the
-section that this small paper will attempt to replicate. They utilize a VAR
-directly estimated on the five macro variables to generate a pricing kernel to
-fit the implied zero-coupon bonds (CRSP Fama files) of maturities six-months
-and one, two, three, four, five, seven and ten years. They use monthly data
-from 1982 to 2004. While the authors do not present the exact parameters
-estimates, they do present graphs of the two-year and ten-year actual,
-predicted, and risk neutral yields on bonds. They also present prediction
-errors for all of the yields used to estimate the model, using an estimated
-model with the Eurodollar and without.
+monetary policy with a binding zero-lower bound (ZLB) for the federal funds rates.
+Their paper is divided into three sections. The first section examines
+suggestive evidence several countries where alternative monetary policy were
+used in the event of a ZLB restriction, using descriptive statistics and
+qualitative narration to describe the actions of the Bank of Japan's
+expectations management in the late 1990s and the Federal Reserve's 'Operation
+Twist' in 1961. The third analysis involves a case study of Japan, using dummy
+variables for central bank announcement along with factor analysis to examine
+the impact of alternative monetary policy during ZLB conditions.
+The second section of their paper, the focus the current paper,  involves the
+estimation of an affine model of the term structure using five observed
+factors: an HP-filtered employment gap, inflation over the past year (measured
+as PCE excluding food and energy), expected inflation over the subsequent year
+from the Blue Chip survey, the federal funds rate, and the year-ahead
+Eurodollar rate. They utilize a VAR directly estimated on the five macro variables to
+generate a pricing kernel to fit the implied zero-coupon bonds (CRSP Fama
+files) of maturities six-months and one, two, three, four, five, seven and ten
+years. They use monthly data from 1982 to 2004. While the authors do not
+present the exact parameters estimates, they do present graphs of the two-year
+and ten-year actual, predicted, and risk neutral yields on bonds. They also
+present prediction errors for all of the yields used to estimate the model,
+using an estimated model with the Eurodollar and without. The implied time
+series of the term premium and the prediction errors are used to show the
+importance of expected policy decisions (through Eurodollar futures) on the
+current yield curve and thus on current economic activity.
 
 Presented in Figure \ref{fig:bern_fig1} are the two graphs presented as they
 appear in \citet{sack2005monetary}[46]. Each graph shows three lines: the
@@ -564,24 +575,36 @@ and that BSR's choice of factors was not suitable to other time periods of
 greater economic uncertainty. I will also examine whether including this
 uncertainty factor rather than Eurodollar futures leads to overall lower
 estimates of the term premium. This analysis for this chapter will largely
-build off of the replication presented in the above section.
+build off of the replication presented in the above section. BSR solves their
+model using a least squares method.
+
+I have already written a Python-based solution suite that can solve both
+observed factor, latent factor, and mixed affine models of the term structure.
+The flexibility of the solution class that I have written allows for a great
+amount of flexibility in testing different numbers of latent variables,
+different mixes of latent and observed variables, and different solution
+methods and approaches. Maximum likelihood, least squares, and non-linear
+squares are currently implemented, with the \citet{ang2003no} iterative maximum
+likelihood solution method soon to follow.
 
 Chapter 2 will focus on improving the information set feeding bond pricing by
 using real-time rather than final macro-data. The aim of this chapter will be
 to answer the question: Does real-time data increase the fit of affine models
-of the term structure that use observed factors? While real-time data has been
-integrated into an affine model framework in \citet{orphanideswei2010}, the
-focus of the paper was not on the value-added of using real-time data. Because
-the definition of the pricing kernel at time $t$ is supposed to reflect all
-information informing bond pricing decisions at time $t$, the necessity of
-adding unobserved latent factors to an affine model with observed factors is
-most often to increase the fit of the model, because the observed factors alone
-cannot match all of the variation. This may simply be an artifact of
-incorrectly attributing available information regarding macroeconomic
-fundamentals at time $t$. Final versions of data, especially GDP and inflation,
-are often not available until quarters after the period that they refer to,
-making final data insuitable as a proxy for available information at time $t$
-influencing bond pricing decisions at time $t$.
+of the term structure that use observed factors compared to models that use
+final data? While real-time data has been integrated into an affine model
+framework in \citet{orphanideswei2010}, the focus of the paper was not on the
+value-added of using real-time data. Because the definition of the pricing
+kernel at time $t$ is supposed to reflect all information informing bond
+pricing decisions at time $t$, the necessity of adding unobserved latent
+factors to an affine model with observed factors is most often to increase the
+fit of the model, because the observed factors alone cannot match all of the
+variation. This may simply be an artifact of incorrectly attributing available
+information regarding macroeconomic fundamentals at time $t$. Final, post
+revision macroeconomic data, especially GDP and inflation, are often not
+available until quarters after the period that they refer to, making final data
+unsuitable as a proxy for available information at time $t$ influencing bond
+pricing decisions at time $t$.
+>>>>>>> master
 
 This will require some theoretical derivation of the exact advantage of using
 real-time data vs. final-data in estimating term structure models. After
@@ -591,11 +614,28 @@ where the gain in explanatory value is statistically significant.
 \citet{orphanideswei2010} show that estimating the model using real-time data
 and time-varying parameters results in overall lower estimates of the term
 premium, because a higher proportion of the premium can be attributed to future
-short-rate expectations. I will compare my results to the results presented in
+short-rate expectations. Instead of simultaneously introducing both a real-time
+data with a new estimation strategy, this chapter's focus will be on the
+ability of using real-time data rather than final-data to decrease the pricing
+error. I will compare my results to the results presented in
 \citet{orphanideswei2010} in order to place this chapter in the affine term
-structure model literature. Data will be the Greenbook records of current
-quarter GDP and inflation expectations (prior to the publicaton of official
-numbers), combined with Blue-Chip data on inflation expectations.
+structure model literature. Data informing the pricing kernel will be the
+Greenbook records expected current quarter GDP and inflation (prior to the
+publication of official numbers), combined with Blue-Chip data on inflation
+expectations. I will compare the pricing error of a variety of these models, in
+each pair of cases using final-data compared to real-time data, but varying the
+number of latent factors from zero to three. Maximum likelihood (ML) via
+Newton-Raphson numerical approximation will be used to estimate the models
+without latent factors, with non-linear least squares estimation through the
+Levenburg-Marquardt algorithm will used as a check. In the case of the models
+with latent factors, iterative ML ala \citet{ang2003no} will be used to
+estimate all of the models, with the Kalman filter used as a check. Estimating
+multiple versions of the final versus real-time models and comparing their fit
+and estimated term premium will allow for a complete analysis of the advantage
+of using real-time vs final data. Estimating these models with only a few
+observed macro factors will allow some flexibility in the number of latent
+factors to include and allow for the analysis to completely focus on the
+advantage of using real-time data in affine models of the term structure.
 
 Chapter 3 will be a computational extension of the Python model solving class.
 In this chapter, I will write a C++ extension to the python class that I have
@@ -619,15 +659,6 @@ rather than through expectations of future short-term interest rates (as in
 a mis-specified affine model, the percentage of the change in yields on
 longer-maturity bonds may be incorrectly split between a term premium component
 and expected future short-rates.
-
-\subsection{Work that I have done}
-
-I have already written a maximum likelihood solver in Python for models and
-have used it for a previous term paper. I would like to fully utilize it and
-also move onto a Kalman filter approach to estimating the system. I've also
-worked through solving some of the DSGE models of the term premium addressed in
-section \ref{sec:struct} using the permutation solution algorithm proposed by
-\citet{swanson2006higher}.
 
 \section{Structural models of the term structure}\label{sec:struct}
 
@@ -924,10 +955,7 @@ primary channel is through which these LSAP events have an impact on
 long-maturity interest rate.
 
 \bibliographystyle{chicago}
-%\bibliography{/home/bart/Documents/Bib_file/master1}
-%\bibliography{C:/Users/bbaker/Documents/Bib_File/master1}
-%\bibliography{G:/Bib_File/master1}
-\bibliography{C:/code/my_projs/bib_file/master1}
+\bibliography{/../../bib_file/master1}
 
 \section{Code}
 
