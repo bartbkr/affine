@@ -146,14 +146,14 @@ ten_yr_plot = ten_yr.reindex(columns = ['120_mth_act',
 fig = ten_yr_plot.plot(legend=False)
 handles, old_labels = fig.get_legend_handles_labels()
 fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
-plt.savefig("../write_up/figures/tenyr_rep.png")
+plt.savefig("../../diss_writeup/figures/tenyr_rep.png")
 #two year
 two_yr_plot = two_yr.reindex(columns = ['24_mth_act',
     '24_mth_pred', '24_mth_nrsk'])
 fig = two_yr_plot.plot()
 handles, old_labels = fig.get_legend_handles_labels()
 fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
-plt.savefig("../write_up/figures/twoyr_rep.png")
+plt.savefig("../../diss_writeup/figures/twoyr_rep.png")
 
 #generate st dev of residuals
 yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr', 'seven_yr', 
