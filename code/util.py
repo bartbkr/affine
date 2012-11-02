@@ -117,7 +117,7 @@ def fail_mail(date, passwd):
     server.sendmail("bartbkr@gmail.com", "bartbkr@gmail.com", head+msg)
     server.quit()
 
-    print "Send mail: woohoo!"
+    print "Send fail mail: woohoo!"
 
 def flatten(array):
     """

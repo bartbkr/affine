@@ -104,5 +104,27 @@ bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g,
 lam_0 = bsr_solve[0]
 lam_1 = bsr_solve[1]
 
+lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, tvalues = bsr_solve
+
+print "lam_0"
 print lam_0
+print "lam_1"
 print lam_1
+print "delta_1"
+print delta_1
+print "mu"
+print mu
+print "phi"
+print phi
+print "sigma"
+print sigma
+print "a_solve"
+print a_solve
+print "b_solve"
+print b_solve
+print "tvalues"
+print tvalues
+
+#send success email
+passwd = keyring.get_password("email_auth", "bartbkr") 
+success_mail(passwd)
