@@ -65,7 +65,8 @@ class Affine(LikelihoodModel):
         mths = self._mths_list()
         self.mths = mths
 
-        assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)), \
+        assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
+                                                - k_ar + 1, \
             "Number of non-null values unequal in VAR and yield curve data"
 
         if latent:
@@ -378,7 +379,7 @@ class Affine(LikelihoodModel):
             The errors for the yields estimated with error
         """
         yc_data = self.yc_data
-        var_data = self.var_data_vert
+        var_data_vert = self.var_data_vert
         yc_names = self.yc_names
         num_yields = self.num_yields
         names = self.names
@@ -417,8 +418,8 @@ class Affine(LikelihoodModel):
         #now solve for unknown factors using long matrices
 
         unobs = np.dot(la.inv(b_sel_unobs), 
-                    yc_data.filter(items=noerr_cols)[lat:].values.T - a_sel - \
-                    np.dot(b_sel_obs, var_data.values.T))
+                    yc_data.filter(items=noerr_cols).values.T - a_sel - \
+                    np.dot(b_sel_obs, var_data_vert.values.T))
 
         #re-initialize a_sel, b_sel_obs, and b_sel_obs
         a_sel = np.zeros([err_num, 1])
@@ -431,12 +432,12 @@ class Affine(LikelihoodModel):
             b_all_unobs[y_pos, :, None] = b_sel_unobs[ix, :, None] = \
                     b_in[err_mth[ix] - 1][neqs * k_ar:]
 
-        yield_errs = yc_data.filter(items=err_cols)[lat:].values.T - a_sel - \
-                        np.dot(b_sel_obs, var_data.values.T) - \
+        yield_errs = yc_data.filter(items=err_cols).values.T - a_sel - \
+                        np.dot(b_sel_obs, var_data_vert.values.T) - \
                         np.dot(b_sel_unobs, unobs)
 
 
-        var_data_c = var_data.copy()
+        var_data_c = var_data_vert.copy()
         for factor in range(lat):
             var_data_c["latent_" + str(factor)] = unobs[factor, :]
         meas_mat = np.zeros((num_yields, err_num))
@@ -675,9 +676,9 @@ class Affine(LikelihoodModel):
         sig : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of sigma
         """
-        macro = self.var_data.copy()
         k_ar = self.k_ar
         neqs = self.neqs
+        macro = self.var_data.copy()[k_ar - 1:]
 
         macro["constant"] = 1
         delta_1[:neqs] = OLS(self.rf_rate,

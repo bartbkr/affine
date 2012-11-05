@@ -14,7 +14,7 @@ start_date = dt.datetime.now()
 passwd = keyring.get_password("email_auth", "bartbkr") 
 
 try:
-    execfile("tp_proj_unob.py")
+    execfile("tp_proj.py")
 except:
     print "Error:", sys.exc_info()[0]
     fail_mail(start_date, passwd)

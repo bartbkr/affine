@@ -11,11 +11,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from util import pickle_file, success_mail, fail_mail, to_mth, gen_guesses
-
-#identify computer
-#identify computer
-comp = socket.gethostname()
+from util import pickle_file, success_mail, to_mth, gen_guesses
 
 ########################################
 # Get macro data                       #
@@ -79,7 +75,9 @@ yc_index = mth_only.index
 
 #for affine model, only want two macro vars
 mod_data = mod_data.reindex(columns=['tr_empl_gap_perc', 'act_infl'])
-mod_data = mod_data.reindex(index=yc_index)
+mod_index = px.date_range("10/1/1981", 
+                yc_index[-1].to_pydatetime().strftime("%m/%d/%Y"), freq="MS")
+mod_data = mod_data.reindex(index=mod_index)
 
 rf_rate = rf_rate.reindex(index=yc_index)
 

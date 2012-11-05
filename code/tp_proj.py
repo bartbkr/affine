@@ -12,19 +12,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from util import robust, pickle_file, success_mail, fail_mail
-
-#identify computer
-#identify computer
-comp = socket.gethostname()
-global path_pre
-if comp == "BBAKER":
-    path_pre = "C:/code/my_projs/diss/"
-if comp == "bart-Inspiron-1525":
-    path_pre = "/home/bart"
-if comp == "linux-econ6":
-    path_pre = "/home/labuser"
-
+from util import robust, pickle_file, success_mail
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -36,7 +24,7 @@ print "Model 1 running"
 # Get data                             #
 ########################################
 
-mthdata = px.read_csv(path_pre + "/data/VARbernankedata.csv", na_values="M",
+mthdata = px.read_csv("../data/VARbernankedata.csv", na_values="M",
                         index_col = 0, parse_dates=True)
 
 ########################################
@@ -103,7 +91,7 @@ x_t = x_t_na.dropna(axis=0)
 # Grab yield curve data                     #
 #############################################
 
-ycdata = px.read_csv(path_pre + "/data/yield_curve.csv",
+ycdata = px.read_csv("../data/yield_curve.csv",
                      na_values = "M", index_col=0, parse_dates=True)
 
 mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',
@@ -143,19 +131,19 @@ var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 ##################################################
 # Define exit message to send to email upon fail #
 ##################################################
-atexit.register(fail_mail, start_date, passwd)
+#atexit.register(fail_mail, start_date, passwd)
 
 #############################################
 # Testing                                   #
 #############################################
 
 run_groups = []
-atts = 100
+atts = 2
 np.random.seed(101)
 collect_0 = []
 collect_1 = []
 
-meth = "cf"
+meth = "ls"
 
 #generate decent guesses
 lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
@@ -175,7 +163,7 @@ pickle_file(collect_0, "collect_0_curve")
 pickle_file(collect_1, "collect_1_curve")
 
 #use medians to guess for next 50 sims
-atts2 = 50
+atts2 = 1
 lam_0_coll = np.zeros((atts2, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
 cov_coll = np.zeros((atts2, neqs + neqs**2, neqs + neqs**2))
