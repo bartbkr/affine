@@ -19,7 +19,7 @@ def pickle_file(obj=None, name=None):
     pkl_file.close()
 
 def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
-        start_date=None, passwd=None):
+        passwd=None):
     """
     Function to run model with guesses, also generating 
     method : string
@@ -68,8 +68,13 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
     out_bsr = bsr.solve(lam_0_g, lam_1_g, method=method, ftol=1e-950,
                         xtol=1e-950, maxfev=1000000000, full_output=False)
 
-    lam_0, lam_1, delta_1, phi, sig, a_solve, b_solve, lam_cov = out_bsr
-    return lam_0, lam_1, lam_cov
+    if method == "ls":
+        lam_0, lam_1, delta_1, mu, phi, sig, a_solve, b_solve, output = out_bsr
+        return lam_0, lam_1, output
+
+    else:
+        lam_0, lam_1, delta_1, mu, phi, sig, a_solve, b_solve, lam_cov = out_bsr
+        return lam_0, lam_1, lam_cov
 
 def success_mail(passwd):
     """

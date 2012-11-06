@@ -87,6 +87,7 @@ class Affine(LikelihoodModel):
         #from OLS VAR one step estimation
         else:
             self.delta_0 = 0
+            self.lat = 0
             delta_1 = np.zeros([neqs*k_ar, 1])
             #delta_1 is vector of zeros, with one grabbing fed_funds rate
             delta_1[np.argmax(var_data.columns == 'fed_funds')] = 1
@@ -341,7 +342,7 @@ class Affine(LikelihoodModel):
         lat = self.lat
         mths = self.mths
         yc_data = self.yc_data
-        x_t = self.var_data_vert
+        var_data_vert = self.var_data_vert
 
         lam_0, lam_1, delta_1, mu, phi, sigma = self._param_to_array(params=params)
 
@@ -350,11 +351,14 @@ class Affine(LikelihoodModel):
                                               sigma=sigma)
 
         errs = []
+
+        yc_data_val = yc_data.values
         
-        for i in mths:
-            act = np.flipud(yc_data['l_tr_m' + str(i)].values)
-            pred = a_solve[i-1] + np.dot(b_solve[i-1].T, np.fliplr(x_t.T))[0]
-            errs = errs + (act-pred).tolist()
+        for ix, mth in enumerate(mths):
+            act = np.flipud(yc_data_val[:, ix])
+            pred = a_solve[mth - 1] + np.dot(b_solve[mth - 1].T, 
+                                        np.fliplr(var_data_vert.T))[0]
+            errs = errs + (act - pred).tolist()
         return errs
 
     def _solve_unobs(self, a_in, b_in):
