@@ -3,12 +3,12 @@ These are utilies used by the affine model class
 """
 
 import numpy as np
+import pandas as px
 import pickle
 import smtplib
-
 import datetime as dt
 
-from affine import Affine
+from operator import itemgetter
 
 def pickle_file(obj=None, name=None):
     """
@@ -19,7 +19,7 @@ def pickle_file(obj=None, name=None):
     pkl_file.close()
 
 def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
-        start_date=None, passwd=None):
+        passwd=None):
     """
     Function to run model with guesses, also generating 
     method : string
@@ -33,6 +33,7 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
     lam_1_g : array
         Guess for lambda 1
     """
+    from affine import Affine
         
     # subset to pre 2005
     mod_data = mod_data[:217]
@@ -67,8 +68,13 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
     out_bsr = bsr.solve(lam_0_g, lam_1_g, method=method, ftol=1e-950,
                         xtol=1e-950, maxfev=1000000000, full_output=False)
 
-    lam_0, lam_1, delta_1, phi, sig, a_solve, b_solve, lam_cov = out_bsr
-    return lam_0, lam_1, lam_cov
+    if method == "ls":
+        lam_0, lam_1, delta_1, mu, phi, sig, a_solve, b_solve, output = out_bsr
+        return lam_0, lam_1, output
+
+    else:
+        lam_0, lam_1, delta_1, mu, phi, sig, a_solve, b_solve, lam_cov = out_bsr
+        return lam_0, lam_1, lam_cov
 
 def success_mail(passwd):
     """
@@ -116,4 +122,85 @@ def fail_mail(date, passwd):
     server.sendmail("bartbkr@gmail.com", "bartbkr@gmail.com", head+msg)
     server.quit()
 
-    print "Send mail: woohoo!"
+    print "Send fail mail: woohoo!"
+
+def flatten(array):
+    """
+    Flattens array to list values
+    """
+    a_list = []
+    if array.ndim == 1:
+        for index in range(np.shape(array)[0]):
+            a_list.append(array[index])
+        return a_list
+    elif array.ndim == 2:
+        rshape = np.reshape(array, np.size(array))
+        for index in range(np.shape(rshape)[0]):
+            a_list.append(rshape[index])
+        return a_list
+    
+def select_rows(rows, array):
+    """
+    Creates 2-dim submatrix only of rows from list rows
+    array must be 2-dim
+    """
+    if array.ndim == 1:
+        new_array = array[rows[0]]
+        if len(rows) > 1:
+            for row in rows[1:]:
+                new_array = np.append(new_array, array[row])
+    elif array.ndim == 2:
+        new_array = array[rows[0], :]
+        if len(rows) > 1:
+            for row in enumerate(rows[1:]):
+                new_array = np.append(new_array, array[row, :], axis=0)
+    return new_array
+
+def to_mth(data):
+    """
+    This function transforms the yield curve data so that the names are all
+    in months
+    (not sure if this is necessary)
+    """
+    mths = []
+    fnd = 0
+    n_cols = len(data.columns)
+    for col in data.columns:
+        if 'm' in col:
+            mths.append(int(col[6]))
+            if fnd == 0:
+                mth_only = px.DataFrame(data[col],
+                        columns = [col],
+                        index=data.index)
+                fnd = 1
+            else:
+                mth_only[col] = data[col]
+        elif 'y' in col:
+            mth = int(col[6:])*12
+            mths.append(mth)
+            mth_only[('l_tr_m' + str(mth))] = data[col]
+    col_dict = dict([( mth_only.columns[x], mths[x]) for x in
+                range(n_cols)])
+    cols = np.asarray(sorted(col_dict.iteritems(),
+                    key=itemgetter(1)))[:,0].tolist()
+    mth_only = mth_only.reindex(columns = cols)
+    mths.sort()
+    return mth_only
+
+def gen_guesses(neqs, k_ar, lat):
+    """
+    Generates Ang and Piazzesi guesses for matrices
+    """
+    dim = neqs * k_ar + lat
+    lam_0 = np.zeros([dim, 1])
+    lam_1 = np.zeros([dim, dim])
+    delta_1 = np.zeros([dim, 1])
+    delta_1[-lat:, ] = np.array([[-0.0001], [0.0000], [0.0001]])
+    mu = np.zeros([dim, 1])
+    phi = np.zeros([dim, dim])
+    sigma = np.zeros([dim, dim])
+    if lat:
+        sigma[-lat:, -lat:] = np.identity(lat)
+        phi[-lat:, -lat:] = \
+                np.random.random(lat*lat).reshape((lat, -1)) / 100000
+    return lam_0, lam_1, delta_1, mu, phi, sigma

@@ -12,19 +12,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from util import robust, pickle_file, success_mail, fail_mail
-
-#identify computer
-#identify computer
-comp = socket.gethostname()
-global path_pre
-if comp == "BBAKER":
-    path_pre = "C:\\Documents and Settings\\bbaker"
-if comp == "bart-Inspiron-1525":
-    path_pre = "/home/bart"
-if comp == "linux-econ6":
-    path_pre = "/home/labuser"
-
+from util import robust, pickle_file, success_mail, to_mth
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -36,7 +24,7 @@ print "Model 1 running"
 # Get data                             #
 ########################################
 
-mthdata = px.read_csv(path_pre + "/data/VARbernankedata.csv", na_values="M",
+mthdata = px.read_csv("../data/VARbernankedata.csv", na_values="M",
                         index_col = 0, parse_dates=True)
 
 ########################################
@@ -103,7 +91,7 @@ x_t = x_t_na.dropna(axis=0)
 # Grab yield curve data                     #
 #############################################
 
-ycdata = px.read_csv(path_pre + "/data/yield_curve.csv",
+ycdata = px.read_csv("../data/yield_curve.csv",
                      na_values = "M", index_col=0, parse_dates=True)
 
 mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',
@@ -114,55 +102,59 @@ mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
 mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
 mod_yc_data = mod_yc_data.rename(columns = {'fed_funds' : 'l_tr_m1'})
 mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1)
+mth_only = to_mth(mod_yc_data)
+
 
 ################################################
 # Generate predictions of cumulative shortrate #
 ################################################
 
 #10 yr = 120 mths
-mths_pred = 120
-pred = np.zeros((vreg.neqs, len(mod_data)-vreg.k_ar))
-k_ar = vreg.k_ar
-neqs = vreg.neqs
-params = vreg.params.values.copy()
-avg_12 = []
-for t in range(k_ar, len(mod_data)):
-    s_data = mod_data[t-k_ar:t].values
-    for i in range(120):
-        new_dat = np.zeros((1, neqs))
-        for p in range(neqs):
-            new_dat[0, p] = params[0, p] + np.dot(np.flipud(s_data)[:k_ar].flatten()[None], params[1:,p,None])[0]
-        s_data = np.append(s_data, new_dat, axis=0)
-    avg_12.append(np.mean(s_data[:, 3]))
-
-#implied term premium
-var_tp = px.DataFrame(index=mod_yc_data.index[1:], data=np.asarray(avg_12), columns=["pred_12"])
-var_tp['act_12'] = mod_yc_data['l_tr_y10']
-var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
+# mths_pred = 120
+# pred = np.zeros((vreg.neqs, len(mod_data)-vreg.k_ar))
+# k_ar = vreg.k_ar
+# neqs = vreg.neqs
+# params = vreg.params.values.copy()
+# avg_12 = []
+# for t in range(k_ar, len(mod_data)):
+#     s_data = mod_data[t-k_ar:t].values
+#     for i in range(120):
+#         new_dat = np.zeros((1, neqs))
+#         for p in range(neqs):
+#             new_dat[0, p] = params[0, p] + np.dot(np.flipud(s_data)[:k_ar].flatten()[None], params[1:,p,None])[0]
+#         s_data = np.append(s_data, new_dat, axis=0)
+#     avg_12.append(np.mean(s_data[:, 3]))
+# 
+# #implied term premium
+# var_tp = px.DataFrame(index=mth_only.index[1:], data=np.asarray(avg_12), columns=["pred_12"])
+# var_tp['act_12'] = mth_only['l_tr_y10']
+# var_tp['VAR term premium'] = var_tp['act_12'] - var_tp['pred_12']
 
 ##################################################
 # Define exit message to send to email upon fail #
 ##################################################
-atexit.register(fail_mail, start_date, passwd)
+#atexit.register(fail_mail, start_date, passwd)
 
 #############################################
 # Testing                                   #
 #############################################
 
 run_groups = []
-atts = 100
+k_ar = vreg.k_ar
+neqs = vreg.neqs
+atts = 2
 np.random.seed(101)
 collect_0 = []
 collect_1 = []
 
-meth = "cf"
+meth = "nls"
 
 #generate decent guesses
 lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
 for a in range(atts):
     print str(a)
-    sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data)
+    sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mth_only)
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]
 
@@ -175,7 +167,7 @@ pickle_file(collect_0, "collect_0_curve")
 pickle_file(collect_1, "collect_1_curve")
 
 #use medians to guess for next 50 sims
-atts2 = 50
+atts2 = 1
 lam_0_coll = np.zeros((atts2, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
 cov_coll = np.zeros((atts2, neqs + neqs**2, neqs + neqs**2))
@@ -185,9 +177,8 @@ collect_cov_ref = []
 for a in range(atts2):
     print str(a)
     #third element is median
-    sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data,
-            lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1],
-            start_date=start_date, passwd=passwd)
+    sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mth_only,
+            lam_0_g=collect_0[3][1], lam_1_g=collect_1[3][1], passwd=passwd)
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]
     cov_coll[a] = sim_run[2]
