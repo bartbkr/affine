@@ -96,7 +96,7 @@ lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g = gen_guesses(k_ar=k_ar,
 #bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
 bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g,
                             delta_1_g=delta_1_g, mu_g=mu_g, phi_g=phi_g,
-                            sigma_g=sigma_g, method="ml", alg="nm",
+                            sigma_g=sigma_g, method="ml", alg="newton",
                             maxfev=10000000, maxiter=10000000)
 
 lam_0 = bsr_solve[0]

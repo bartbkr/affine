@@ -260,6 +260,7 @@ class Affine(LikelihoodModel):
         """
         #would be nice to have additional arguments here
         loglike = self.loglike
+        my_stuff = args
         return approx_hess(params, loglike, args=(args))
 
     def loglike(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
@@ -274,6 +275,8 @@ class Affine(LikelihoodModel):
         lam_0, lam_1, delta_1, mu, phi, sigma \
             = self._param_to_array(params=params, delta_1=delta_1, mu=mu, \
                                    phi=phi, sigma=sigma)
+
+        print lam_0
 
         solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1, \
                                 delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)
