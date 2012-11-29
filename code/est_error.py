@@ -143,17 +143,19 @@ six_mth = act_pred.reindex(columns = ['6_mth_act',
 #plot the term premium
 ten_yr_plot = ten_yr.reindex(columns = ['120_mth_act',
     '120_mth_pred', '120_mth_nrsk'])
-fig = ten_yr_plot.plot(legend=False)
+fig = ten_yr_plot.plot(style=['-', '--', '-.'], legend=False)
 handles, old_labels = fig.get_legend_handles_labels()
 fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
-plt.savefig("../../diss_writeup/figures/tenyr_rep.png")
+#plt.savefig("../../diss_writeup/figures/tenyr_rep.png")
+plt.show()
 #two year
 two_yr_plot = two_yr.reindex(columns = ['24_mth_act',
     '24_mth_pred', '24_mth_nrsk'])
-fig = two_yr_plot.plot()
+fig = two_yr_plot.plot(style=['-', '--', '-.'])
 handles, old_labels = fig.get_legend_handles_labels()
 fig.legend(handles, ('Actual', 'Predicted', 'Risk-neutral'))
-plt.savefig("../../diss_writeup/figures/twoyr_rep.png")
+#plt.savefig("../../diss_writeup/figures/twoyr_rep.png")
+plt.show()
 
 #generate st dev of residuals
 yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr', 'seven_yr', 
