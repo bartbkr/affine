@@ -1,5 +1,5 @@
 """
-This defines the class objection Affine, intended to solve affine models of the
+This defines the class object Affine, intended to solve affine models of the
 term structure
 This class inherits from statsmodels LikelihoodModel class
 """
