@@ -225,7 +225,7 @@ class Affine(LikelihoodModel):
                                               delta_1=delta_1, mu=mu, phi=phi,
                                               sigma=sigma)
 
-        #This will need to be reworked
+        #This will need to be refactored
         #if full_output:
             #return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output 
         if method == "nls":
@@ -271,6 +271,7 @@ class Affine(LikelihoodModel):
         per = self.periods
 
         #HERE all of the params don't seem to be moving
+        #only seems to be for certain solution methods
 
         lam_0, lam_1, delta_1, mu, phi, sigma \
             = self._param_to_array(params=params, delta_1=delta_1, mu=mu, \
