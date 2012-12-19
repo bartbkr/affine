@@ -17,7 +17,7 @@ from statsmodels.regression.linear_model import OLS
 from statsmodels.tools.numdiff import (approx_hess, approx_fprime)
 from operator import itemgetter
 from scipy import optimize
-from util import flatten, select_rows
+from util import flatten, select_rows, retry
 
 #debugging
 import pdb
@@ -193,8 +193,9 @@ class Affine(LikelihoodModel):
 
         if method == "ls":
             func = self._affine_nsum_errs
-            reslt = optimize.leastsq(func, params, maxfev=maxfev,
-                                xtol=xtol, full_output=full_output)
+            solver = retry(optimize, attempts)
+            reslt = solver(func, params, maxfev=maxfev, xtol=xtol,
+                    full_output=full_output)
             solv_params = reslt[0]
             output = reslt[1:]
 

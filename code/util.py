@@ -9,8 +9,10 @@ import datetime as dt
 import pickle
 import smtplib
 import decorator
+import sys
 
 from operator import itemgetter
+from numpy.linalg import LinAlgError
 
 def pickle_file(obj=None, name=None):
     """
@@ -216,14 +218,11 @@ def retry(func, attempts, *exception_types):
             try:
                 return func(**kwargs)
                 break
-            except LinAlgError as e:
-                print e.message
+            except LinAlgError:
                 print "Trying again, maybe bad initial run"
+                print "LinAlgError:", sys.exc_info()[0]
                 continue
             except:
                 print "Unexpected error:", sys.exc_info()[0]
                 raise
-                break
     return inner_wrapper
-
-
