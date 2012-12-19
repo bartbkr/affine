@@ -4,9 +4,11 @@ These are utilies used by the affine model class
 
 import numpy as np
 import pandas as px
+import datetime as dt
+
 import pickle
 import smtplib
-import datetime as dt
+import decorator
 
 from operator import itemgetter
 
@@ -204,3 +206,24 @@ def gen_guesses(neqs, k_ar, lat):
         phi[-lat:, -lat:] = \
                 np.random.random(lat*lat).reshape((lat, -1)) / 100000
     return lam_0, lam_1, delta_1, mu, phi, sigma
+
+def retry(func, attempts, *exception_types):
+    """
+    Decorator that attempts a function multiple times, even with exception
+    """
+    def inner_wrapper(**kwargs):
+        for attempt in xrange(attempts):
+            try:
+                return func(**kwargs)
+                break
+            except LinAlgError as e:
+                print e.message
+                print "Trying again, maybe bad initial run"
+                continue
+            except:
+                print "Unexpected error:", sys.exc_info()[0]
+                raise
+                break
+    return inner_wrapper
+
+

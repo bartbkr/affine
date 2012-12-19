@@ -110,8 +110,8 @@ class Affine(LikelihoodModel):
 
     def solve(self, lam_0_g=None, lam_1_g=None, delta_1_g=None, mu_g=None,
               phi_g=None, sigma_g=None, method="ls", alg="newton",
-              maxfev=10000, maxiter=10000, ftol=1e-100, xtol=1e-100,
-              full_output=False):
+              attempts=5, maxfev=10000, maxiter=10000, ftol=1e-100, 
+              xtol=1e-100, full_output=False):
         """
         Attempt to solve affine model
 
@@ -142,6 +142,9 @@ class Affine(LikelihoodModel):
             to the solver.  Each solver has several optional arguments that are
             not the same across solvers.  See the notes section below (or
             scipy.optimize) for the available arguments.
+        attempts : int
+            Number of attempts to retry solving if singular matrix Exception
+            raised by Numpy
 
         scipy.optimize.leastsq params
         maxfev : int
@@ -276,7 +279,7 @@ class Affine(LikelihoodModel):
             = self._param_to_array(params=params, delta_1=delta_1, mu=mu, \
                                    phi=phi, sigma=sigma)
 
-        print lam_0
+        #print lam_0
 
         solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1, \
                                 delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)
