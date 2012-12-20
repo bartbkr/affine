@@ -209,7 +209,7 @@ def gen_guesses(neqs, k_ar, lat):
                 np.random.random(lat*lat).reshape((lat, -1)) / 100000
     return lam_0, lam_1, delta_1, mu, phi, sigma
 
-def retry(func, attempts, *exception_types):
+def retry(func, attempts):
     """
     Decorator that attempts a function multiple times, even with exception
     """
