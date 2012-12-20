@@ -22,8 +22,7 @@ def pickle_file(obj=None, name=None):
     pickle.dump(obj, pkl_file)
     pkl_file.close()
 
-def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
-        passwd=None):
+def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None):
     """
     Function to run model with guesses, also generating 
     method : string
@@ -213,10 +212,10 @@ def retry(func, attempts):
     """
     Decorator that attempts a function multiple times, even with exception
     """
-    def inner_wrapper(**kwargs):
+    def inner_wrapper(*args, **kwargs):
         for attempt in xrange(attempts):
             try:
-                return func(**kwargs)
+                return func(*args, **kwargs)
                 break
             except LinAlgError:
                 print "Trying again, maybe bad initial run"

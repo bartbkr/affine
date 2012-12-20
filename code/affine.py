@@ -194,7 +194,8 @@ class Affine(LikelihoodModel):
         if method == "ls":
             func = self._affine_nsum_errs
             solver = retry(optimize.leastsq, attempts)
-            reslt = solver(func, params, maxfev=maxfev, xtol=xtol, full_output=full_output)
+            reslt = solver(func, params, maxfev=maxfev, xtol=xtol,
+                           full_output=full_output)
             solv_params = reslt[0]
             output = reslt[1:]
 
@@ -205,12 +206,12 @@ class Affine(LikelihoodModel):
             #run optmization
             solver = retry(optimize.curve_fit, attempts)
             reslt = solver(func, var_data_vert, yield_stack, p0=params,
-                    maxfev=maxfev, xtol=xtol, full_output=full_output)
+                           maxfev=maxfev, xtol=xtol, full_output=True)
             solv_params = reslt[0]
             solv_cov = reslt[1]
 
         elif method == "ml":
-            solver = retry(solf.fit, attempts)
+            solver = retry(self.fit, attempts)
             solve = solver(start_params=params, method=alg, maxiter=maxiter,
                     maxfun=maxfev, xtol=xtol, fargs=(lam_0_g, lam_1_g,
                         delta_1_g, mu_g, phi_g, sigma_g))
