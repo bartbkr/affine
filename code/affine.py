@@ -326,6 +326,17 @@ class Affine(LikelihoodModel):
         Performs three step ML ala Ang and Piazzesi (2003)
 
         """
+        #1) keep lam_0 and lam_1 equal to zero and estimate to get starting
+        #parameters for \theta
+
+        #2)Hold lam_0 constant while estimating to get starting values for
+        #lam_1
+
+        #3) Set insignificant parameters in lam_1 equal to zero and estimate
+        #lamda_0
+
+        #4) Set insignficant parameters in lam_0 equal to 0. Re-estimate whole
+        # system abiding by all parameter guesses and parameters equalt to 0
 
         #estimate with lam_0_g 
         lam_0_g
@@ -642,6 +653,7 @@ class Affine(LikelihoodModel):
         multistep : step in ang and piazzesi method
             0 : NA
             1 : set both lam_0 and lam_1 equal to zero
+            2 : set lam_0 eqaul to 0 
         """
         #we will integrate standard assumptions
         #these could be changed later, but need to think of a standard way of
