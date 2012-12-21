@@ -132,6 +132,7 @@ class Affine(LikelihoodModel):
             ls = linear least squares
             nls = nonlinear least squares
             ml = maximum likelihood
+            angpiazml = ang and piazzesi multi-step ML
         alg : str {'newton','nm','bfgs','powell','cg', or 'ncg'}
             algorithm used for numerical approximation
             Method can be 'newton' for Newton-Raphson, 'nm' for Nelder-Mead,
@@ -176,6 +177,7 @@ class Affine(LikelihoodModel):
 
         #creates single input vector for params to solve
         if lat:
+            #assertions for correction passed in parameters
             assert np.shape(delta_1_g) == (dim, 1), "Shape of delta_1_g" \
                 "incorrect"
             assert np.shape(mu_g) == (dim, 1), "Shape of mu incorrect"
@@ -184,9 +186,11 @@ class Affine(LikelihoodModel):
             delta_1_g, mu_g, phi_g, sigma_g = \
                     self._pass_ols(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
                                    sigma=sigma_g)
+            pdb.set_trace()
 
-            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g, 
-                    delta_1=delta_1_g, mu=mu_g, phi=phi_g, sigma=sigma_g)
+            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g,
+                                          delta_1=delta_1_g, mu=mu_g,
+                                          phi=phi_g, sigma=sigma_g)
 
         else:
             params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g)
@@ -218,6 +222,10 @@ class Affine(LikelihoodModel):
 
             solv_params = solve.params
             tvalues = solve.tvalues
+        elif method == "angpiazml":
+            solve = solver(start_params=params, method=alg, maxiter=maxiter,
+                    maxfun=maxfev, xtol=xtol, fargs=(lam_0_g, lam_1_g,
+                        delta_1_g, mu_g, phi_g, sigma_g))
 
         # elif method = "ml_angpiaz":
         #     func = self.something
@@ -311,6 +319,22 @@ class Affine(LikelihoodModel):
                np.sum(yield_errs**2/np.var(yield_errs, axis=1)[None].T)
 
         return like
+
+    def angpiazml(start_params=, method=, maxiter=, maxfun=, xtol=, delta_1_g=,
+                  mu_g=, phi_g=, sigma_g=):
+        """
+        Performs three step ML ala Ang and Piazzesi (2003)
+
+        """
+
+        #estimate with lam_0_g 
+        lam_0_g
+
+        params = 
+
+
+
+
 
     def gen_pred_coef(self, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
@@ -599,7 +623,7 @@ class Affine(LikelihoodModel):
         return new
     
     def _params_to_list(self, lam_0=None, lam_1=None, delta_1=None, mu=None,
-                        phi=None, sigma=None):
+                        phi=None, sigma=None, multistep=0):
         """
         Creates a single list of params from guess arrays that is passed into
         solver
@@ -615,6 +639,9 @@ class Affine(LikelihoodModel):
             guess for elements of phi
         sigma : array (neqs * k_ar + lat, neqs * k_ar + lat)
             guess for elements of sigma
+        multistep : step in ang and piazzesi method
+            0 : NA
+            1 : set both lam_0 and lam_1 equal to zero
         """
         #we will integrate standard assumptions
         #these could be changed later, but need to think of a standard way of
@@ -694,6 +721,8 @@ class Affine(LikelihoodModel):
         macro = self.var_data.copy()[k_ar - 1:]
 
         macro["constant"] = 1
+        #we will want to change this next one once we make delta_1 uncontrained
+        #(see top of ang and piazzesi page 759)
         delta_1[:neqs] = OLS(self.rf_rate,
                              macro).fit().params[1:].values[None].T
         mu[:neqs * k_ar, 0, None] = self.mu_ols[None]
