@@ -11,6 +11,7 @@ import scipy.linalg as la
 import re
 
 from numpy import linalg as nla
+from numpy import ma
 from statsmodels.tsa.api import VAR
 from statsmodels.base.model import LikelihoodModel
 from statsmodels.regression.linear_model import OLS
@@ -31,7 +32,7 @@ class Affine(LikelihoodModel):
     This class defines an affine model of the term structure
     """
     def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4, freq='M',
-                    latent=False, no_err=None):
+                 latent=False, no_err=None):
         """
         Attempts to solve affine model
         yc_data : DataFrame 
@@ -108,25 +109,30 @@ class Affine(LikelihoodModel):
 
         super(Affine, self).__init__(var_data_vert)
 
-    def solve(self, lam_0_g=None, lam_1_g=None, delta_1_g=None, mu_g=None,
-              phi_g=None, sigma_g=None, method="ls", alg="newton",
+    def solve(self, lam_0_e=None, lam_1_e=None, delta_1_e=None, mu_e=None,
+              phi_e=None, sigma_e=None, method="ls", alg="newton",
               attempts=5, maxfev=10000, maxiter=10000, ftol=1e-100, 
               xtol=1e-100, full_output=False):
         """
         Attempt to solve affine model
 
-        lam_0_g : array (neqs * k_ar + lat, 1)
-            guess for elements of lambda_0
-        lam_1_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            guess for elements of lambda_1
-        delta_1_g : array (neqs * k_ar + lat, 1)
-            guess for elements of delta_1
-        mu_g : array (neqs * k_ar + lat, 1)
-            guess for elements of mu
-        phi_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            guess for elements of phi
-        sigma_g : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            guess for elements of sigma
+        For all estimate paramters:
+        elements marked with 'E' or 'e' are estimated
+        n = number of variables in fully-specified VAR(1) at t
+        lam_0_e : array-like, n x 1
+            shape of constant vector of risk pricing equation
+        lam_1_e : array-like, n x n
+            shape of parameter array of risk pricing equation
+        delta_1_e : array-like, n x 1
+            shape of initial parameter vector, corresponding to short-rate
+            equation
+        mu_e : array-like, n x 1
+            shape of constant vector for VAR process
+        phi_e : array-like, n x n
+            shape of parameter array for VAR process
+        sigma_e : array-like, n x n
+            shape of variance, covariance array for VAR process
+
         method : string
             solution method
             ls = linear least squares
@@ -147,7 +153,7 @@ class Affine(LikelihoodModel):
             Number of attempts to retry solving if singular matrix Exception
             raised by Numpy
 
-        scipy.optimize.leastsq params
+        scipy.optimize params
         maxfev : int
             maximum number of calls to the function for solution alg
         maxiter : int
@@ -173,7 +179,8 @@ class Affine(LikelihoodModel):
         if lam_0_g is not None:
             assert np.shape(lam_0_g) == (dim, 1), "Shape of lam_0_g incorrect"
         if lam_1_g is not None:
-            assert np.shape(lam_1_g) == (dim, dim), "Shape of lam_1_g incorrect"
+            assert np.shape(lam_1_g) == (dim, dim), \
+                "Shape of lam_1_g incorrect"
 
         #creates single input vector for params to solve
         if lat:
@@ -186,8 +193,6 @@ class Affine(LikelihoodModel):
             delta_1_g, mu_g, phi_g, sigma_g = \
                     self._pass_ols(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
                                    sigma=sigma_g)
-            pdb.set_trace()
-
             params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g,
                                           delta_1=delta_1_g, mu=mu_g,
                                           phi=phi_g, sigma=sigma_g)
@@ -217,9 +222,8 @@ class Affine(LikelihoodModel):
         elif method == "ml":
             solver = retry(self.fit, attempts)
             solve = solver(start_params=params, method=alg, maxiter=maxiter,
-                    maxfun=maxfev, xtol=xtol, fargs=(lam_0_g, lam_1_g,
-                        delta_1_g, mu_g, phi_g, sigma_g))
-
+                    maxfun=maxfev, xtol=xtol, fargs=(lam_0_e, lam_1_e,
+                        delta_1_e, mu_e, phi_e, sigma_e))
             solv_params = solve.params
             tvalues = solve.tvalues
         elif method == "angpiazml":
@@ -283,14 +287,12 @@ class Affine(LikelihoodModel):
         lat = self.lat
         per = self.periods
 
-        #HERE all of the params don't seem to be moving
+        #all of the params don't seem to be moving
         #only seems to be for certain solution methods
 
         lam_0, lam_1, delta_1, mu, phi, sigma \
             = self._param_to_array(params=params, delta_1=delta_1, mu=mu, \
                                    phi=phi, sigma=sigma)
-
-        #print lam_0
 
         solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1, \
                                 delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)
@@ -356,6 +358,7 @@ class Affine(LikelihoodModel):
         phi : array
         sigma : array
         """
+        #This should be passed to a C function, it is slow right now
         mths = self.mths
         delta_0 = self.delta_0
         max_mth = max(mths)
@@ -511,8 +514,8 @@ class Affine(LikelihoodModel):
             mths.append(int(re.match(matcher, column).group(2)))
         return mths
 
-    def _param_to_array(self, params, delta_1=None, mu=None, phi=None,
-            sigma=None):
+    def _param_to_array(self, params, lam_0_e=lam_0, lam_1_e=lam_1,
+                        delta_1_e=delta_1, mu_e=mu, phi_e=phi)
         """
         Process params input into appropriate arrays
 
@@ -532,70 +535,15 @@ class Affine(LikelihoodModel):
         neqs = self.neqs
         k_ar = self.k_ar
 
-        if lat:
+        all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
 
-            pos_list = self.pos_list
+        arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
+                                     all_arrays])
 
-            lam_0_est = params[:pos_list[0]]
-            lam_1_est = params[pos_list[0]:pos_list[1]]
-            delta_1_g = params[pos_list[1]:pos_list[2]]
-            mu_g = params[pos_list[2]:pos_list[3]]
-            phi_g = params[pos_list[3]:pos_list[4]]
-            sigma_g = params[pos_list[4]:]
+        for pos, struct in enumerate(all_arrays):
+            struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
 
-            #lambda_0
-
-            lam_0 = np.zeros([k_ar * neqs + lat, 1])
-            lam_0[:neqs, 0] = np.asarray(lam_0_est[:neqs]).T
-            lam_0[-lat:, 0] = np.asarray(lam_0_est[-lat:]).T
-
-            #lambda_1
-
-            lam_1 = np.zeros([k_ar * neqs + lat, k_ar * neqs + lat])
-            lam_1[:neqs, :neqs] = np.reshape(lam_1_est[:neqs**2], (neqs, neqs))
-            nxt = neqs*lat
-            lam_1[:neqs, -lat:] = np.reshape(lam_1_est[neqs**2:\
-                                            neqs**2 + nxt],(neqs,lat))
-            nxt = nxt + neqs**2
-            lam_1[-lat:, :neqs] = np.reshape(lam_1_est[nxt: \
-                                            nxt+lat*neqs], (lat, neqs))
-            nxt = nxt + lat * neqs
-            lam_1[-lat:, -lat:] = np.reshape(lam_1_est[nxt: \
-                                            nxt + lat**2], (lat, lat))
-
-            #delta_1
-
-            delta_1[-lat:, 0] = np.asarray(delta_1_g)
-
-            #mu
-
-            mu[-lat:, 0] = np.asarray(mu_g)
-
-            #phi
-
-            phi[-lat:, -lat:] = np.reshape(phi_g, (lat, lat))
-
-            #sigma
-
-            sigma[-lat:, -lat:] = np.reshape(sigma_g, (lat, lat))
-
-        else:
-
-            lam_0_est = params[:neqs]
-            lam_1_est = params[neqs:]
-
-            lam_0 = np.zeros([k_ar*neqs, 1])
-            lam_0[:neqs] = np.asarray([lam_0_est]).T
-
-            lam_1 = np.zeros([k_ar*neqs, k_ar*neqs])
-            lam_1[:neqs, :neqs] = np.reshape(lam_1_est, (neqs, neqs))
-
-            delta_1 = self.delta_1_nolat
-            mu = self.mu_ols
-            phi = self.phi_ols
-            sigma = self.sigma_ols
-
-        return lam_0, lam_1, delta_1, mu, phi, sigma
+        return all_arrays
 
     def _affine_pred(self, data, *params):
         """
@@ -659,6 +607,11 @@ class Affine(LikelihoodModel):
         #these could be changed later, but need to think of a standard way of
         #bring them in
 
+        all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
+
+        for struct in all_arrays:
+            guess_list.append(struct
+
         lat = self.lat
         neqs = self.neqs
         guess_list = []
@@ -683,7 +636,7 @@ class Affine(LikelihoodModel):
         #flatten this list into one dimension
         flatg_list = [item for sublist in guess_list for item in sublist]
         return flatg_list
-    
+
     def _gen_OLS_res(self):
         """
         Runs VAR on macro data and retrieves parameters
@@ -776,6 +729,16 @@ class Affine(LikelihoodModel):
             pos += length
 
         return pos_list
+    
+    def _gen_arg_sep(self, arg_lenths):
+        """
+        Generates list of positions 
+        """
+        arg_sep = [0]
+        for length in arg_lengths:
+            pos_list.append(length + pos)
+            pos += length
+        return arg_sep
 
     def _gen_col_names(self):
         """
