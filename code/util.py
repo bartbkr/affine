@@ -3,6 +3,7 @@ These are utilies used by the affine model class
 """
 
 import numpy as np
+import numpy.ma as ma
 import pandas as px
 import datetime as dt
 
@@ -13,6 +14,8 @@ import sys
 
 from operator import itemgetter
 from numpy.linalg import LinAlgError
+from statsmodels.tsa.api import VAR
+from statsmodels.regression.linear_model import OLS
 
 def pickle_file(obj=None, name=None):
     """
@@ -225,3 +228,141 @@ def retry(func, attempts):
                 print "Unexpected error:", sys.exc_info()[0]
                 raise
     return inner_wrapper
+
+def params_to_list(lam_0=None, lam_1=None, delta_1=None, mu=None,
+                   phi=None, sigma=None, multistep=0):
+    """
+    Creates a single list of params from guess arrays that is passed into
+    solver
+    lam_0 : array (neqs * k_ar + lat, 1)
+        guess for elements of lambda_0
+    lam_1 : array (neqs * k_ar + lat, neqs * k_ar + lat)
+        guess for elements of lambda_1
+    delta_1 : array (neqs * k_ar + lat, 1)
+        guess for elements of delta_1
+    mu : array (neqs * k_ar + lat, 1)
+        guess for elements of mu
+    phi : array (neqs * k_ar + lat, neqs * k_ar + lat)
+        guess for elements of phi
+    sigma : array (neqs * k_ar + lat, neqs * k_ar + lat)
+        guess for elements of sigma
+    """
+    #we will integrate standard assumptions
+    #these could be changed later, but need to think of a standard way of
+    #bring them in
+
+    all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
+
+    guess_list = []
+
+    #for struct in all_arrays:
+        #guess_list.append(struct[ma.getmask(struct))
+
+    #we assume that those params corresponding to lags are set to zero
+    if lat: 
+        #we are assuming independence between macro factors and latent
+        #factors
+        guess_list.append(flatten(lam_0[:neqs]))
+        guess_list.append(flatten(lam_0[-lat:]))
+        guess_list.append(flatten(lam_1[:neqs, :neqs]))
+        guess_list.append(flatten(lam_1[:neqs, -lat:]))
+        guess_list.append(flatten(lam_1[-lat:, :neqs]))
+        guess_list.append(flatten(lam_1[-lat:, -lat:]))
+        guess_list.append(flatten(delta_1[-lat:, 0]))
+        guess_list.append(flatten(mu[-lat:, 0]))
+        guess_list.append(flatten(phi[-lat:, -lat:]))
+        guess_list.append(flatten(sigma[-lat:, -lat:]))
+    else:
+        guess_list.append(flatten(lam_0[:neqs]))
+        guess_list.append(flatten(lam_1[:neqs, :neqs]))
+
+    #flatten this list into one dimension
+    flatg_list = [item for sublist in guess_list for item in sublist]
+    return flatg_list
+
+def ap_constructor(neqs, k_ar, lat):
+    """
+    Contructor for ang and piazzesi model
+    """
+
+    masklower = np.mask_indices(lat, np.tril)
+    lower_ind = np.tril_indecies(lat)
+    for numb, element in enumerate(lower_ind):
+        lower_ind[numb] = element + neqs + k_ar
+
+    dim = neqs * k_ar + lat
+    lam_0 = ma.zeros([dim, 1])
+    lam_1 = ma.zeros([dim, dim])
+    delta_1 = ma.zeros([dim, 1])
+    delta_1[-lat:, ] = np.array([[-0.0001], [0.0000], [0.0001]])
+    mu = ma.zeros([dim, 1])
+    phi = ma.zeros([dim, dim])
+    sigma = ma.zeros([dim, dim])
+    if lat:
+        sigma[-lat:, -lat:] = np.identity(lat)
+        phi[-lat:, -lat:] = \
+                np.random.random(lat*lat).reshape((lat, -1)) / 100000
+
+    #mask values to be estimated
+    lam_0[:neqs, 0] = ma.masked
+    lam_0[-lat:, 0] = ma.masked
+
+    lam_1[:neqs, :neqs] = ma.masked
+    lam_1[:neqs, -lat:] = ma.masked
+    lam_1[-lat:, :neqs] = ma.masked
+    lam_1[-lat:, -lat:] = ma.masked
+
+    delta_1[-lat:, 0] = ma.masked
+
+    mu[-lat:, 0] = ma.masked
+
+    phi[lower_ind] = ma.masked
+
+    sigma[lower_ind] = ma.masked
+
+    return lam_0, lam_1, delta_1, mu, phi, sigma
+
+def pass_ols(var_data, freq, lat, k_ar, neqs, delta_1, mu, phi, sigma, 
+             rf_rate):
+    """
+    Inserts estimated OLS parameters into appropriate matrices
+
+    delta_1 : array (neqs * k_ar + lat, 1)
+        guess for elements of delta_1
+    mu : array (neqs * k_ar + lat, 1)
+        guess for elements of mu
+    phi : array (neqs * k_ar + lat, neqs * k_ar + lat)
+        guess for elements of phi
+    sig : array (neqs * k_ar + lat, neqs * k_ar + lat)
+        guess for elements of sigma
+    """
+    var_fit = VAR(var_data, freq=freq).fit(maxlags=k_ar)
+
+    coefs = var_fit.params.values
+    sigma_u = var_fit.sigma_u
+
+    obs_var = neqs * k_ar
+
+    mu_ols = np.zeros([k_ar*neqs, 1])
+    mu_ols[:neqs] = coefs[0, None].T
+
+    phi_ols = np.zeros([k_ar * neqs, k_ar * neqs])
+    phi_ols[:neqs] = coefs[1:].T
+    phi_ols[neqs:obs_var, :(k_ar - 1) * neqs] = np.identity((k_ar - 1) * neqs)
+
+    sigma_ols = np.zeros([k_ar * neqs, k_ar * neqs])
+    sigma_ols[:neqs, :neqs] = sigma_u
+    sigma_ols[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
+    sigma_ols = np.tril(sigma_ols)
+    
+    macro = var_data.copy()[k_ar - 1:]
+    macro["constant"] = 1
+    #we will want to change this next one once we make delta_1 uncontrained
+    #(see top of ang and piazzesi page 759)
+    delta_1[:neqs] = OLS(rf_rate,
+                         macro).fit().params[1:].values[None].T
+    mu[:neqs * k_ar, 0, None] = mu_ols[None]
+    phi[:neqs * k_ar, :neqs * k_ar] = phi_ols[None]
+    sigma[:neqs * k_ar, :neqs * k_ar] = sigma_ols[None]
+
+    return delta_1, mu, phi, sigma

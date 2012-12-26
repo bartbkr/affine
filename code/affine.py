@@ -109,12 +109,16 @@ class Affine(LikelihoodModel):
 
         super(Affine, self).__init__(var_data_vert)
 
-    def solve(self, lam_0_e=None, lam_1_e=None, delta_1_e=None, mu_e=None,
-              phi_e=None, sigma_e=None, method="ls", alg="newton",
-              attempts=5, maxfev=10000, maxiter=10000, ftol=1e-100, 
-              xtol=1e-100, full_output=False):
+    def solve(self, guess_params, lam_0_e=None, lam_1_e=None, delta_1_e=None,
+            mu_e=None, phi_e=None, sigma_e=None, method="ls", alg="newton",
+            attempts=5, maxfev=10000, maxiter=10000, ftol=1e-100, xtol=1e-100,
+            full_output=False):
         """
         Attempt to solve affine model
+
+        guess_params : list
+            List of starting values for parameters to be estimated
+            In row-order and ordered as masked arrays
 
         For all estimate paramters:
         elements marked with 'E' or 'e' are estimated
@@ -190,6 +194,7 @@ class Affine(LikelihoodModel):
             assert np.shape(mu_g) == (dim, 1), "Shape of mu incorrect"
             assert np.shape(phi_g) == (dim, dim), "Shape of phi_g incorrect"
             assert np.shape(sigma_g) == (dim, dim), "Shape of sig_g incorrect"
+            #This might need to be removed towrads purer solver class
             delta_1_g, mu_g, phi_g, sigma_g = \
                     self._pass_ols(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
                                    sigma=sigma_g)
@@ -230,9 +235,6 @@ class Affine(LikelihoodModel):
             solve = solver(start_params=params, method=alg, maxiter=maxiter,
                     maxfun=maxfev, xtol=xtol, fargs=(lam_0_g, lam_1_g,
                         delta_1_g, mu_g, phi_g, sigma_g))
-
-        # elif method = "ml_angpiaz":
-        #     func = self.something
 
         lam_0, lam_1, delta_1, mu, phi, sigma = \
                 self._param_to_array(params=solv_params, delta_1=delta_1_g,
@@ -322,32 +324,32 @@ class Affine(LikelihoodModel):
 
         return like
 
-    def angpiazml(start_params=, method=, maxiter=, maxfun=, xtol=, delta_1_g=,
-                  mu_g=, phi_g=, sigma_g=):
-        """
-        Performs three step ML ala Ang and Piazzesi (2003)
+    # def angpiazml(start_params, method=, maxiter=, maxfun=, xtol=, delta_1_g=,
+    #               mu_g=, phi_g=, sigma_g=):
+    #     """
+    #     Performs three step ML ala Ang and Piazzesi (2003)
 
-        """
-        #1) keep lam_0 and lam_1 equal to zero and estimate to get starting
-        #parameters for \theta
+    #     multistep : step in ang and piazzesi method
+    #         0 : NA
+    #         1 : set both lam_0 and lam_1 equal to zero
+    #         2 : set lam_0 eqaul to 0 
+    #     """
+    #     #1) keep lam_0 and lam_1 equal to zero and estimate to get starting
+    #     #parameters for \theta
 
-        #2)Hold lam_0 constant while estimating to get starting values for
-        #lam_1
+    #     #2)Hold lam_0 constant while estimating to get starting values for
+    #     #lam_1
 
-        #3) Set insignificant parameters in lam_1 equal to zero and estimate
-        #lamda_0
+    #     #3) Set insignificant parameters in lam_1 equal to zero and estimate
+    #     #lamda_0
 
-        #4) Set insignficant parameters in lam_0 equal to 0. Re-estimate whole
-        # system abiding by all parameter guesses and parameters equalt to 0
+    #     #4) Set insignficant parameters in lam_0 equal to 0. Re-estimate whole
+    #     # system abiding by all parameter guesses and parameters equalt to 0
 
-        #estimate with lam_0_g 
-        lam_0_g
+    #     #estimate with lam_0_g 
+    #     lam_0_g
 
-        params = 
-
-
-
-
+    #     params = 
 
     def gen_pred_coef(self, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
@@ -487,7 +489,6 @@ class Affine(LikelihoodModel):
                         np.dot(b_sel_obs, var_data_vert.values.T) - \
                         np.dot(b_sel_unobs, unobs)
 
-
         var_data_c = var_data_vert.copy()
         for factor in range(lat):
             var_data_c["latent_" + str(factor)] = unobs[factor, :]
@@ -514,8 +515,8 @@ class Affine(LikelihoodModel):
             mths.append(int(re.match(matcher, column).group(2)))
         return mths
 
-    def _param_to_array(self, params, lam_0_e=lam_0, lam_1_e=lam_1,
-                        delta_1_e=delta_1, mu_e=mu, phi_e=phi)
+    def _param_to_array(self, params, lam_0_e, lam_1_e, delta_1_e, mu_e,
+                        phi_e):
         """
         Process params input into appropriate arrays
 
@@ -529,12 +530,7 @@ class Affine(LikelihoodModel):
             phi prior to complete model solve
         sigma : array (neqs * k_ar + lat, neqs * k_ar + lat)
             sigma prior to complete model solve
-
         """
-        lat = self.lat
-        neqs = self.neqs
-        k_ar = self.k_ar
-
         all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
 
         arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
@@ -581,62 +577,6 @@ class Affine(LikelihoodModel):
             new[col*obs:(col+1)*obs] = orig[mth].values
         return new
     
-    def _params_to_list(self, lam_0=None, lam_1=None, delta_1=None, mu=None,
-                        phi=None, sigma=None, multistep=0):
-        """
-        Creates a single list of params from guess arrays that is passed into
-        solver
-        lam_0 : array (neqs * k_ar + lat, 1)
-            guess for elements of lambda_0
-        lam_1 : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            guess for elements of lambda_1
-        delta_1 : array (neqs * k_ar + lat, 1)
-            guess for elements of delta_1
-        mu : array (neqs * k_ar + lat, 1)
-            guess for elements of mu
-        phi : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            guess for elements of phi
-        sigma : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            guess for elements of sigma
-        multistep : step in ang and piazzesi method
-            0 : NA
-            1 : set both lam_0 and lam_1 equal to zero
-            2 : set lam_0 eqaul to 0 
-        """
-        #we will integrate standard assumptions
-        #these could be changed later, but need to think of a standard way of
-        #bring them in
-
-        all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
-
-        for struct in all_arrays:
-            guess_list.append(struct
-
-        lat = self.lat
-        neqs = self.neqs
-        guess_list = []
-        #we assume that those params corresponding to lags are set to zero
-        if lat: 
-            #we are assuming independence between macro factors and latent
-            #factors
-            guess_list.append(flatten(lam_0[:neqs]))
-            guess_list.append(flatten(lam_0[-lat:]))
-            guess_list.append(flatten(lam_1[:neqs, :neqs]))
-            guess_list.append(flatten(lam_1[:neqs, -lat:]))
-            guess_list.append(flatten(lam_1[-lat:, :neqs]))
-            guess_list.append(flatten(lam_1[-lat:, -lat:]))
-            guess_list.append(flatten(delta_1[-lat:, 0]))
-            guess_list.append(flatten(mu[-lat:, 0]))
-            guess_list.append(flatten(phi[-lat:, -lat:]))
-            guess_list.append(flatten(sigma[-lat:, -lat:]))
-        else:
-            guess_list.append(flatten(lam_0[:neqs]))
-            guess_list.append(flatten(lam_1[:neqs, :neqs]))
-
-        #flatten this list into one dimension
-        flatg_list = [item for sublist in guess_list for item in sublist]
-        return flatg_list
-
     def _gen_OLS_res(self):
         """
         Runs VAR on macro data and retrieves parameters
@@ -667,34 +607,6 @@ class Affine(LikelihoodModel):
         sigma[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
         
         return mu, phi, sigma
-
-    def _pass_ols(self, delta_1, mu, phi, sigma):
-        """
-        Inserts estimated OLS parameters into appropriate matrices
-
-        delta_1 : array (neqs * k_ar + lat, 1)
-            guess for elements of delta_1
-        mu : array (neqs * k_ar + lat, 1)
-            guess for elements of mu
-        phi : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            guess for elements of phi
-        sig : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            guess for elements of sigma
-        """
-        k_ar = self.k_ar
-        neqs = self.neqs
-        macro = self.var_data.copy()[k_ar - 1:]
-
-        macro["constant"] = 1
-        #we will want to change this next one once we make delta_1 uncontrained
-        #(see top of ang and piazzesi page 759)
-        delta_1[:neqs] = OLS(self.rf_rate,
-                             macro).fit().params[1:].values[None].T
-        mu[:neqs * k_ar, 0, None] = self.mu_ols[None]
-        phi[:neqs * k_ar, :neqs * k_ar] = self.phi_ols[None]
-        sigma[:neqs * k_ar, :neqs * k_ar] = self.sigma_ols[None]
-
-        return delta_1, mu, phi, sigma
 
     def _ml_meth(self, params, lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g):
         """
