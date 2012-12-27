@@ -24,7 +24,7 @@ from util import flatten, select_rows, retry
 import pdb
 
 #############################################
-# Create affine class system                   #
+# Create affine class system                #
 #############################################
 
 class Affine(LikelihoodModel):
@@ -32,7 +32,8 @@ class Affine(LikelihoodModel):
     This class defines an affine model of the term structure
     """
     def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4, freq='M',
-                 latent=False, no_err=None):
+                 latent=False, no_err=None, lam_0_e=None, lam_1_e=None,
+                 delta_1_e=None, mu_e=None, phi_e=None, sigma_e=None,):
         """
         Attempts to solve affine model
         yc_data : DataFrame 
@@ -49,6 +50,24 @@ class Affine(LikelihoodModel):
             list of the column indexes of yields to be measured without error
             ex: [0, 3, 4] 
             (1st, 4th, and 5th columns in yc_data to be estimatd without error)
+
+        For all estimate parameter arrays:
+            elements marked with 'E' or 'e' are estimated
+            n = number of variables in fully-specified VAR(1) at t
+
+        lam_0_e : array-like, n x 1
+            shape of constant vector of risk pricing equation
+        lam_1_e : array-like, n x n
+            shape of parameter array of risk pricing equation
+        delta_1_e : array-like, n x 1
+            shape of initial parameter vector, corresponding to short-rate
+            equation
+        mu_e : array-like, n x 1
+            shape of constant vector for VAR process
+        phi_e : array-like, n x n
+            shape of parameter array for VAR process
+        sigma_e : array-like, n x n
+            shape of variance, covariance array for VAR process
         """
         self.yc_data = yc_data
         self.var_data = var_data
@@ -62,6 +81,13 @@ class Affine(LikelihoodModel):
         self.latent = latent
         self.no_err = no_err
 
+        self.lam_0_e = lam_0_e
+        self.lam_1_e = lam_1_e
+        self.delta_1_e = delta_1_e
+        self.mu_e = mu_e
+        self.phi_e = phi_e
+        self.sigma_e = sigma_e
+
         #generates mths: list of mths in yield curve data
         mths = self._mths_list()
         self.mths = mths
@@ -71,12 +97,10 @@ class Affine(LikelihoodModel):
             "Number of non-null values unequal in VAR and yield curve data"
 
         if latent:
-
+            #assertions for correction passed in parameters
             lat = self.lat = len(no_err)
 
             self.err = list(set(range(len(mths))).difference(no_err))
-
-            self.pos_list = self._gen_pos_list()
 
             self.no_err_mth, self.err_mth = self._gen_mth_list()
             #gen position list for processing list input to solver
@@ -91,10 +115,11 @@ class Affine(LikelihoodModel):
             self.lat = 0
             delta_1 = np.zeros([neqs*k_ar, 1])
             #delta_1 is vector of zeros, with one grabbing fed_funds rate
+            #this will need to be removed, is now specified in model setup
             delta_1[np.argmax(var_data.columns == 'fed_funds')] = 1
             self.delta_1_nolat = delta_1
 
-        self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
+        #self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
 
         #maybe this should be done in setup script...
         #get VAR input data ready
@@ -106,36 +131,22 @@ class Affine(LikelihoodModel):
 
         var_data_vert = self.var_data_vert = x_t_na.dropna(axis=0)
         self.periods = len(self.var_data)
+        self.guess_length = self._gen_guess_length()
+
+        #final size checks
+        self._size_checks()
 
         super(Affine, self).__init__(var_data_vert)
 
-    def solve(self, guess_params, lam_0_e=None, lam_1_e=None, delta_1_e=None,
-            mu_e=None, phi_e=None, sigma_e=None, method="ls", alg="newton",
-            attempts=5, maxfev=10000, maxiter=10000, ftol=1e-100, xtol=1e-100,
-            full_output=False):
+    def solve(self, guess_params,  method="ls", alg="newton", attempts=5,
+              maxfev=10000, maxiter=10000, ftol=1e-100, xtol=1e-100,
+              full_output=False):
         """
         Attempt to solve affine model
 
         guess_params : list
             List of starting values for parameters to be estimated
             In row-order and ordered as masked arrays
-
-        For all estimate paramters:
-        elements marked with 'E' or 'e' are estimated
-        n = number of variables in fully-specified VAR(1) at t
-        lam_0_e : array-like, n x 1
-            shape of constant vector of risk pricing equation
-        lam_1_e : array-like, n x n
-            shape of parameter array of risk pricing equation
-        delta_1_e : array-like, n x 1
-            shape of initial parameter vector, corresponding to short-rate
-            equation
-        mu_e : array-like, n x 1
-            shape of constant vector for VAR process
-        phi_e : array-like, n x n
-            shape of parameter array for VAR process
-        sigma_e : array-like, n x n
-            shape of variance, covariance array for VAR process
 
         method : string
             solution method
@@ -169,46 +180,16 @@ class Affine(LikelihoodModel):
         full_output : bool
             non_zero to return all optional outputs
         """
-        #Notes for you:
-        #remember that Ang and Piazzesi treat observed and unobserved factors
-        #as orthogonal
-        #observed factor parameters can thus be estimated using OLS
         k_ar = self.k_ar
         neqs = self.neqs
         lat = self.lat
         yc_data = self.yc_data
         var_data_vert = self.var_data_vert
 
-        dim = neqs * k_ar + lat
-        if lam_0_g is not None:
-            assert np.shape(lam_0_g) == (dim, 1), "Shape of lam_0_g incorrect"
-        if lam_1_g is not None:
-            assert np.shape(lam_1_g) == (dim, dim), \
-                "Shape of lam_1_g incorrect"
-
-        #creates single input vector for params to solve
-        if lat:
-            #assertions for correction passed in parameters
-            assert np.shape(delta_1_g) == (dim, 1), "Shape of delta_1_g" \
-                "incorrect"
-            assert np.shape(mu_g) == (dim, 1), "Shape of mu incorrect"
-            assert np.shape(phi_g) == (dim, dim), "Shape of phi_g incorrect"
-            assert np.shape(sigma_g) == (dim, dim), "Shape of sig_g incorrect"
-            #This might need to be removed towrads purer solver class
-            delta_1_g, mu_g, phi_g, sigma_g = \
-                    self._pass_ols(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
-                                   sigma=sigma_g)
-            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g,
-                                          delta_1=delta_1_g, mu=mu_g,
-                                          phi=phi_g, sigma=sigma_g)
-
-        else:
-            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g)
-
         if method == "ls":
             func = self._affine_nsum_errs
             solver = retry(optimize.leastsq, attempts)
-            reslt = solver(func, params, maxfev=maxfev, xtol=xtol,
+            reslt = solver(func, guess_params, maxfev=maxfev, xtol=xtol,
                            full_output=full_output)
             solv_params = reslt[0]
             output = reslt[1:]
@@ -219,26 +200,26 @@ class Affine(LikelihoodModel):
             yield_stack = self._stack_yields(yc_data)
             #run optmization
             solver = retry(optimize.curve_fit, attempts)
-            reslt = solver(func, var_data_vert, yield_stack, p0=params,
+            reslt = solver(func, var_data_vert, yield_stack, p0=guess_params,
                            maxfev=maxfev, xtol=xtol, full_output=True)
             solv_params = reslt[0]
             solv_cov = reslt[1]
 
         elif method == "ml":
             solver = retry(self.fit, attempts)
-            solve = solver(start_params=params, method=alg, maxiter=maxiter,
-                    maxfun=maxfev, xtol=xtol, fargs=(lam_0_e, lam_1_e,
-                        delta_1_e, mu_e, phi_e, sigma_e))
+            solve = solver(start_params=guess_params, method=alg,
+                           maxiter=maxiter, maxfun=maxfev, xtol=xtol)
             solv_params = solve.params
             tvalues = solve.tvalues
+
         elif method == "angpiazml":
             solve = solver(start_params=params, method=alg, maxiter=maxiter,
-                    maxfun=maxfev, xtol=xtol, fargs=(lam_0_g, lam_1_g,
-                        delta_1_g, mu_g, phi_g, sigma_g))
+                    maxfun=maxfev, xtol=xtol)
+            solve_params = solve.params
+            tvalues = solve.tvalues
 
         lam_0, lam_1, delta_1, mu, phi, sigma = \
-                self._param_to_array(params=solv_params, delta_1=delta_1_g,
-                                      mu=mu_g, phi=phi_g, sigma=sigma_g)
+                self._params_to_array(solve_params)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
                                               delta_1=delta_1, mu=mu, phi=phi,
@@ -257,7 +238,7 @@ class Affine(LikelihoodModel):
             return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
                     tvalues
 
-    def score(self, params, *args):
+    def score(self, params):
         """
         Return the gradient of the loglike at params
 
@@ -271,18 +252,17 @@ class Affine(LikelihoodModel):
         """
         #would be nice to have additional arguments here
         loglike = self.loglike
-        return approx_fprime(params, loglike, epsilon=1e-8, args=(args))
+        return approx_fprime(params, loglike, epsilon=1e-8)
 
-    def hessian(self, params, *args):
+    def hessian(self, params):
         """
         Returns numerical hessian.
         """
         #would be nice to have additional arguments here
         loglike = self.loglike
-        my_stuff = args
-        return approx_hess(params, loglike, args=(args))
+        return approx_hess(params, loglike)
 
-    def loglike(self, params, lam_0, lam_1, delta_1, mu, phi, sigma):
+    def loglike(self, params):
         """
         Loglikelihood used in latent factor models
         """
@@ -292,12 +272,11 @@ class Affine(LikelihoodModel):
         #all of the params don't seem to be moving
         #only seems to be for certain solution methods
 
-        lam_0, lam_1, delta_1, mu, phi, sigma \
-            = self._param_to_array(params=params, delta_1=delta_1, mu=mu, \
-                                   phi=phi, sigma=sigma)
+        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(params)
 
-        solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1, \
-                                delta_1=delta_1, mu=mu, phi=phi, sigma=sigma)
+        solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
+                                              delta_1=delta_1, mu=mu, phi=phi,
+                                              sigma=sigma)
 
         #first solve for unknown part of information vector
         var_data_c, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
@@ -323,33 +302,6 @@ class Affine(LikelihoodModel):
                np.sum(yield_errs**2/np.var(yield_errs, axis=1)[None].T)
 
         return like
-
-    # def angpiazml(start_params, method=, maxiter=, maxfun=, xtol=, delta_1_g=,
-    #               mu_g=, phi_g=, sigma_g=):
-    #     """
-    #     Performs three step ML ala Ang and Piazzesi (2003)
-
-    #     multistep : step in ang and piazzesi method
-    #         0 : NA
-    #         1 : set both lam_0 and lam_1 equal to zero
-    #         2 : set lam_0 eqaul to 0 
-    #     """
-    #     #1) keep lam_0 and lam_1 equal to zero and estimate to get starting
-    #     #parameters for \theta
-
-    #     #2)Hold lam_0 constant while estimating to get starting values for
-    #     #lam_1
-
-    #     #3) Set insignificant parameters in lam_1 equal to zero and estimate
-    #     #lamda_0
-
-    #     #4) Set insignficant parameters in lam_0 equal to 0. Re-estimate whole
-    #     # system abiding by all parameter guesses and parameters equalt to 0
-
-    #     #estimate with lam_0_g 
-    #     lam_0_g
-
-    #     params = 
 
     def gen_pred_coef(self, lam_0, lam_1, delta_1, mu, phi, sigma):
         """
@@ -393,7 +345,7 @@ class Affine(LikelihoodModel):
         yc_data = self.yc_data
         var_data_vert = self.var_data_vert
 
-        lam_0, lam_1, delta_1, mu, phi, sigma = self._param_to_array(params=params)
+        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(params=params)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
                                               delta_1=delta_1, mu=mu,phi=phi,
@@ -515,22 +467,22 @@ class Affine(LikelihoodModel):
             mths.append(int(re.match(matcher, column).group(2)))
         return mths
 
-    def _param_to_array(self, params, lam_0_e, lam_1_e, delta_1_e, mu_e,
-                        phi_e):
+    def _params_to_array(self, params):
         """
         Process params input into appropriate arrays
 
         Parameters
         ----------
-        delta_1 : array (neqs * k_ar + lat, 1)
-            delta_1 prior to complete model solve
-        mu : array (neqs * k_ar + lat, 1)
-            mu prior to complete model solve
-        phi : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            phi prior to complete model solve
-        sigma : array (neqs * k_ar + lat, neqs * k_ar + lat)
-            sigma prior to complete model solve
+        params : list
+            guess parameters
         """
+        lam_0_e = self.lam_0_e.copy()
+        lam_1_e = self.lam_1_e.copy()
+        delta_1_e = self.delta_1_e.copy()
+        mu_e = self.mu_e.copy()
+        phi_e = self.phi_e.copy()
+        sigma_e = self.sigma_e.copy()
+
         all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
 
         arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
@@ -539,7 +491,7 @@ class Affine(LikelihoodModel):
         for pos, struct in enumerate(all_arrays):
             struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
 
-        return all_arrays
+        return tuple(all_arrays)
 
     def _affine_pred(self, data, *params):
         """
@@ -551,7 +503,7 @@ class Affine(LikelihoodModel):
         mths = self.mths
         yc_data = self.yc_data
 
-        lam_0, lam_1, delta_1, mu, phi, sigma = self._param_to_array(params)
+        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(params)
 
         a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_1, mu, phi,
                                             sigma)
@@ -577,78 +529,14 @@ class Affine(LikelihoodModel):
             new[col*obs:(col+1)*obs] = orig[mth].values
         return new
     
-    def _gen_OLS_res(self):
-        """
-        Runs VAR on macro data and retrieves parameters
-        """
-        #run VAR to generate parameters for known 
-        var_data = self.var_data
-        k_ar = self.k_ar
-        neqs = self.neqs
-        lat = self.lat
-        freq = self.freq
-
-        var_fit = VAR(var_data, freq=freq).fit(maxlags=k_ar)
-
-        coefs = var_fit.params.values
-        sigma_u = var_fit.sigma_u
-
-        obs_var = neqs * k_ar
-
-        mu = np.zeros([k_ar*neqs, 1])
-        mu[:neqs] = coefs[0, None].T
-
-        phi = np.zeros([k_ar * neqs, k_ar * neqs])
-        phi[:neqs] = coefs[1:].T
-        phi[neqs:obs_var, :(k_ar - 1) * neqs] = np.identity((k_ar - 1) * neqs)
-
-        sigma = np.zeros([k_ar * neqs, k_ar * neqs])
-        sigma[:neqs, :neqs] = sigma_u
-        sigma[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
-        
-        return mu, phi, sigma
-
-    def _ml_meth(self, params, lam_0_g, lam_1_g, delta_1_g, mu_g, phi_g, sigma_g):
-        """
-        This is a wrapper for the simple maximum likelihodd solution method
-        """
-        lam_0_g
-        #solve_a = self.gen_pred_coef(lam_0=lam_0_g, lam_1_g=lam_1_g
-
-    def _gen_pos_list(self):
-        """
-        Generates list of positions from draw parameters from list
-        Notes: this is only lengths of parameters that we are solving for using
-        numerical maximization
-        """
-        neqs = self.neqs
-        k_ar = self.k_ar
-        lat = self.lat
-
-        pos_list = []
-        pos = 0
-        len_lam_0 = neqs + lat
-        len_lam_1 = neqs**2 + (neqs * lat) + (lat * neqs) + lat**2
-        len_delta_1 = lat
-        len_mu = lat
-        len_phi = lat * lat
-        len_sig = lat * lat
-        length_list = [len_lam_0, len_lam_1, len_delta_1, len_mu, len_phi,
-                       len_sig]
-
-        for length in length_list:
-            pos_list.append(length + pos)
-            pos += length
-
-        return pos_list
-    
-    def _gen_arg_sep(self, arg_lenths):
+    def _gen_arg_sep(self, arg_lengths):
         """
         Generates list of positions 
         """
         arg_sep = [0]
+        pos = 0
         for length in arg_lengths:
-            pos_list.append(length + pos)
+            arg_sep.append(length + pos)
             pos += length
         return arg_sep
 
@@ -690,7 +578,6 @@ class Affine(LikelihoodModel):
         """
         Consruct jacobian matrix
         meas_mat : array 
-        LEFT OFF here 
         """
         k_ar = self.k_ar
         neqs = self.neqs
@@ -708,3 +595,37 @@ class Affine(LikelihoodModel):
         jacob[num_obsrv:, num_obsrv + lat:] = meas_mat
 
         return jacob
+
+    def _gen_guess_length(self):
+        lam_0_e = self.lam_0_e
+        lam_1_e = self.lam_1_e
+        delta_1_e = self.delta_1_e
+        mu_e = self.mu_e
+        phi_e = self.phi_e
+        sigma_e = self.sigma_e
+
+        all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
+
+        count = 0
+        for struct in all_arrays:
+            count += ma.count_masked(struct)
+
+        return count
+
+    def _size_checks(self):
+        """
+        Run size checks on parameter arrays
+        """
+        dim = self.neqs * self.k_ar + self.lat
+        assert np.shape(self.lam_0_e) == (dim, 1), "Shape of lam_0_e incorrect"
+        assert np.shape(self.lam_1_e) == (dim, dim), \
+                "Shape of lam_1_e incorrect"
+
+        if self.latent:
+            assert np.shape(self.delta_1_e) == (dim, 1), "Shape of delta_1_e" \
+                "incorrect"
+            assert np.shape(self.mu_e) == (dim, 1), "Shape of mu incorrect"
+            assert np.shape(self.phi_e) == (dim, dim), \
+                    "Shape of phi_e incorrect"
+            assert np.shape(self.sigma_e) == (dim, dim), \
+                    "Shape of sig_e incorrect"

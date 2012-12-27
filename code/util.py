@@ -25,7 +25,7 @@ def pickle_file(obj=None, name=None):
     pickle.dump(obj, pkl_file)
     pkl_file.close()
 
-def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None):
+def robust(mod_data, mod_yc_data, method=None):
     """
     Function to run model with guesses, also generating 
     method : string
@@ -45,33 +45,59 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None):
     mod_data = mod_data[:217]
     mod_yc_data = mod_yc_data[:214]
 
+    k_ar = 4
+    neqs = 5
+    lat = 0
+
+    lam_0_e = ma.zeros((k_ar * neqs, 1))
+    lam_0_e[:neqs] = ma.masked
+
+    lam_1_e = ma.zeros((k_ar * neqs, k_ar * neqs))
+    lam_1_e[:neqs, :neqs] = ma.masked
+
+    delta_1_e = ma.zeros([k_ar * neqs, 1])
+    delta_1_e[:, :] = ma.masked
+    delta_1_e[:, :] = ma.nomask
+    delta_1_e[np.argmax(mod_data.columns == 'fed_funds')] = 1
+
+    var_fit = VAR(mod_data, freq="M").fit(maxlags=k_ar)
+
+    coefs = var_fit.params.values
+    sigma_u = var_fit.sigma_u
+    obs_var = neqs * k_ar
+
+    mu_e = ma.zeros([k_ar*neqs, 1])
+    mu_e[:, :] = ma.masked
+    mu_e[:, :] = ma.nomask
+    mu_e[:neqs] = coefs[0, None].T
+
+    phi_e = ma.zeros([k_ar * neqs, k_ar * neqs])
+    phi_e[:, :] = ma.masked
+    phi_e[:, :] = ma.nomask
+    phi_e[:neqs] = coefs[1:].T
+    phi_e[neqs:obs_var, :(k_ar - 1) * neqs] = np.identity((k_ar - 1) * neqs)
+
+    sigma_e = ma.zeros([k_ar * neqs, k_ar * neqs])
+    sigma_e[:, :] = ma.masked
+    sigma_e[:, :] = ma.nomask
+    sigma_e[:neqs, :neqs] = sigma_u
+    sigma_e[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
+
     #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
-    bsr = Affine(yc_data = mod_yc_data, var_data = mod_data)
+    bsr = Affine(yc_data = mod_yc_data, var_data = mod_data, lam_0_e=lam_0_e,
+                 lam_1_e=lam_1_e, delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e,
+                 sigma_e=sigma_e)
     neqs = bsr.neqs
 
-    #test sum_sqr_pe
-    if lam_0_g is None:
-        lam_0_g = np.zeros([5*4, 1])
-        lam_0_g[:neqs] = np.array([[-0.1], [0.1], [-0.1], [0.1], [-0.1]])
+    guess_length = bsr.guess_length
 
-    #set seed for future repl
+    guess_params = [0.0000] * guess_length
 
-    if lam_1_g is None:
-        lam_1_g = np.zeros([5*4, 5*4])
-        for eqnumb in range(neqs):
-            if eqnumb % 2 == 0:
-                mult = 1
-            else: 
-                mult = -1
-            guess = [[mult*-0.1], [mult*0.1], [mult*-0.1], [mult*0.1], \
-                     [mult*-0.1]]
-            lam_1_g[eqnumb, :neqs, None] = np.array([guess])*np.random.random()
+    for numb, element in enumerate(guess_params[:30]):
+        element = 0.0001
+        guess_params[numb] = element * (np.random.random() - 0.5)
 
-    #generate a and b for no risk 
-    #a_nrsk, b_nrsk = bsr.gen_pred_coef(lam_0_nr, lam_1_nr, bsr.delta_1,
-                    #bsr.phi, bsr.sig)
-
-    out_bsr = bsr.solve(lam_0_g, lam_1_g, method=method, ftol=1e-950,
+    out_bsr = bsr.solve(guess_params=guess_params, method=method, ftol=1e-950,
                         xtol=1e-950, maxfev=1000000000, full_output=False)
 
     if method == "ls":
@@ -284,11 +310,9 @@ def ap_constructor(neqs, k_ar, lat):
     """
     Contructor for ang and piazzesi model
     """
-
-    masklower = np.mask_indices(lat, np.tril)
-    lower_ind = np.tril_indecies(lat)
+    lower_ind = list(np.tril_indices(lat))
     for numb, element in enumerate(lower_ind):
-        lower_ind[numb] = element + neqs + k_ar
+        lower_ind[numb] = element + neqs * k_ar
 
     dim = neqs * k_ar + lat
     lam_0 = ma.zeros([dim, 1])
@@ -298,10 +322,10 @@ def ap_constructor(neqs, k_ar, lat):
     mu = ma.zeros([dim, 1])
     phi = ma.zeros([dim, dim])
     sigma = ma.zeros([dim, dim])
-    if lat:
-        sigma[-lat:, -lat:] = np.identity(lat)
-        phi[-lat:, -lat:] = \
-                np.random.random(lat*lat).reshape((lat, -1)) / 100000
+    #if lat:
+    #    sigma[-lat:, -lat:] = np.identity(lat)
+    #    phi[-lat:, -lat:] = \
+    #            np.random.random(lat*lat).reshape((lat, -1)) / 100000
 
     #mask values to be estimated
     lam_0[:neqs, 0] = ma.masked
@@ -318,7 +342,9 @@ def ap_constructor(neqs, k_ar, lat):
 
     phi[lower_ind] = ma.masked
 
-    sigma[lower_ind] = ma.masked
+    sigma[:, :] = ma.masked
+    sigma[:, :] = ma.nomask
+    sigma[-lat:, -lat:] = np.identity(lat)
 
     return lam_0, lam_1, delta_1, mu, phi, sigma
 
@@ -346,10 +372,13 @@ def pass_ols(var_data, freq, lat, k_ar, neqs, delta_1, mu, phi, sigma,
     mu_ols = np.zeros([k_ar*neqs, 1])
     mu_ols[:neqs] = coefs[0, None].T
 
+    #phi is unconstrained but only non-zero in macro porition for current
+    #period elements
     phi_ols = np.zeros([k_ar * neqs, k_ar * neqs])
     phi_ols[:neqs] = coefs[1:].T
     phi_ols[neqs:obs_var, :(k_ar - 1) * neqs] = np.identity((k_ar - 1) * neqs)
 
+    #macro portion of sigma is assumed lower triangular
     sigma_ols = np.zeros([k_ar * neqs, k_ar * neqs])
     sigma_ols[:neqs, :neqs] = sigma_u
     sigma_ols[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)

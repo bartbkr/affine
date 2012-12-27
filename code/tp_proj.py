@@ -147,7 +147,7 @@ np.random.seed(101)
 collect_0 = []
 collect_1 = []
 
-meth = "nls"
+meth = "ls"
 
 #generate decent guesses
 lam_0_coll = np.zeros((atts, neqs*k_ar, 1))

@@ -86,9 +86,6 @@ neqs = len(mod_data.columns)
 
 from affine import Affine
 
-bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
-                   latent=latent, no_err=[0, 4, 7])
-
 lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e = ap_constructor(k_ar=k_ar,
                                                                    neqs=neqs, 
                                                                    lat=lat)
@@ -98,23 +95,31 @@ delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=mod_data, freq="M", lat=3,
                                            phi=phi_e, sigma=sigma_e,
                                            rf_rate=rf_rate)
 
-lam_0_guess = [0.0] * (neqs + lat)
-lam_1_guess = [0.0] * ((neqs * neqs) + (neqs * lat) + (lat * neqs) + 
-              (lat * lat))
-delta_1_guess = [0.0] * (lat)
-mu_guess = [0.0] * (lat)
-phi_guess = [0.0] * (lat * lat)
-sigma_guess = [0.0] * (lat * lat)
+#lam_0_guess = [0.0] * (neqs + lat)
+#lam_1_guess = [0.0] * ((neqs * neqs) + (neqs * lat) + (lat * neqs) + 
+              #(lat * lat))
+#delta_1_guess = [0.0] * (lat)
+#mu_guess = [0.0] * (lat)
+#phi_guess = [0.0] * (lat * lat)
+#sigma_guess = [0.0] * (lat * lat)
 
-#guess_params = 
+bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
+                   latent=latent, no_err=[0, 4, 7], lam_0_e=lam_0_e,
+                   lam_1_e=lam_1_e, delta_1_e=delta_1_e, mu_e=mu_e,
+                   phi_e=phi_e, sigma_e=sigma_e)
 
+guess_length = bsr_model.guess_length
+
+guess_params = [0.0000] * guess_length
+
+for numb, element in enumerate(guess_params[:30]):
+    element = 0.0001
+    guess_params[numb] = element * (np.random.random() - 0.5)
 
 # #This is for nls method, only need guesses for lam_0, lam_1
 # #bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
-# bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g,
-#                             delta_1_g=delta_1_g, mu_g=mu_g, phi_g=phi_g,
-#                             sigma_g=sigma_g, method="ml", alg="newton",
-#                             maxfev=10000000, maxiter=10000000)
+bsr_solve = bsr_model.solve(guess_params=guess_params, method="ml",
+                            alg="newton", maxfev=10000000, maxiter=10000000)
 # 
 # lam_0 = bsr_solve[0]
 # lam_1 = bsr_solve[1]
