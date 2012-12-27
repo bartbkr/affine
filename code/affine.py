@@ -191,7 +191,7 @@ class Affine(LikelihoodModel):
             solver = retry(optimize.leastsq, attempts)
             reslt = solver(func, guess_params, maxfev=maxfev, xtol=xtol,
                            full_output=full_output)
-            solv_params = reslt[0]
+            solve_params = reslt[0]
             output = reslt[1:]
 
         elif method == "nls":
@@ -202,14 +202,14 @@ class Affine(LikelihoodModel):
             solver = retry(optimize.curve_fit, attempts)
             reslt = solver(func, var_data_vert, yield_stack, p0=guess_params,
                            maxfev=maxfev, xtol=xtol, full_output=True)
-            solv_params = reslt[0]
+            solve_params = reslt[0]
             solv_cov = reslt[1]
 
         elif method == "ml":
             solver = retry(self.fit, attempts)
             solve = solver(start_params=guess_params, method=alg,
                            maxiter=maxiter, maxfun=maxfev, xtol=xtol)
-            solv_params = solve.params
+            solve_params = solve.params
             tvalues = solve.tvalues
 
         elif method == "angpiazml":
