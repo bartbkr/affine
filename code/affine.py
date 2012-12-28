@@ -314,7 +314,7 @@ class Affine(LikelihoodModel):
         phi : array
         sigma : array
         """
-        #This should be passed to a C function, it is slow right now
+        #Thiu should be passed to a C function, it is really slow right now
         mths = self.mths
         delta_0 = self.delta_0
         max_mth = max(mths)
@@ -342,6 +342,7 @@ class Affine(LikelihoodModel):
         """
         This function generates the sum of the prediction errors
         """
+        #This function is slow
         lat = self.lat
         mths = self.mths
         yc_data = self.yc_data
