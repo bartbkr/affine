@@ -6,7 +6,7 @@ import sys
 
 import datetime as dt
 
-from util import fail_mail
+from core.util import fail_mail
 
 start_date = dt.datetime.now()
 

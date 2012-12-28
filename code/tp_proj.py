@@ -12,7 +12,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from util import robust, pickle_file, success_mail, to_mth
+from core.util import robust, pickle_file, success_mail, to_mth
 
 ##############################################################################
 # Estimate model with Eurodollar futures

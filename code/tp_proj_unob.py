@@ -11,7 +11,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from util import pickle_file, success_mail, to_mth, gen_guesses, \
+from core.util import pickle_file, success_mail, to_mth, gen_guesses, \
                  ap_constructor, pass_ols
 
 ########################################
@@ -84,7 +84,7 @@ rf_rate = rf_rate.reindex(index=yc_index)
 
 neqs = len(mod_data.columns)
 
-from affine import Affine
+from core.affine import Affine
 
 lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e = ap_constructor(k_ar=k_ar,
                                                                    neqs=neqs, 
