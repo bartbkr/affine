@@ -28,4 +28,5 @@
 
 /code/*.pkl
 /code/store_pass.py
+/temp_res/*
 *.pyc
