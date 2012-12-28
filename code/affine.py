@@ -356,11 +356,11 @@ class Affine(LikelihoodModel):
         errs = []
 
         yc_data_val = yc_data.values
-        
+
         for ix, mth in enumerate(mths):
-            act = np.flipud(yc_data_val[:, ix])
-            pred = a_solve[mth - 1] + np.dot(b_solve[mth - 1].T, 
-                                        np.fliplr(var_data_vert.T))[0]
+            act = yc_data_val[:, ix]
+            pred = a_solve[mth - 1] + np.dot(b_solve[mth - 1].T,
+                                             var_data_vert.T)[0]
             errs = errs + (act - pred).tolist()
         return errs
 
