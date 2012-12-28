@@ -33,7 +33,8 @@ class Affine(LikelihoodModel):
     """
     def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4, freq='M',
                  latent=False, no_err=None, lam_0_e=None, lam_1_e=None,
-                 delta_1_e=None, mu_e=None, phi_e=None, sigma_e=None,):
+                 delta_1_e=None, mu_e=None, phi_e=None, sigma_e=None, 
+                 mths=None):
         """
         Attempts to solve affine model
         yc_data : DataFrame 
@@ -89,7 +90,8 @@ class Affine(LikelihoodModel):
         self.sigma_e = sigma_e
 
         #generates mths: list of mths in yield curve data
-        mths = self._mths_list()
+        if mths is None:
+            mths = self._mths_list()
         self.mths = mths
 
         assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
