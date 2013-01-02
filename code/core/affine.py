@@ -317,6 +317,7 @@ class Affine(LikelihoodModel):
         #Thiu should be passed to a C function, it is really slow right now
         mths = self.mths
         delta_0 = self.delta_0
+        #Should probably set this so its not recalculated every run
         max_mth = max(mths)
         #generate predictions
         a_pre = np.zeros((max_mth, 1))
