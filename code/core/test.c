@@ -12,20 +12,34 @@ int my_func_d(int a, int b, int *pointer) {
     return d;
 }
 
-void mat_prodct(int arr1_x, int arr1_y, int arr2_x, int arr2_y, 
-                double arr1[], double arr2[], double result[]) {
+void mat_prodct(int x1, int y1, int x2, int y2, double arr1[x1][y1], 
+                double arr2[x2][y2], double result[x1][y2]) {
     int dim1_x, dim1_y, dim2_y;
 
-    for (dim1_x = 0; dim1_x < arr1_x; dim1_x++) {
-        for (dim2_y = 0; dim2_y < arr2_y; dim2_y++) {
+    for (dim1_x = 0; dim1_x < x1; dim1_x++) {
+        for (dim2_y = 0; dim2_y < y2; dim2_y++) {
             double sum = 0;
-            for (dim1_y = 0; dim1_y < arr1_y; dim1_y++) {
-                sum += *arr1[dim1_x][dim1_y] * *arr2[dim1_y][dim2_y];
+            for (dim1_y = 0; dim1_y < y1; dim1_y++) {
+                sum += arr1[dim1_x][dim1_y] * arr2[dim1_y][dim2_y];
             }
             result[dim1_x][dim2_y] = sum;
         }
     }
 }
+
+
+void init_mat(int x, int y, double arr1[x][y]) {
+    int i;
+    int j;
+    for (i = 0; i < x; i++) {
+        for (j = 0; j < y; j++) {
+            arr1[i][j] = i + j;
+            printf("Argument: %f\n", arr1[i][j]); 
+        }
+    }
+
+}
+
 
 int main()
 {
@@ -38,9 +52,30 @@ int main()
     double arr2[arr2_x][arr2_y];
     double result[arr1_x][arr2_y];
 
-    mat_prodct(arr1_x, arr1_y, arr2_x, arr2_y, &arr1, &arr2, &result);
+    printf("First one!\n");
+    init_mat(arr1_x, arr1_y, arr1);
+    printf("Second one!\n");
+    init_mat(arr2_x, arr2_y, arr2);
+
+    mat_prodct(arr1_x, arr1_y, arr2_x, arr2_y, arr1, arr2, result);
+
+    printf("Result !\n");
+
+    int i;
+    int j;
+    for (i = 0; i < arr1_x; i++) {
+        for (j = 0; j < arr2_y; j++) {
+            printf("Argument: %f\n", result[i][j]); 
+        }
+    }
+
+
+
+
+    return 0;
 
     /*  
+
     double resltarray = (double*) malloc(sizeof(double));
     int i;
     int j;
