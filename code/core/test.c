@@ -12,6 +12,8 @@ int my_func_d(int a, int b, int *pointer) {
     return d;
 }
 
+/*  Matrix product functions */
+
 void mat_prodct(int x1, int y1, int x2, int y2, double arr1[x1][y1], 
                 double arr2[x2][y2], double result[x1][y2]) {
     int dim1_x, dim1_y, dim2_y;
