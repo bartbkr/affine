@@ -46,13 +46,14 @@ void init_mat(int x, int y, double arr1[x][y]) {
 int main()
 {
     enum sz{S=0,L=-3,XL};
-    int arr1_x = 3;
+    int arr1_x = 1;
     int arr1_y = 4;
     int arr2_x = 4;
-    int arr2_y = 2;
+    int arr2_y = 1;
     double arr1[arr1_x][arr1_y];
     double arr2[arr2_x][arr2_y];
     double result[arr1_x][arr2_y];
+    double b_pre_mth = arr1[][2];
 
     printf("First one!\n");
     init_mat(arr1_x, arr1_y, arr1);
