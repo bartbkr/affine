@@ -2,13 +2,13 @@
 #include <arrayobject.h>
 
 /* === Constants used in rest of program === */
-const double half = 1.5;
+const double half = 0.5;
 
 /* ==== Set up the methods table ====================== */
 static PyMethodDef _C_extensionsMethods[] = {
     {"gen_pred_coef", gen_pred_coef, METH_VARARGS},
     {NULL, NULL}
-}
+};
 
 /*  ==== Matrix sum function ===== */
 void mat_sum(int x, int y, double arr1[x][y], double arr2[x][y], 
@@ -60,7 +60,7 @@ void mat_prodct_tpose1(int row1, int col1, int row2, int col2,
     int dim1_row, dim1_col, dim2_col;
 
     for (dim1_col = 0; dim1_col < col1; dim1_col++) {
-        for (dim2_col = 0; dim2_col < col; dim2_col++) {
+        for (dim2_col = 0; dim2_col < col2; dim2_col++) {
             double sum = 0;
             for (dim1_row = 0; dim1_row < row1; dim1_row++) {
                 sum += arr1[dim1_row][dim1_col] * arr2[dim1_row][dim2_col];
@@ -78,7 +78,7 @@ void mat_prodct_tpose2(int row1, int col1, int row2, int col2,
     int dim1_row, dim1_col, dim2_row;
 
     for (dim1_row = 0; dim1_row < row1; dim1_row++) {
-        for (dim2_row = 0; dim2_row < row; dim2_row++) {
+        for (dim2_row = 0; dim2_row < row2; dim2_row++) {
             double sum = 0;
             for (dim1_col = 0; dim1_col < col1; dim1_col++) {
                 sum += arr1[dim1_row][dim1_col] * arr2[dim2_row][dim1_col];
@@ -87,26 +87,6 @@ void mat_prodct_tpose2(int row1, int col1, int row2, int col2,
         }
     }
 }
-
-
-/*  ==== Matrix product functions tpose second argument ===== */
-void mat_prodct_tpose1(int row1, int col1, int row2, int col2, 
-                       double arr1[row1][col1], double arr2[row2][col2], 
-                       double result[row1][row2]) {
-
-    int dim1_row, dim1_col, dim2_col;
-
-    for (dim1_row = 0; dim1_row < row1; dim1_row++) {
-        for (dim2_row = 0; dim2_row < row; dim2_row++) {
-            double sum = 0;
-            for (dim1_col = 0; dim1_col < col1; dim1_col++) {
-                sum += arr1[dim1_row][dim1_col] * arr2[dim2_row][dim1_col];
-            }
-            result[dim1_row][dim2_row] = sum;
-        }
-    }
-}
-
 
 /* ==== Initialize the C_test functions ====================== */
 // Module name must be _C_arraytest in compile and linked 
@@ -119,7 +99,9 @@ void init_C_extensions()  {
 static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
     PyArrayObject *lam_0, *lam_1, *delta_1, *mu, *phi, *sigma;
     int lam_0_x, lam_0_y, lam_1_x, lam_1_y, delta_1_x, delta_1_y, mu_x, mu_y,
-        phi_x, phi_y, sigma_x, sigma_y, delta_0, max_mth, mth;
+        phi_x, phi_y, sigma_x, sigma_y, delta_0, max_mth, mth, next_mth;
+
+    double **lam_0_c, **lam_1_c, **delta_1_c, **mu_c, **phi_c, **sigma_c;
 
     /* Parse input arguments to function */
 
@@ -133,21 +115,21 @@ static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
 
     /* Get dimesions of all input arrays */
 
-    lam_0_rows=dims[0]=lam_0->dimensions[0];
-    lam_0_cols=dims[1]=lam_0->dimensions[1];
-    lam_1_rows=dims[0]=lam_1->dimensions[0];
-    lam_1_cols=dims[1]=lam_1->dimensions[1];
-    delta_1_rows=dims[0]=delta_1->dimensions[0];
-    delta_1_cols=dims[1]=delta_1->dimensions[1];
-    mu_rows=dims[0]=mu->dimensions[0];
-    mu_cols=dims[1]=mu->dimensions[1];
-    phi_rows=dims[0]=phi->dimensions[0];
-    phi_cols=dims[1]=phi->dimensions[1];
-    sigma_rows=dims[0]=sigma->dimensions[0];
-    sigma_cols=dims[1]=sigma->dimensions[1];
+    lam_0_rows=lam_0->dimensions[0];
+    lam_0_cols=lam_0->dimensions[1];
+    lam_1_rows=lam_1->dimensions[0];
+    lam_1_cols=lam_1->dimensions[1];
+    delta_1_rows=delta_1->dimensions[0];
+    delta_1_cols=delta_1->dimensions[1];
+    mu_rows=mu->dimensions[0];
+    mu_cols=mu->dimensions[1];
+    phi_rows=phi->dimensions[0];
+    phi_cols=phi->dimensions[1];
+    sigma_rows=sigma->dimensions[0];
+    sigma_cols=sigma->dimensions[1];
 
     /*  Create C arrays */
-    /* Maybe should be constants??? *?
+    /* Maybe should be constants??? */
 
     lam_0_c = pymatrix_to_Carrayptrs(lam_0);
     lam_1_c = pymatrix_to_Carrayptrs(lam_1);
@@ -157,14 +139,21 @@ static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
     sigma_c = pymatrix_to_Carrayptrs(sigma);
 
     /*  Initialize collector arrays */
-
+    int a_dims[2] = {max_mth, 1};
+    int b_dims[2] = {delta_1_rows, max_mth};
     int b_pre_rows = delta_1_rows;
+
+    a_fin_array = (PyArrayObject *) PyArray_FromDims(2, a_dims, NPY_DOUBLE);
+    b_fin_array = (PyArrayObject *) PyArray_FromDims(2, b_dims, NPY_DOUBLE);
 
     double a_pre[max_mth];
     double b_pre[delta_1_rows][max_mth];
 
-    /* Initialize intermediate arrays */
+    a_fin = pymatrix_to_Carrayptrs(a_pre_array);
+    b_fin = pymatrix_to_Carrayptrs(b_pre_array);
 
+    /* Initialize intermediate arrays */
+    /*  Elements for a_pre calculation */
     double dot_sig_lam_0[sigma_rows][lam_0_cols];
     double diff_mu_sigl[mu_rows][1];
     double dot_bpre_mu_sig1;
@@ -173,42 +162,82 @@ static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
     double dot_b_sigt[1][sigma_rows];
     double dot_b_sst_bt;
 
+    /*  Elements for b_pre calculation */
+    double dot_sig_lam_1[sigma_rows][lam_1_cols];
+    double diff_phi_sig[phi_rows][phi_cols];
+    double dot_phisig_b[phi_cols][1];
+    
+    /*  Perform operations */
+
     a_pre[0] = delta_0;
-    for (i = 0; i < delta_1_x; i++) {
-        b_pre[i][0] = delta_1_c[i]
+    a_fin[0] = -(a_pre[0]);
+    for (i = 0; i < delta_1_rows; i++) {
+        b_pre[i][0] = delta_1_c[i];
+        b_fin[i][0] = -b_pre[i][0];
     }
+
+    double b_pre_mth[delta_1_rows];
 
     for (mth = 0; mth < (max_mth - 1); mth++) {
 
-        /* Left off here */
-        mat_prodct(sigma_rows, sigma_cols, sigma_c[sigma_rows][sigma_cols],
-                   lam_0_rows, lam_0_cols, lam_0_c[lam_0_rows][lam_0_cols],
-                   dot_sig_lam_0[sigma_rows][lam_0_cols]);
-        mat_subtract(mu_rows, mu_cols, mu[mu_rows][mu_cols], 
-                     dot_sig_lam_0[sigma_rows][lam_0_cols],
-                     diff_mu_sigl[mu_rows][mu_cols]);
-        double b_pre_mth = b_pre[][mth];
-        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth[b_pre_rows][1],
-                          mu_rows, 1, diff_mu_sigl[][1], 
+        next_mth = mth + 1;
+
+        for (i = 0; i < delta_1_x; i++) {
+            b_pre_mth[i] = b_pre[i][mth];
+        }
+
+        /* Calculate next a_pre element*/
+        mat_prodct(sigma_rows, sigma_cols, sigma_c, 
+                   lam_0_rows, lam_0_cols, lam_0_c,
+                   dot_sig_lam_0);
+        mat_subtract(mu_rows, mu_cols, mu_c, dot_sig_lam_0, diff_mu_sigl);
+        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth, 
+                          mu_rows, 1, diff_mu_sigl, 
                           dot_bpre_mu_sig1);
 
-        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth[b_pre_rows][1],
-                          sigma_rows, sigma_cols, 
-                          sigma_c[sigma_rows][sigma_cols], 
-                          dot_b_pre_sig[1][sigma_cols]);
-        mat_prodct_tpose2(1, sigma_cols, dot_b_pre_sig[1][sigma_cols],
-                          sigma_rows, sigma_cols, 
-                          sigma_c[sigma_rows][sigma_cols],
-                          dot_b_sigt[1][sigma_rows]);
-        mat_prodct(1, sigma_rows, dot_b_sigt[1][sigma_rows],
-                   b_pre_rows, 1, b_pre_mth[b_pre_rows][1],
+        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth,
+                          sigma_rows, sigma_cols, sigma_c, 
+                          dot_b_pre_sig);
+        mat_prodct_tpose2(1, sigma_cols, dot_b_pre_sig,
+                          sigma_rows, sigma_cols, sigma_c,
+                          dot_b_sigt);
+        mat_prodct(1, sigma_rows, dot_b_sigt,
+                   b_pre_rows, 1, b_pre_mth,
                    dot_b_sst_bt);
 
+        a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1 + (half * dot_b_sst_bt)
+                       - delta_0;
+        a_fin[next_mth] = -(a_pre[next_mth] / (next_mth));
 
-        a_pre[mth+1] = a_pre[mth] + 
+        /* Calculate next b_pre element */
+        mat_prodct(sigma_rows, sigma_cols, sigma_c,
+                   lam_1_rows, lam_1_cols, lam_1_c, 
+                   dot_sig_lam_1);
+        mat_subtract(phi_rows, phi_cols, phi_c, dot_sig_lam_1, diff_phi_sig);
+        mat_prodct_tpose1(phi_rows, phi_cols, diff_phi_sig,
+                          b_pre_rows, 1, b_pre_mth,
+                          dot_phisig_b);
 
+        for (i = 0; i < delta_1_x; i++) {
+            b_pre[i][next_mth] = dot_phisig_b[i][1] - delta_1_c[i][1];
+            b_fin[i][next_mth] = -(b_pre[i][next_mth] / (next_mth));
+        }
     }
 
+    free_Carrayptrs(lam_0_c);
+    free_Carrayptrs(lam_1_c);
+    free_Carrayptrs(delta_1_c);
+    free_Carrayptrs(mu_c);
+    free_Carrayptrs(phi_c);
+    free_Carrayptrs(sigma_c);
+    free_Carrayptrs(a_fin);
+    free_Carrayptrs(b_fin);
+
+    PyObject *Result = Py_BuildValue("OO", a_fin_array, b_fin_array);
+    Py_DECREF(a_fin_array);
+    Py_DECREF(b_fin_array);
+
+    return Result;
 }
 
 /* ==== Create Carray from PyArray ======================
@@ -227,3 +256,7 @@ double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin)  {
     return c;
 }
 
+/* ==== Free a double *vector (vec of pointers) ========================== */ 
+void free_Carrayptrs(double **v)  {
+    free((char*) v);
+}
