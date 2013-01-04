@@ -53,7 +53,6 @@ int main()
     double arr1[arr1_x][arr1_y];
     double arr2[arr2_x][arr2_y];
     double result[arr1_x][arr2_y];
-    double b_pre_mth = arr1[][2];
 
     printf("First one!\n");
     init_mat(arr1_x, arr1_y, arr1);

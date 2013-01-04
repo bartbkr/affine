@@ -97,11 +97,14 @@ void init_C_extensions()  {
 }
 
 static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
-    PyArrayObject *lam_0, *lam_1, *delta_1, *mu, *phi, *sigma;
-    int lam_0_x, lam_0_y, lam_1_x, lam_1_y, delta_1_x, delta_1_y, mu_x, mu_y,
-        phi_x, phi_y, sigma_x, sigma_y, delta_0, max_mth, mth, next_mth;
+    PyArrayObject *lam_0, *lam_1, *delta_1, *mu, *phi, *sigma, *a_fin_array,
+                  *b_fin_array;
+    int lam_0_rows, lam_0_cols, lam_1_rows, lam_1_cols, delta_1_rows,
+        delta_1_cols, mu_rows, mu_cols, phi_rows, phi_cols, sigma_rows,
+        sigma_cols, delta_0, max_mth, mth, next_mth, i;
 
-    double **lam_0_c, **lam_1_c, **delta_1_c, **mu_c, **phi_c, **sigma_c;
+    double **lam_0_c, **lam_1_c, **delta_1_c, **mu_c, **phi_c, **sigma_c,
+           **a_fin, **b_fin;
 
     /* Parse input arguments to function */
 
@@ -111,7 +114,7 @@ static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
         &delta_0, &max_mth))
         return NULL;
     if (NULL == lam_0 || NULL == lam_1 || NULL == delta_1 || NULL == mu || 
-        NULL == phi || NULL == sigma || NULL == max_mth) return NULL;
+        NULL == phi || NULL == sigma) return NULL;
 
     /* Get dimesions of all input arrays */
 
@@ -149,18 +152,18 @@ static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
     double a_pre[max_mth];
     double b_pre[delta_1_rows][max_mth];
 
-    a_fin = pymatrix_to_Carrayptrs(a_pre_array);
-    b_fin = pymatrix_to_Carrayptrs(b_pre_array);
+    a_fin = pymatrix_to_Carrayptrs(a_fin_array);
+    b_fin = pymatrix_to_Carrayptrs(b_fin_array);
 
     /* Initialize intermediate arrays */
     /*  Elements for a_pre calculation */
     double dot_sig_lam_0[sigma_rows][lam_0_cols];
     double diff_mu_sigl[mu_rows][1];
-    double dot_bpre_mu_sig1;
+    double dot_bpre_mu_sig1[1][1];
 
     double dot_b_pre_sig[1][sigma_cols];
     double dot_b_sigt[1][sigma_rows];
-    double dot_b_sst_bt;
+    double dot_b_sst_bt[1][1];
 
     /*  Elements for b_pre calculation */
     double dot_sig_lam_1[sigma_rows][lam_1_cols];
@@ -170,9 +173,9 @@ static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
     /*  Perform operations */
 
     a_pre[0] = delta_0;
-    a_fin[0] = -(a_pre[0]);
+    a_fin[0][1] = -a_pre[0];
     for (i = 0; i < delta_1_rows; i++) {
-        b_pre[i][0] = delta_1_c[i];
+        b_pre[i][0] = delta_1_c[i][1];
         b_fin[i][0] = -b_pre[i][0];
     }
 
@@ -182,7 +185,7 @@ static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
 
         next_mth = mth + 1;
 
-        for (i = 0; i < delta_1_x; i++) {
+        for (i = 0; i < delta_1_rows; i++) {
             b_pre_mth[i] = b_pre[i][mth];
         }
 
@@ -205,9 +208,9 @@ static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
                    b_pre_rows, 1, b_pre_mth,
                    dot_b_sst_bt);
 
-        a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1 + (half * dot_b_sst_bt)
-                       - delta_0;
-        a_fin[next_mth] = -(a_pre[next_mth] / (next_mth));
+        a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1[1][1] + 
+                        (half * dot_b_sst_bt[1][1]) - delta_0;
+        a_fin[next_mth] = -a_pre[next_mth] / next_mth;
 
         /* Calculate next b_pre element */
         mat_prodct(sigma_rows, sigma_cols, sigma_c,
