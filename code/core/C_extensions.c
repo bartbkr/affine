@@ -1,5 +1,7 @@
-#include <Python.h>
-#include <arrayobject.h>
+#include "Python.h"
+#include "arrayobject.h"
+#include "C_extensions.h"
+#include <math.h>
 
 /* === Constants used in rest of program === */
 const double half = 0.5;
@@ -10,6 +12,15 @@ static PyMethodDef _C_extensionsMethods[] = {
     {NULL, NULL}
 };
 
+/* ==== Initialize the C_test functions ====================== */
+// Module name must be _C_arraytest in compile and linked 
+
+void init_C_extensions()  {
+    (void) Py_InitModule("_C_extensions", _C_extensionsMethods);
+    import_array();
+}
+
+/*  Array helper functions */
 /*  ==== Matrix sum function ===== */
 void mat_sum(int x, int y, double arr1[x][y], double arr2[x][y], 
              double result[x][y]) {
@@ -88,15 +99,7 @@ void mat_prodct_tpose2(int row1, int col1, int row2, int col2,
     }
 }
 
-/* ==== Initialize the C_test functions ====================== */
-// Module name must be _C_arraytest in compile and linked 
-
-void init_C_extensions()  {
-    (void) Py_InitModule("_C_extensions", _C_extensionsMethods);
-    import_array();
-}
-
-static PyObject * gen_pred_coef(PyObject *self, PyObject *args)  {
+static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     PyArrayObject *lam_0, *lam_1, *delta_1, *mu, *phi, *sigma, *a_fin_array,
                   *b_fin_array;
     int lam_0_rows, lam_0_cols, lam_1_rows, lam_1_cols, delta_1_rows,
@@ -257,6 +260,17 @@ double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin)  {
     for ( i=0; i<n; i++)  {
         c[i]=a+i*m;  }
     return c;
+}
+
+/* ==== Allocate a double *vector (vec of pointers) ======================
+    Memory is Allocated!  See void free_Carray(double ** )                  */
+double **ptrvector(long n)  {
+    double **v;
+    v=(double **)malloc((size_t) (n*sizeof(double)));
+    if (!v)   {
+        printf("In **ptrvector. Allocation of memory for double array failed.");
+        exit(0);  }
+    return v;
 }
 
 /* ==== Free a double *vector (vec of pointers) ========================== */ 
