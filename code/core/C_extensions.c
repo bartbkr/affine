@@ -291,7 +291,7 @@ double **ptrvector(long n)  {
 
 /*  ==== Create ** double from double 2-dim array === */
 double **twodim_to_point(int rows, int cols, double array[rows][cols]) {
-    int row, i;
+    int row;
     double **pointer, *a;
     pointer=(double **)malloc((size_t) (rows*sizeof(double)));
     if (!pointer)   {
@@ -299,7 +299,7 @@ double **twodim_to_point(int rows, int cols, double array[rows][cols]) {
         exit(0);  }
     a = (double *) array;
     for (row=0; row < rows; row++) {
-        pointer[i] = a + row * cols;
+        pointer[row] = a + row * cols;
     }
     return pointer;
 }
