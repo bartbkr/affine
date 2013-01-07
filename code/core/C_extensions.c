@@ -22,12 +22,13 @@ void init_C_extensions()  {
 
 /*  Array helper functions */
 /*  ==== Matrix sum function ===== */
-void mat_sum(int x, int y, double arr1[x][y], double arr2[x][y], 
-             double result[x][y]) {
-    int dim_x, dim_y;
-    for (dim_x = 0; dim_x < x; dim_x++) {
-        for (dim_y = 0; dim_y < y; dim_y++) {
-            result[dim_x][dim_y] = arr1[dim_x][dim_y] + arr2[dim_x][dim_y];
+void mat_sum(int rows, int cols, double arr1[rows][cols], 
+             double arr2[rows][cols], double result[rows][cols]) {
+    int dim_rows, dim_cols;
+    for (dim_rows = 0; dim_rows < rows; dim_rows++) {
+        for (dim_cols = 0; dim_cols < cols; dim_cols++) {
+            result[dim_rows][dim_cols] = arr1[dim_rows][dim_cols]
+                                    + arr2[dim_rows][dim_cols];
         }
     }
 }
@@ -45,7 +46,7 @@ void mat_subtract(int rows, int cols, double arr1[rows][cols],
 
 /*  ==== Matrix product functions ===== */
 void mat_prodct(int row1, int col1, double arr1[row1][col1], int row2, 
-                int col2, double arr2[row2][col2], 
+                int col2, double **arr2[row2][col2], 
                 double result[row1][col2]) {
 
     /* What about case when results in single number */
@@ -64,8 +65,8 @@ void mat_prodct(int row1, int col1, double arr1[row1][col1], int row2,
 }
 
 /*  ==== Matrix product functions tpose first argument ===== */
-void mat_prodct_tpose1(int row1, int col1, int row2, int col2, 
-                       double arr1[row1][col1], double arr2[row2][col2], 
+void mat_prodct_tpose1(int row1, int col1, double arr1[row1][col1], 
+                       int row2, int col2, double arr2[row2][col2], 
                        double result[col1][col2]) {
 
     int dim1_row, dim1_col, dim2_col;
@@ -82,8 +83,8 @@ void mat_prodct_tpose1(int row1, int col1, int row2, int col2,
 }
 
 /*  ==== Matrix product functions tpose second argument ===== */
-void mat_prodct_tpose2(int row1, int col1, int row2, int col2, 
-                       double arr1[row1][col1], double arr2[row2][col2], 
+void mat_prodct_tpose2(int row1, int col1, double arr1[row1][col1],
+                       int row2, int col2, double arr2[row2][col2], 
                        double result[row1][row2]) {
 
     int dim1_row, dim1_col, dim2_row;
@@ -224,7 +225,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                           b_pre_rows, 1, b_pre_mth,
                           dot_phisig_b);
 
-        for (i = 0; i < delta_1_x; i++) {
+        for (i = 0; i < delta_1_rows; i++) {
             b_pre[i][next_mth] = dot_phisig_b[i][1] - delta_1_c[i][1];
             b_fin[i][next_mth] = -(b_pre[i][next_mth] / (next_mth));
         }
