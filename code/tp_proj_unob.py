@@ -11,7 +11,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from core.util import pickle_file, success_mail, to_mth, gen_guesses, \
+from affine.util import pickle_file, success_mail, to_mth, gen_guesses, \
                  ap_constructor, pass_ols
 
 ########################################
