@@ -14,6 +14,8 @@ from scipy import stats
 from affine.util import pickle_file, success_mail, to_mth, gen_guesses, \
                  ap_constructor, pass_ols
 
+import pdb
+
 ########################################
 # Get macro data                       #
 ########################################
@@ -84,29 +86,24 @@ rf_rate = rf_rate.reindex(index=yc_index)
 
 neqs = len(mod_data.columns)
 
-from core.affine import Affine
+from affine.affine import Affine
 
-lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e = ap_constructor(k_ar=k_ar,
-                                                                   neqs=neqs, 
-                                                                   lat=lat)
+lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, sigma_e \
+    = ap_constructor(k_ar=k_ar, neqs=neqs, lat=lat)
 
-delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=mod_data, freq="M", lat=3,
-                                           k_ar=4, neqs=2, delta_1=delta_1_e, mu=mu_e,
-                                           phi=phi_e, sigma=sigma_e,
-                                           rf_rate=rf_rate)
-
-#lam_0_guess = [0.0] * (neqs + lat)
-#lam_1_guess = [0.0] * ((neqs * neqs) + (neqs * lat) + (lat * neqs) + 
-              #(lat * lat))
-#delta_1_guess = [0.0] * (lat)
-#mu_guess = [0.0] * (lat)
-#phi_guess = [0.0] * (lat * lat)
-#sigma_guess = [0.0] * (lat * lat)
+delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=mod_data,
+                                                      freq="M", lat=3, k_ar=4,
+                                                      neqs=2,
+                                                      delta_0=delta_0_e,
+                                                      delta_1=delta_1_e,
+                                                      mu=mu_e, phi=phi_e,
+                                                      sigma=sigma_e,
+                                                      rf_rate=rf_rate)
 
 bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
                    latent=latent, no_err=[0, 4, 7], lam_0_e=lam_0_e,
-                   lam_1_e=lam_1_e, delta_1_e=delta_1_e, mu_e=mu_e,
-                   phi_e=phi_e, sigma_e=sigma_e)
+                   lam_1_e=lam_1_e, delta_0_e=delta_0_e, delta_1_e=delta_1_e,
+                   mu_e=mu_e, phi_e=phi_e, sigma_e=sigma_e)
 
 guess_length = bsr_model.guess_length
 

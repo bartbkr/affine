@@ -317,6 +317,7 @@ def ap_constructor(neqs, k_ar, lat):
     dim = neqs * k_ar + lat
     lam_0 = ma.zeros([dim, 1])
     lam_1 = ma.zeros([dim, dim])
+    delta_0 = ma.zeros([1, 1])
     delta_1 = ma.zeros([dim, 1])
     delta_1[-lat:, ] = np.array([[-0.0001], [0.0000], [0.0001]])
     mu = ma.zeros([dim, 1])
@@ -336,6 +337,9 @@ def ap_constructor(neqs, k_ar, lat):
     lam_1[-lat:, :neqs] = ma.masked
     lam_1[-lat:, -lat:] = ma.masked
 
+    delta_0[:, :] = ma.masked
+    delta_0[:, :] = ma.nomask
+
     delta_1[-lat:, 0] = ma.masked
 
     mu[-lat:, 0] = ma.masked
@@ -346,13 +350,15 @@ def ap_constructor(neqs, k_ar, lat):
     sigma[:, :] = ma.nomask
     sigma[-lat:, -lat:] = np.identity(lat)
 
-    return lam_0, lam_1, delta_1, mu, phi, sigma
+    return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma
 
-def pass_ols(var_data, freq, lat, k_ar, neqs, delta_1, mu, phi, sigma, 
+def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
              rf_rate):
     """
     Inserts estimated OLS parameters into appropriate matrices
 
+    delta_0 : array (1, 1)
+        guess for element of delta_0
     delta_1 : array (neqs * k_ar + lat, 1)
         guess for elements of delta_1
     mu : array (neqs * k_ar + lat, 1)
@@ -388,10 +394,12 @@ def pass_ols(var_data, freq, lat, k_ar, neqs, delta_1, mu, phi, sigma,
     macro["constant"] = 1
     #we will want to change this next one once we make delta_1 uncontrained
     #(see top of ang and piazzesi page 759)
-    delta_1[:neqs] = OLS(rf_rate,
-                         macro).fit().params[1:].values[None].T
+    params = OLS(rf_rate, macro).fit().params
+    delta_0[0, 0] = params[0]
+    delta_1[:neqs] = params[1:].values[None].T
+
     mu[:neqs * k_ar, 0, None] = mu_ols[None]
     phi[:neqs * k_ar, :neqs * k_ar] = phi_ols[None]
     sigma[:neqs * k_ar, :neqs * k_ar] = sigma_ols[None]
 
-    return delta_1, mu, phi, sigma
+    return delta_0, delta_1, mu, phi, sigma

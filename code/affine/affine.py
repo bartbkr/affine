@@ -33,8 +33,8 @@ class Affine(LikelihoodModel):
     """
     def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4, freq='M',
                  latent=False, no_err=None, lam_0_e=None, lam_1_e=None,
-                 delta_1_e=None, mu_e=None, phi_e=None, sigma_e=None, 
-                 mths=None):
+                 delta_0_e=None, delta_1_e=None, mu_e=None, phi_e=None,
+                 sigma_e=None, mths=None):
         """
         Attempts to solve affine model
         yc_data : DataFrame 
@@ -56,19 +56,20 @@ class Affine(LikelihoodModel):
             elements marked with 'E' or 'e' are estimated
             n = number of variables in fully-specified VAR(1) at t
 
-        lam_0_e : array-like, n x 1
-            shape of constant vector of risk pricing equation
-        lam_1_e : array-like, n x n
-            shape of parameter array of risk pricing equation
-        delta_1_e : array-like, n x 1
-            shape of initial parameter vector, corresponding to short-rate
-            equation
-        mu_e : array-like, n x 1
-            shape of constant vector for VAR process
-        phi_e : array-like, n x n
-            shape of parameter array for VAR process
-        sigma_e : array-like, n x n
-            shape of variance, covariance array for VAR process
+        lam_0_e : Numpy masked array, n x 1
+            constant vector of risk pricing equation
+        lam_1_e : Numpy masked array, n x n
+            parameter array of risk pricing equation
+        delta_0_e : Numpy masked array, 1 x 1
+            constant in short-rate equation
+        delta_1_e : Numpy masked array, n x 1
+            parameter vector in short-rate equation
+        mu_e : Numpy masked array, n x 1
+            constant vector for VAR process
+        phi_e : Numpy masked array, n x n
+            parameter array for VAR process
+        sigma_e : Numpy masked array, n x n
+            covariance array for VAR process
         """
         self.yc_data = yc_data
         self.var_data = var_data
@@ -84,6 +85,7 @@ class Affine(LikelihoodModel):
 
         self.lam_0_e = lam_0_e
         self.lam_1_e = lam_1_e
+        self.delta_0_e = delta_0_e
         self.delta_1_e = delta_1_e
         self.mu_e = mu_e
         self.phi_e = phi_e
@@ -108,7 +110,7 @@ class Affine(LikelihoodModel):
             #gen position list for processing list input to solver
             self.noerr_cols, self.err_cols = self._gen_col_names()
             #set to unconditional mean of short_rate
-            self.delta_0 = np.mean(rf_rate)
+            #self.delta_0 = np.mean(rf_rate)
 
         #with all observed factors, mu, phi, and sigma are directly generated
         #from OLS VAR one step estimation
@@ -220,25 +222,24 @@ class Affine(LikelihoodModel):
             solve_params = solve.params
             tvalues = solve.tvalues
 
-        lam_0, lam_1, delta_1, mu, phi, sigma = \
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
                 self._params_to_array(solve_params)
 
-        a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
-                                              delta_1=delta_1, mu=mu, phi=phi,
-                                              sigma=sigma)
+        a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
+                                              mu, phi, sigma)
 
         #This will need to be refactored
         #if full_output:
-            #return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output 
+            #return lam_0, lam_1, delta_0, delta_1, phi, sigma, a_solve, b_solve, output 
         if method == "nls":
-            return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
-                    solv_cov
+            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+                   b_solve, solv_cov
         elif method == "ls":
-            return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
-                    output
+            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+                   b_solve, output
         elif method == "ml":
-            return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
-                    tvalues
+            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+                   b_solve, tvalues
 
     def score(self, params):
         """
@@ -274,11 +275,10 @@ class Affine(LikelihoodModel):
         #all of the params don't seem to be moving
         #only seems to be for certain solution methods
 
-        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(params)
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = self._params_to_array(params)
 
-        solve_a, solve_b = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
-                                              delta_1=delta_1, mu=mu, phi=phi,
-                                              sigma=sigma)
+        solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
+                                              mu, phi, sigma)
 
         #first solve for unknown part of information vector
         var_data_c, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
@@ -305,18 +305,18 @@ class Affine(LikelihoodModel):
 
         return like
 
-    def gen_pred_coef(self, lam_0, lam_1, delta_1, mu, phi, sigma):
+    def gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi, sigma):
         """
         Generates prediction coefficient vectors A and B
         lam_0 : array
         lam_1 : array
+        delta_0 : array
         delta_1 : array
         phi : array
         sigma : array
         """
         #Thiu should be passed to a C function, it is really slow right now
         mths = self.mths
-        delta_0 = self.delta_0
         #Should probably set this so its not recalculated every run
         max_mth = max(mths)
         #generate predictions
@@ -349,12 +349,11 @@ class Affine(LikelihoodModel):
         yc_data = self.yc_data
         var_data_vert = self.var_data_vert
 
-        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(params=params)
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+            self._params_to_array(params=params)
 
-        a_solve, b_solve = self.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
-                                              delta_1=delta_1, mu=mu,phi=phi,
-                                              sigma=sigma)
-
+        a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
+                                              mu, phi, sigma)
         errs = []
 
         yc_data_val = yc_data.values
@@ -482,12 +481,14 @@ class Affine(LikelihoodModel):
         """
         lam_0_e = self.lam_0_e.copy()
         lam_1_e = self.lam_1_e.copy()
+        delta_0_e = self.delta_0_e.copy()
         delta_1_e = self.delta_1_e.copy()
         mu_e = self.mu_e.copy()
         phi_e = self.phi_e.copy()
         sigma_e = self.sigma_e.copy()
 
-        all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
+        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, 
+                      sigma_e]
 
         arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
                                      all_arrays])
@@ -507,10 +508,11 @@ class Affine(LikelihoodModel):
         mths = self.mths
         yc_data = self.yc_data
 
-        lam_0, lam_1, delta_1, mu, phi, sigma = self._params_to_array(params)
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma \
+                = self._params_to_array(params)
 
-        a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_1, mu, phi,
-                                            sigma)
+        a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
+                                            phi, sigma)
 
         pred = px.DataFrame(index=yc_data.index)
 
@@ -603,12 +605,14 @@ class Affine(LikelihoodModel):
     def _gen_guess_length(self):
         lam_0_e = self.lam_0_e
         lam_1_e = self.lam_1_e
+        delta_0_e = self.delta_0_e
         delta_1_e = self.delta_1_e
         mu_e = self.mu_e
         phi_e = self.phi_e
         sigma_e = self.sigma_e
 
-        all_arrays = [lam_0_e, lam_1_e, delta_1_e, mu_e, phi_e, sigma_e]
+        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, 
+                      sigma_e]
 
         count = 0
         for struct in all_arrays:
