@@ -46,7 +46,7 @@ void mat_subtract(int rows, int cols, double **arr1, double **arr2,
 
 /*  ==== Matrix product functions ===== */
 void mat_prodct(int row1, int col1, double **arr1, 
-                int row2, int col2, double **arr2, 
+                int col2, double **arr2, 
                 double **result) {
 
     /* What about case when results in single number */
@@ -66,7 +66,7 @@ void mat_prodct(int row1, int col1, double **arr1,
 
 /*  ==== Matrix product functions tpose first argument ===== */
 void mat_prodct_tpose1(int row1, int col1, double **arr1, 
-                       int row2, int col2, double **arr2, 
+                       int col2, double **arr2, 
                        double **result) {
 
     int dim1_row, dim1_col, dim2_col;
@@ -84,7 +84,7 @@ void mat_prodct_tpose1(int row1, int col1, double **arr1,
 
 /*  ==== Matrix product functions tpose second argument ===== */
 void mat_prodct_tpose2(int row1, int col1, double **arr1,
-                       int row2, int col2, double **arr2, 
+                       int row2, double **arr2, 
                        double **result) {
 
     int dim1_row, dim1_col, dim2_row;
@@ -209,21 +209,21 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
         /* Calculate next a_pre element*/
         mat_prodct(sigma_rows, sigma_cols, sigma_c, 
-                   lam_0_rows, lam_0_cols, lam_0_c,
+                   lam_0_cols, lam_0_c,
                    dot_sig_lam_0_c);
         mat_subtract(mu_rows, mu_cols, mu_c, dot_sig_lam_0_c, diff_mu_sigl_c);
         mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth_c, 
-                          mu_rows, 1, diff_mu_sigl_c, 
+                          1, diff_mu_sigl_c, 
                           dot_bpre_mu_sig1_c);
 
         mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth_c,
-                          sigma_rows, sigma_cols, sigma_c, 
+                          sigma_cols, sigma_c, 
                           dot_b_pre_sig_c);
         mat_prodct_tpose2(1, sigma_cols, dot_b_pre_sig_c,
-                          sigma_rows, sigma_cols, sigma_c,
+                          sigma_rows, sigma_c,
                           dot_b_sigt_c);
         mat_prodct(1, sigma_rows, dot_b_sigt_c,
-                   b_pre_rows, 1, b_pre_mth_c,
+                   1, b_pre_mth_c,
                    dot_b_sst_bt_c);
 
         a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1[1][1] + 
@@ -232,12 +232,12 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
         /* Calculate next b_pre element */
         mat_prodct(sigma_rows, sigma_cols, sigma_c,
-                   lam_1_rows, lam_1_cols, lam_1_c, 
+                   lam_1_cols, lam_1_c, 
                    dot_sig_lam_1_c);
         mat_subtract(phi_rows, phi_cols, phi_c, dot_sig_lam_1_c, 
                      diff_phi_sig_c);
         mat_prodct_tpose1(phi_rows, phi_cols, diff_phi_sig_c,
-                          b_pre_rows, 1, b_pre_mth_c,
+                          1, b_pre_mth_c,
                           dot_phisig_b_c);
 
         for (i = 0; i < delta_1_rows; i++) {
