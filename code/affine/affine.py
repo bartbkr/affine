@@ -20,6 +20,9 @@ from operator import itemgetter
 from scipy import optimize
 from util import flatten, select_rows, retry
 
+#C extension
+import _C_extensions
+
 #debugging
 import pdb
 
@@ -95,6 +98,7 @@ class Affine(LikelihoodModel):
         if mths is None:
             mths = self._mths_list()
         self.mths = mths
+        self.max_mth = max(mths)
 
         assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
                                                 - k_ar + 1, \
@@ -316,9 +320,8 @@ class Affine(LikelihoodModel):
         sigma : array
         """
         #Thiu should be passed to a C function, it is really slow right now
-        mths = self.mths
         #Should probably set this so its not recalculated every run
-        max_mth = max(mths)
+        max_mth = self.max_mth
         #generate predictions
         a_pre = np.zeros((max_mth, 1))
         a_pre[0] = -delta_0
@@ -338,6 +341,24 @@ class Affine(LikelihoodModel):
         for mth in range(max_mth):
             b_solve[mth] = np.multiply(-b_pre[mth], n_inv[mth])
         return a_solve, b_solve
+
+    def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi, 
+                          sigma):
+        """
+        Generation prediction coefficient vectors A and B in fast C function
+        lam_0 : array
+        lam_1 : array
+        delta_0 : array
+        delta_1 : array
+        phi : array
+        sigma : array
+        """
+        max_mth = self.max_mth
+
+        #should probably do some checking here
+
+        return _C_extensions.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
+                                           phi, sigma, max_mth)
 
     def _affine_nsum_errs(self, params):
         """

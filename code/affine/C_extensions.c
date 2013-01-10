@@ -101,14 +101,13 @@ void mat_prodct_tpose2(int row1, int col1, double **arr1,
 }
 
 static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
-    PyArrayObject *lam_0, *lam_1, *delta_1, *mu, *phi, *sigma, *a_fin_array,
-                  *b_fin_array;
-    int lam_0_rows, lam_0_cols, lam_1_rows, lam_1_cols, delta_1_rows,
-        delta_1_cols, mu_rows, mu_cols, phi_rows, phi_cols, sigma_rows,
-        sigma_cols, delta_0, max_mth, mth, next_mth, i;
+    PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma,
+                  *a_fin_array, *b_fin_array;
+    int lam_0_cols, lam_1_cols, delta_1_rows, mu_rows, mu_cols, phi_rows,
+        phi_cols, sigma_rows, sigma_cols, max_mth, mth, next_mth, i;
 
-    double **lam_0_c, **lam_1_c, **delta_1_c, **mu_c, **phi_c, **sigma_c,
-           **a_fin, **b_fin, **dot_sig_lam_0_c, **diff_mu_sigl_c,
+    double **lam_0_c, **lam_1_c, **delta_0_c, **delta_1_c, **mu_c, **phi_c,
+           **sigma_c, **a_fin, **b_fin, **dot_sig_lam_0_c, **diff_mu_sigl_c,
            **dot_bpre_mu_sig1_c, **dot_b_pre_sig_c, **dot_b_sigt_c,
            **dot_b_sst_bt_c, **dot_sig_lam_1_c, **diff_phi_sig_c,
            **dot_phisig_b_c, **b_pre_mth_c;
@@ -116,21 +115,18 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     /* Parse input arguments to function */
 
     if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!i",
-        &PyArray_Type, &lam_0, &PyArray_Type, &lam_1, &PyArray_Type, &delta_1,
-        &PyArray_Type, &mu, &PyArray_Type, &phi, &PyArray_Type, &sigma, 
-        &delta_0, &max_mth))
+        &PyArray_Type, &lam_0, &PyArray_Type, &lam_1, &PyArray_Type, &delta_0,
+        &PyArray_Type, &delta_1, &PyArray_Type, &mu, &PyArray_Type, &phi,
+        &PyArray_Type, &sigma, &max_mth))
         return NULL;
-    if (NULL == lam_0 || NULL == lam_1 || NULL == delta_1 || NULL == mu || 
-        NULL == phi || NULL == sigma) return NULL;
+    if (NULL == lam_0 || NULL == lam_1 || NULL == delta_0 || NULL == delta_1 ||
+        NULL == mu || NULL == phi || NULL == sigma) return NULL;
 
     /* Get dimesions of all input arrays */
 
-    lam_0_rows=lam_0->dimensions[0];
     lam_0_cols=lam_0->dimensions[1];
-    lam_1_rows=lam_1->dimensions[0];
     lam_1_cols=lam_1->dimensions[1];
     delta_1_rows=delta_1->dimensions[0];
-    delta_1_cols=delta_1->dimensions[1];
     mu_rows=mu->dimensions[0];
     mu_cols=mu->dimensions[1];
     phi_rows=phi->dimensions[0];
@@ -143,6 +139,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     lam_0_c = pymatrix_to_Carrayptrs(lam_0);
     lam_1_c = pymatrix_to_Carrayptrs(lam_1);
+    delta_0_c = pymatrix_to_Carrayptrs(delta_0);
     delta_1_c = pymatrix_to_Carrayptrs(delta_1); 
     mu_c = pymatrix_to_Carrayptrs(mu); 
     phi_c = pymatrix_to_Carrayptrs(phi); 
@@ -188,7 +185,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     
     /*  Perform operations */
 
-    a_pre[0] = delta_0;
+    a_pre[0] = delta_0_c[0][0];
     a_fin[0][1] = -a_pre[0];
     for (i = 0; i < delta_1_rows; i++) {
         b_pre[i][0] = delta_1_c[i][1];
@@ -227,7 +224,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                    dot_b_sst_bt_c);
 
         a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1[1][1] + 
-                        (half * dot_b_sst_bt[1][1]) - delta_0;
+                        (half * dot_b_sst_bt[1][1]) - delta_0_c[0][0];
         a_fin[next_mth][0] = -a_pre[next_mth] / next_mth;
 
         /* Calculate next b_pre element */
@@ -248,6 +245,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     free_Carrayptrs(lam_0_c);
     free_Carrayptrs(lam_1_c);
+    free_Carrayptrs(delta_0_c);
     free_Carrayptrs(delta_1_c);
     free_Carrayptrs(mu_c);
     free_Carrayptrs(phi_c);
