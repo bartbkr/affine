@@ -223,8 +223,8 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                    1, b_pre_mth_c,
                    dot_b_sst_bt_c);
 
-        a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1[1][1] + 
-                        (half * dot_b_sst_bt[1][1]) - delta_0_c[0][0];
+        a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1[0][0] + 
+                        (half * dot_b_sst_bt[0][0]) - delta_0_c[0][0];
         a_fin[next_mth][0] = -a_pre[next_mth] / next_mth;
 
         /* Calculate next b_pre element */

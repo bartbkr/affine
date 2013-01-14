@@ -21,7 +21,11 @@ from scipy import optimize
 from util import flatten, select_rows, retry
 
 #C extension
-import _C_extensions
+try:
+    import _C_extensions
+    fast_gen_pred = True
+except:
+    fast_gen_pred = False
 
 #debugging
 import pdb
@@ -40,7 +44,7 @@ class Affine(LikelihoodModel):
                  sigma_e=None, mths=None):
         """
         Attempts to solve affine model
-        yc_data : DataFrame 
+        yc_data : DataFrame
             yield curve data
         var_data : DataFrame
             data for var model
@@ -52,7 +56,7 @@ class Affine(LikelihoodModel):
             frequency of data
         no_err : list of ints
             list of the column indexes of yields to be measured without error
-            ex: [0, 3, 4] 
+            ex: [0, 3, 4]
             (1st, 4th, and 5th columns in yc_data to be estimatd without error)
 
         For all estimate parameter arrays:
@@ -234,7 +238,7 @@ class Affine(LikelihoodModel):
 
         #This will need to be refactored
         #if full_output:
-            #return lam_0, lam_1, delta_0, delta_1, phi, sigma, a_solve, b_solve, output 
+            #return lam_0, lam_1, delta_0, delta_1, phi, sigma, a_solve, b_solve, output
         if method == "nls":
             return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
                    b_solve, solv_cov
@@ -281,8 +285,13 @@ class Affine(LikelihoodModel):
 
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = self._params_to_array(params)
 
-        solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
-                                              mu, phi, sigma)
+        if fast_gen_pred:
+            solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                      delta_1, mu, phi, sigma)
+
+        else:
+            solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
+                                                  delta_1, mu, phi, sigma)
 
         #first solve for unknown part of information vector
         var_data_c, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
@@ -342,7 +351,7 @@ class Affine(LikelihoodModel):
             b_solve[mth] = np.multiply(-b_pre[mth], n_inv[mth])
         return a_solve, b_solve
 
-    def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi, 
+    def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
                           sigma):
         """
         Generation prediction coefficient vectors A and B in fast C function
@@ -400,7 +409,7 @@ class Affine(LikelihoodModel):
 
         Returns
         -------
-        var_data_c : DataFrame 
+        var_data_c : DataFrame
             VAR data including unobserved factors
         jacob : array (neqs * k_ar + num_yields)**2
             Jacobian used in likelihood
@@ -446,7 +455,7 @@ class Affine(LikelihoodModel):
                     b_in[no_err_mth[ix] - 1][neqs * k_ar:]
         #now solve for unknown factors using long matrices
 
-        unobs = np.dot(la.inv(b_sel_unobs), 
+        unobs = np.dot(la.inv(b_sel_unobs),
                     yc_data.filter(items=noerr_cols).values.T - a_sel - \
                     np.dot(b_sel_obs, var_data_vert.values.T))
 
@@ -474,10 +483,10 @@ class Affine(LikelihoodModel):
             row_index = yc_data_names.index(col)
             meas_mat[row_index, col_index] = 1
 
-        jacob = self._construct_J(b_obs=b_all_obs, 
+        jacob = self._construct_J(b_obs=b_all_obs,
                                     b_unobs=b_all_unobs, meas_mat=meas_mat)
-        
-        return var_data_c, jacob, yield_errs 
+
+        return var_data_c, jacob, yield_errs
 
     def _mths_list(self):
         """
@@ -508,7 +517,7 @@ class Affine(LikelihoodModel):
         phi_e = self.phi_e.copy()
         sigma_e = self.sigma_e.copy()
 
-        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, 
+        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e,
                       sigma_e]
 
         arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
@@ -555,10 +564,10 @@ class Affine(LikelihoodModel):
         for col, mth in enumerate(orig.columns):
             new[col*obs:(col+1)*obs] = orig[mth].values
         return new
-    
+
     def _gen_arg_sep(self, arg_lengths):
         """
-        Generates list of positions 
+        Generates list of positions
         """
         arg_sep = [0]
         pos = 0
@@ -601,10 +610,10 @@ class Affine(LikelihoodModel):
 
         return no_err_mth, err_mth
 
-    def _construct_J(self, b_obs, b_unobs, meas_mat): 
+    def _construct_J(self, b_obs, b_unobs, meas_mat):
         """
         Consruct jacobian matrix
-        meas_mat : array 
+        meas_mat : array
         """
         k_ar = self.k_ar
         neqs = self.neqs
@@ -613,7 +622,7 @@ class Affine(LikelihoodModel):
         num_obsrv = neqs * k_ar
 
         #now construct Jacobian
-        msize = neqs * k_ar + num_yields 
+        msize = neqs * k_ar + num_yields
         jacob = np.zeros([msize, msize])
         jacob[:num_obsrv, :num_obsrv] = np.identity(neqs*k_ar)
 
@@ -632,7 +641,7 @@ class Affine(LikelihoodModel):
         phi_e = self.phi_e
         sigma_e = self.sigma_e
 
-        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, 
+        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e,
                       sigma_e]
 
         count = 0

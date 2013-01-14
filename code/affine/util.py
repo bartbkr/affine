@@ -27,10 +27,10 @@ def pickle_file(obj=None, name=None):
 
 def robust(mod_data, mod_yc_data, method=None):
     """
-    Function to run model with guesses, also generating 
+    Function to run model with guesses, also generating
     method : string
         method to pass to Affine.solve()
-    mod_data : pandas DataFrame 
+    mod_data : pandas DataFrame
         model data
     mod_yc_data : pandas DataFrame
         model yield curve data
@@ -40,7 +40,7 @@ def robust(mod_data, mod_yc_data, method=None):
         Guess for lambda 1
     """
     from affine import Affine
-        
+
     # subset to pre 2005
     mod_data = mod_data[:217]
     mod_yc_data = mod_yc_data[:214]
@@ -54,6 +54,10 @@ def robust(mod_data, mod_yc_data, method=None):
 
     lam_1_e = ma.zeros((k_ar * neqs, k_ar * neqs))
     lam_1_e[:neqs, :neqs] = ma.masked
+
+    delta_0_e = ma.zeros([1, 1])
+    delta_0_e[:, :] = ma.masked
+    delta_0_e[:, :] = ma.nomask
 
     delta_1_e = ma.zeros([k_ar * neqs, 1])
     delta_1_e[:, :] = ma.masked
@@ -85,8 +89,8 @@ def robust(mod_data, mod_yc_data, method=None):
 
     #anl_mths, mth_only_data = proc_to_mth(mod_yc_data)
     bsr = Affine(yc_data = mod_yc_data, var_data = mod_data, lam_0_e=lam_0_e,
-                 lam_1_e=lam_1_e, delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e,
-                 sigma_e=sigma_e)
+                 lam_1_e=lam_1_e, delta_0_e=delta_0_e, delta_1_e=delta_1_e,
+                 mu_e=mu_e, phi_e=phi_e, sigma_e=sigma_e)
     neqs = bsr.neqs
 
     guess_length = bsr.guess_length
@@ -170,7 +174,7 @@ def flatten(array):
         for index in range(np.shape(rshape)[0]):
             a_list.append(rshape[index])
         return a_list
-    
+
 def select_rows(rows, array):
     """
     Creates 2-dim submatrix only of rows from list rows
@@ -254,7 +258,6 @@ def retry(func, attempts):
                 print "Unexpected error:", sys.exc_info()[0]
                 raise
     return inner_wrapper
-
 def params_to_list(lam_0=None, lam_1=None, delta_1=None, mu=None,
                    phi=None, sigma=None, multistep=0):
     """
@@ -285,7 +288,7 @@ def params_to_list(lam_0=None, lam_1=None, delta_1=None, mu=None,
         #guess_list.append(struct[ma.getmask(struct))
 
     #we assume that those params corresponding to lags are set to zero
-    if lat: 
+    if lat:
         #we are assuming independence between macro factors and latent
         #factors
         guess_list.append(flatten(lam_0[:neqs]))
@@ -389,7 +392,7 @@ def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
     sigma_ols[:neqs, :neqs] = sigma_u
     sigma_ols[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
     sigma_ols = np.tril(sigma_ols)
-    
+
     macro = var_data.copy()[k_ar - 1:]
     macro["constant"] = 1
     #we will want to change this next one once we make delta_1 uncontrained
