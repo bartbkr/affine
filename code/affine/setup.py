@@ -11,7 +11,6 @@ except ImportError:
 c_extentsion = Extension('_C_extensions', ['C_extensions.c'],
                     include_dirs=[np.get_include() + "/numpy"])
 
-
 setup(name = 'py_affine',
       author = 'Barton Baker',
       version = '1.0',

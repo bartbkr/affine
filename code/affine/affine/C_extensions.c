@@ -114,7 +114,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     /* Parse input arguments to function */
 
-    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!i",
+    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!i",
         &PyArray_Type, &lam_0, &PyArray_Type, &lam_1, &PyArray_Type, &delta_0,
         &PyArray_Type, &delta_1, &PyArray_Type, &mu, &PyArray_Type, &phi,
         &PyArray_Type, &sigma, &max_mth))

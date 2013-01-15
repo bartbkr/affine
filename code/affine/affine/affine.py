@@ -22,7 +22,7 @@ from util import flatten, select_rows, retry
 
 #C extension
 try:
-    import _C_extensions
+    from . import _C_extensions
     fast_gen_pred = True
 except:
     fast_gen_pred = False
