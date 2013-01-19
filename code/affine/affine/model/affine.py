@@ -22,8 +22,9 @@ from util import flatten, select_rows, retry
 
 #C extension
 try:
-    from . import _C_extensions
+    from affine import _C_extensions
     fast_gen_pred = True
+    pdb.set_trace()
 except:
     fast_gen_pred = False
 
