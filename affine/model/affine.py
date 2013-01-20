@@ -24,7 +24,6 @@ from util import flatten, select_rows, retry
 try:
     from affine import _C_extensions
     fast_gen_pred = True
-    pdb.set_trace()
 except:
     fast_gen_pred = False
 
@@ -383,8 +382,13 @@ class Affine(LikelihoodModel):
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
             self._params_to_array(params=params)
 
-        a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
-                                              mu, phi, sigma)
+        if fast_gen_pred:
+            solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                      delta_1, mu, phi, sigma)
+
+        else:
+            solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
+                                                  delta_1, mu, phi, sigma)
         errs = []
 
         yc_data_val = yc_data.values
@@ -542,8 +546,13 @@ class Affine(LikelihoodModel):
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma \
                 = self._params_to_array(params)
 
-        a_test, b_test = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
-                                            phi, sigma)
+        if fast_gen_pred:
+            solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                      delta_1, mu, phi, sigma)
+
+        else:
+            solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
+                                                  delta_1, mu, phi, sigma)
 
         pred = px.DataFrame(index=yc_data.index)
 

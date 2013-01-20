@@ -12,7 +12,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from affine.util import robust, pickle_file, success_mail, to_mth
+from affine.model.util import robust, pickle_file, success_mail, to_mth
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -124,7 +124,7 @@ mth_only = to_mth(mod_yc_data)
 #             new_dat[0, p] = params[0, p] + np.dot(np.flipud(s_data)[:k_ar].flatten()[None], params[1:,p,None])[0]
 #         s_data = np.append(s_data, new_dat, axis=0)
 #     avg_12.append(np.mean(s_data[:, 3]))
-# 
+#
 # #implied term premium
 # var_tp = px.DataFrame(index=mth_only.index[1:], data=np.asarray(avg_12), columns=["pred_12"])
 # var_tp['act_12'] = mth_only['l_tr_y10']
@@ -183,7 +183,7 @@ for a in range(atts2):
     lam_1_coll[a] = sim_run[1]
     cov_coll[a] = sim_run[2]
 
-#These estimates are getting closer to each other throughout the entire span 
+#These estimates are getting closer to each other throughout the entire span
 
 for q in quant:
     collect_0_ref.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))

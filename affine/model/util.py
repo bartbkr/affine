@@ -39,7 +39,7 @@ def robust(mod_data, mod_yc_data, method=None):
     lam_1_g : array
         Guess for lambda 1
     """
-    from affine import Affine
+    from affine.model.affine import Affine
 
     # subset to pre 2005
     mod_data = mod_data[:217]
