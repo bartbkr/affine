@@ -1,6 +1,3 @@
-"""
-This script attempts to solve the model with unknown variables
-"""
 import numpy as np
 import pandas as px
 
@@ -17,7 +14,7 @@ from affine.constructors.helper import (pickle_file, success_mail, to_mth,
 ########################################
 # Get macro data                       #
 ########################################
-mthdata = px.read_csv("../data/VARbernankedata.csv", na_values="M",
+mthdata = px.read_csv("./data/VARbernankedata.csv", na_values="M",
                         index_col = 0, parse_dates=True)
 
 index = mthdata['Total_Nonfarm_employment'].index
@@ -56,7 +53,7 @@ x_t = x_t_na.dropna(axis=0)
 # Grab yield curve data                     #
 #############################################
 
-ycdata = px.read_csv("../data/yield_curve.csv", na_values = "M", index_col=0,
+ycdata = px.read_csv("./data/yield_curve.csv", na_values = "M", index_col=0,
                      parse_dates=True)
 
 mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6', 'l_tr_y1',
@@ -84,7 +81,7 @@ rf_rate = rf_rate.reindex(index=yc_index)
 
 neqs = len(mod_data.columns)
 
-from affine.affine import Affine
+from affine.model.affine import Affine
 
 lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, sigma_e \
     = ap_constructor(k_ar=k_ar, neqs=neqs, lat=lat)
@@ -107,39 +104,18 @@ guess_length = bsr_model.guess_length
 
 guess_params = [0.0000] * guess_length
 
+np.random.seed(100)
+
 for numb, element in enumerate(guess_params[:30]):
     element = 0.0001
     guess_params[numb] = element * (np.random.random() - 0.5)
 
-# #This is for nls method, only need guesses for lam_0, lam_1
-# #bsr_solve = bsr_model.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
-bsr_solve = bsr_model.solve(guess_params=guess_params, method="ml",
-                            alg="newton", maxfev=10000000, maxiter=10000000)
-#
-# lam_0 = bsr_solve[0]
-# lam_1 = bsr_solve[1]
-#
-# lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, tvalues = bsr_solve
-#
-# print "lam_0"
-# print lam_0
-# print "lam_1"
-# print lam_1
-# print "delta_1"
-# print delta_1
-# print "mu"
-# print mu
-# print "phi"
-# print phi
-# print "sigma"
-# print sigma
-# print "a_solve"
-# print a_solve
-# print "b_solve"
-# print b_solve
-# print "tvalues"
-# print tvalues
-#
-# #send success email
-# passwd = keyring.get_password("email_auth", "bartbkr")
-# success_mail(passwd)
+lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+                    bsr_model._params_to_array(guess_params)
+
+opt_a_solve, opt_b_solve = bsr_model.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                       delta_1, mu, phi, sigma)
+
+a_solve, b_solve = bsr_model.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
+                                           phi, sigma)
+

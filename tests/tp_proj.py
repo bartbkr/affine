@@ -12,7 +12,7 @@ import keyring
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
 from scipy import stats
-from affine.model.util import robust, pickle_file, success_mail, to_mth
+from affine.constructors.helper import robust, pickle_file, success_mail, to_mth
 
 ##############################################################################
 # Estimate model with Eurodollar futures
@@ -24,7 +24,7 @@ print "Model 1 running"
 # Get data                             #
 ########################################
 
-mthdata = px.read_csv("../data/VARbernankedata.csv", na_values="M",
+mthdata = px.read_csv("./data/VARbernankedata.csv", na_values="M",
                         index_col = 0, parse_dates=True)
 
 ########################################
@@ -91,7 +91,7 @@ x_t = x_t_na.dropna(axis=0)
 # Grab yield curve data                     #
 #############################################
 
-ycdata = px.read_csv("../data/yield_curve.csv",
+ycdata = px.read_csv("./data/yield_curve.csv",
                      na_values = "M", index_col=0, parse_dates=True)
 
 mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6',

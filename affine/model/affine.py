@@ -15,14 +15,16 @@ from numpy import ma
 from statsmodels.tsa.api import VAR
 from statsmodels.base.model import LikelihoodModel
 from statsmodels.regression.linear_model import OLS
-from statsmodels.tools.numdiff import (approx_hess, approx_fprime)
+from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from operator import itemgetter
 from scipy import optimize
-from util import flatten, select_rows, retry
+from util import retry
+
+import pdb
 
 #C extension
 try:
-    from affine import _C_extensions
+    import _C_extensions
     fast_gen_pred = True
 except:
     fast_gen_pred = False
@@ -382,6 +384,8 @@ class Affine(LikelihoodModel):
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
             self._params_to_array(params=params)
 
+        pdb.set_trace()
+
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
@@ -389,6 +393,7 @@ class Affine(LikelihoodModel):
         else:
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
+        pdb.set_trace()
         errs = []
 
         yc_data_val = yc_data.values

@@ -17,17 +17,17 @@ except ImportError:
     "    $ pip install scipy  # or easy_install scipy\n")
     sys.exit(noscipy_msg)
 
-c_extension = Extension('affine._C_extensions',
-                        depends=['affine/c_extension/C_extensions.h'],
-                        sources=['affine/c_extension/C_extensions.c'],
+c_extension = Extension('affine.model._C_extensions',
+                        depends=['affine/extensions/C_extensions.h'],
+                        sources=['affine/extensions/C_extensions.c'],
                         include_dirs=[os.path.join(np.get_include(), 'numpy')])
 
 setup(name='py_affine',
       author='Barton Baker',
       version='0.3',
       packages=['affine',
-                'affine.model'],
-      include_dirs=[np.get_include()],
+                'affine.model',
+                'affine.constructors'],
       description='This package offers a complete solver class for affine ' \
                     + 'models, specifically affine models of the term ' \
                     + 'structure',
