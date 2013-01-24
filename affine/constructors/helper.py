@@ -14,6 +14,8 @@ from statsmodels.tsa.api import VAR
 from statsmodels.regression.linear_model import OLS
 from affine.model.affine import Affine
 
+import pdb
+
 def ap_constructor(neqs, k_ar, lat):
     """
     Contructor for ang and piazzesi model
@@ -103,8 +105,9 @@ def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
     #we will want to change this next one once we make delta_1 uncontrained
     #(see top of ang and piazzesi page 759)
     params = OLS(rf_rate, macro).fit().params
-    delta_0[0, 0] = params[0]
-    delta_1[:neqs] = params[1:].values[None].T
+    delta_0[0, 0] = params[-1]
+    delta_1[:neqs] = params[0:-1].values[None].T
+    pdb.set_trace()
 
     mu[:neqs * k_ar, 0, None] = mu_ols[None]
     phi[:neqs * k_ar, :neqs * k_ar] = phi_ols[None]
