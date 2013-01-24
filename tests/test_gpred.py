@@ -14,7 +14,7 @@ from affine.constructors.helper import (pickle_file, success_mail, to_mth,
 ########################################
 # Get macro data                       #
 ########################################
-mthdata = px.read_csv("./data/VARbernankedata.csv", na_values="M",
+mthdata = px.read_csv("./data/macro_data.csv", na_values="M",
                         index_col = 0, parse_dates=True)
 
 index = mthdata['Total_Nonfarm_employment'].index
@@ -72,7 +72,7 @@ mth_only = to_mth(mod_yc_data)
 yc_index = mth_only.index
 
 #for affine model, only want two macro vars
-mod_data = mod_data.reindex(columns=['tr_empl_gap_perc', 'act_infl'])
+mod_data = mod_data.reindex(columns=['act_infl', 'tr_empl_gap_perc'])
 mod_index = px.date_range("10/1/1981",
                 yc_index[-1].to_pydatetime().strftime("%m/%d/%Y"), freq="MS")
 mod_data = mod_data.reindex(index=mod_index)

@@ -1,0 +1,15 @@
+Help wanted data:
+
+http://www.economagic.com/em-cgi/data.exe/fedstl/helpwant#EOdata
+really from The Conference Board
+accessed 1/23/2013
+
+PCE : from BEA website
+accessed 1/23/2013
+http://www.bea.gov/iTable/index_UD.cfm
+
+CPI, PPI, unemployment: from BLS website
+accessed 1/23/2013
+http://www.bls.gov/cpi/
+
+
