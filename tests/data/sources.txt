@@ -12,4 +12,5 @@ CPI, PPI, unemployment: from BLS website
 accessed 1/23/2013
 http://www.bls.gov/cpi/
 
-
+All yields are from Fed data website:
+http://www.federalreserve.gov/datadownload/
