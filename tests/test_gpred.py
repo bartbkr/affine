@@ -7,32 +7,69 @@ import keyring
 
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
+from statsmodels.sandbox.pca import Pca
 from scipy import stats
+from affine.model.affine import Affine
 from affine.constructors.helper import (pickle_file, success_mail, to_mth,
                                         gen_guesses, ap_constructor, pass_ols)
+import pdb
 
 ########################################
 # Get macro data                       #
 ########################################
-mthdata = px.read_csv("./data/macro_data.csv", na_values="M",
-                        index_col = 0, parse_dates=True)
+mthdata = px.read_csv("./data/macro_data.csv", na_values="M", sep=";",
+                      index_col = 0, parse_dates=True)
 
-index = mthdata['Total_Nonfarm_employment'].index
-tr_empl_gap, hp_ch = hpfilter(mthdata['Total_Nonfarm_employment'], lamb=129600)
+index = mthdata['Total_Nonfarm_employment_seas'].dropna().index
+nonfarm = mthdata['Total_Nonfarm_employment_seas'].dropna()
+tr_empl_gap, hp_ch = hpfilter(nonfarm, lamb=129600)
 
 mthdata['tr_empl_gap'] = px.Series(tr_empl_gap, index=index)
 mthdata['hp_ch'] = px.Series(hp_ch, index=index)
 
 mthdata['tr_empl_gap_perc'] = mthdata['tr_empl_gap']/mthdata['hp_ch']
-mthdata['act_infl'] = \
-    mthdata['Pers_Cons_P'].diff(periods=12)/mthdata['Pers_Cons_P']*100
-mthdata['ed_fut'] = 100 - mthdata['one_year_ED']
 
-#define final data set
-mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
-                                   'act_infl',
-                                   'fed_funds']).dropna(axis=0)
+#output
+output = mthdata.reindex(columns=['unemployment_seas', 'indust_prod_seas',
+                                  'help_wanted_index']).dropna()
+output['empl_gap'] = mthdata['tr_empl_gap_perc']
 
+#normalize each output value to zero mean and unit variance
+for var in output.columns:
+    output[var + "_norm"] = (output[var] - output[var].mean()) / \
+                                output[var].std()
+output = output.filter(regex=".*_norm")
+
+#retrieve first PC
+output_pca = Pca(data=output.values.T, names=output.columns.tolist())
+output_pca1_data = output_pca.project(nPCs=1)
+output['output_pca1'] = px.Series(output_pca1_data.T.tolist()[0],
+                                  index=output.index)
+
+#prices
+prices = px.DataFrame(index=index)
+prices['CPI_infl'] = mthdata['CPI_seas'].diff(periods=12)/ \
+       mthdata['CPI_seas'] * 100
+prices['PPI_infl'] = mthdata['PPI_seas'].diff(periods=12)/ \
+       mthdata['CPI_seas'] * 100
+
+#normalize each price value to zero mean and unit variance
+for var in prices.columns:
+    prices[var + "_norm"] = (prices[var] - prices[var].mean()) / \
+                                prices[var].std()
+prices = prices.filter(regex=".*_norm").dropna()
+
+#retrieve first PC
+prices_pca = Pca(data=prices.values.T, names=prices.columns.tolist())
+prices_pca1_data = prices_pca.project(nPCs=1)
+prices['price_pca1'] = px.Series(prices_pca1_data.T.tolist()[0],
+                                 index=prices.index)
+macro_data = output.join(prices)
+
+macro_data = macro_data.join(mthdata).reindex(columns=['price_pca1',
+                                                       'output_pca1']).dropna()
+
+macro_data_ind = macro_data.index
 #########################################
 # Set up affine affine model            #
 #########################################
@@ -41,11 +78,11 @@ lat = 3
 latent = True
 
 #create BSR x_t
-x_t_na = mod_data.copy()
+x_t_na = macro_data.copy()
 for t in range(k_ar-1):
-    for var in mod_data.columns:
-        x_t_na[var + '_m' + str(t+1)] = px.Series(mod_data[var].values[:-(t+1)],
-                                            index=mod_data.index[t+1:])
+    for var in macro_data.columns:
+        x_t_na[var + '_m' + str(t+1)] = px.Series(macro_data[var].values[:-(t+1)],
+                                            index=macro_data.index[t+1:])
 #remove missing values
 x_t = x_t_na.dropna(axis=0)
 
@@ -53,52 +90,47 @@ x_t = x_t_na.dropna(axis=0)
 # Grab yield curve data                     #
 #############################################
 
-ycdata = px.read_csv("./data/yield_curve.csv", na_values = "M", index_col=0,
-                     parse_dates=True)
+ycdata = px.read_csv("./data/yield_curve.csv", na_values = "M", sep=";",
+                     index_col=0, parse_dates=True)
 
-mod_yc_data_nodp = ycdata.reindex(columns=['l_tr_m3', 'l_tr_m6', 'l_tr_y1',
-                                           'l_tr_y2', 'l_tr_y3', 'l_tr_y5',
-                                           'l_tr_y7', 'l_tr_y10'])
+ycdata["trb_m1"] = mthdata["fed_funds"]
+
+yc_data_use = ycdata.reindex(columns=['trb_m1', 'trb_m3', 'trb_m6', 'trcr_y1',
+                                      'trcr_y3', 'trcr_y5', 'trcr_y10'],
+                             index=macro_data_ind).dropna()
+
+mths = [1, 3, 6, 12, 36, 60, 120]
+final_ind = yc_data_use.index
+yc_data_use = yc_data_use.reindex(index=final_ind[k_ar - 1:])
 
 #align number of obs between yields and grab rf rate
-mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
-mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
-mod_yc_data = mod_yc_data.rename(columns = {'fed_funds' : 'l_tr_m1'})
-mod_yc_data = mod_yc_data.drop(['l_tr_m1'], axis=1).dropna()
-
-rf_rate = mod_data["fed_funds"]
-
-mth_only = to_mth(mod_yc_data)
-yc_index = mth_only.index
+#mth_only = to_mth(mod_yc_data)
 
 #for affine model, only want two macro vars
-mod_data = mod_data.reindex(columns=['act_infl', 'tr_empl_gap_perc'])
-mod_index = px.date_range("10/1/1981",
-                yc_index[-1].to_pydatetime().strftime("%m/%d/%Y"), freq="MS")
-mod_data = mod_data.reindex(index=mod_index)
+macro_data_use = macro_data.reindex(index=final_ind)
+rf_rate = yc_data_use["trb_m1"]
 
-rf_rate = rf_rate.reindex(index=yc_index)
+neqs = len(macro_data_use.columns)
 
-neqs = len(mod_data.columns)
-
-from affine.model.affine import Affine
-
+#This is a constructor function for easiloy setting up the system ala Ang and
+#Piazzessi 2003
 lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, sigma_e \
     = ap_constructor(k_ar=k_ar, neqs=neqs, lat=lat)
 
-delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=mod_data,
-                                                      freq="M", lat=3, k_ar=4,
-                                                      neqs=2,
+delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
+                                                      freq="M", lat=lat,
+                                                      k_ar=k_ar, neqs=neqs,
                                                       delta_0=delta_0_e,
                                                       delta_1=delta_1_e,
                                                       mu=mu_e, phi=phi_e,
                                                       sigma=sigma_e,
                                                       rf_rate=rf_rate)
 
-bsr_model = Affine(yc_data=mth_only, var_data=mod_data, rf_rate=rf_rate,
-                   latent=latent, no_err=[0, 4, 7], lam_0_e=lam_0_e,
-                   lam_1_e=lam_1_e, delta_0_e=delta_0_e, delta_1_e=delta_1_e,
-                   mu_e=mu_e, phi_e=phi_e, sigma_e=sigma_e)
+bsr_model = Affine(yc_data=yc_data_use, var_data=macro_data_use,
+                   rf_rate=rf_rate, latent=latent, no_err=[0, 3, 6],
+                   lam_0_e=lam_0_e, lam_1_e=lam_1_e, delta_0_e=delta_0_e,
+                   delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e,
+                   sigma_e=sigma_e, mths=mths)
 
 guess_length = bsr_model.guess_length
 

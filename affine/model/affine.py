@@ -101,6 +101,8 @@ class Affine(LikelihoodModel):
         self.sigma_e = sigma_e
 
         #generates mths: list of mths in yield curve data
+        #only works for data labels matching regular expression
+        #should probably be phased out
         if mths is None:
             mths = self._mths_list()
         self.mths = mths

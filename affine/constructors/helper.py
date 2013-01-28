@@ -107,7 +107,6 @@ def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
     params = OLS(rf_rate, macro).fit().params
     delta_0[0, 0] = params[-1]
     delta_1[:neqs] = params[0:-1].values[None].T
-    pdb.set_trace()
 
     mu[:neqs * k_ar, 0, None] = mu_ols[None]
     phi[:neqs * k_ar, :neqs * k_ar] = phi_ols[None]
