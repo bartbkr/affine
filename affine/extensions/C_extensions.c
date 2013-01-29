@@ -137,6 +137,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     /*  Create C arrays */
     /* Maybe should be constants??? */
 
+    /* Debugging */
     lam_0_c = pymatrix_to_Carrayptrs(lam_0);
     lam_1_c = pymatrix_to_Carrayptrs(lam_1);
     delta_0_c = pymatrix_to_Carrayptrs(delta_0);
@@ -190,6 +191,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     for (i = 0; i < delta_1_rows; i++) {
         b_pre[i][0] = delta_1_c[i][1];
         b_fin[i][0] = -b_pre[i][0];
+        break;
     }
 
     double b_pre_mth[b_pre_rows][1];
