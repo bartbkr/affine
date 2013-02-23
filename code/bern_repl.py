@@ -11,7 +11,6 @@ import sys
 
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
-from scipy import stats
 from util import pickle_file, success_mail, fail_mail, to_mth, gen_guesses, \
                     robust
 
@@ -106,10 +105,12 @@ for a in range(atts):
     lam_0_coll[a] = sim_run[0]
     lam_1_coll[a] = sim_run[1]
 
-quant = [0, 10, 25, 50, 75, 90, 100]
-for q in quant:
-    collect_lam_0.append((str(q), stats.scoreatpercentile(lam_0_coll[:], q)))
-    collect_lam_1.append((str(q), stats.scoreatpercentile(lam_1_coll[:], q)))
+quantiles = [0, 10, 25, 50, 75, 90, 100]
+for quant in quantiles:
+    collect_lam_0.append((str(quant), np.percentile(lam_0_coll, quant,
+                                                    axis=0)))
+    collect_lam_1.append((str(quant), np.percentile(lam_1_coll, quant,
+                                                    axis=0)))
 
 pickle_file(collect_lam_0, "../temp_res/collect_lam_0_ls")
 pickle_file(collect_lam_1, "../temp_res/collect_lam_1_ls")
@@ -126,6 +127,7 @@ collect_cov_ref = []
 for a in range(atts2):
     print str(a)
     #third element is median
+    pdb.set_trace()
     sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data,
             lam_0_g=collect_lam_0[3][1], lam_1_g=collect_lam_1[3][1],
             start_date=start_date, passwd=passwd)
@@ -135,10 +137,12 @@ for a in range(atts2):
 
 #These estimates are getting closer to each other throughout the entire span
 
-for q in quant:
-    collect_lam_0_ref.append((str(q), stats.scoreatpercentile(lam_0_all[:], q)))
-    collect_lam_1_ref.append((str(q), stats.scoreatpercentile(lam_1_all[:], q)))
-    collect_cov_ref.append((str(q), stats.scoreatpercentile(cov_all[:], q)))
+for quant in quantiles:
+    collect_lam_0_ref.append((str(quant), np.percentile(lam_0_all, quant,
+                                                        axis=0)))
+    collect_lam_1_ref.append((str(quant), np.percentile(lam_1_all, quant,
+                                                        axis=0)))
+    collect_cov_ref.append((str(quant), np.percentile(cov_all, quant, axis=0)))
 
 #Collect results
 pickle_file(lam_0_all, "../temp_res/lam_0_all_ls")
