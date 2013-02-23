@@ -21,10 +21,10 @@ def pickle_file(obj=None, name=None):
 def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
         start_date=None, passwd=None, bsr_orig=True):
     """
-    Function to run model with guesses, also generating 
+    Function to run model with guesses, also generating
     method : string
         method to pass to Affine.solve()
-    mod_data : pandas DataFrame 
+    mod_data : pandas DataFrame
         model data
     mod_yc_data : pandas DataFrame
         model yield curve data
@@ -34,7 +34,7 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
         Guess for lambda 1
     """
     from affine import Affine
-        
+
     # subset to pre 2005
     #if bsr_orig:
         #mod_data = mod_data[:217]
@@ -61,13 +61,13 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
         for eqnumb in range(neqs):
             if eqnumb % 2 == 0:
                 mult = 1
-            else: 
+            else:
                 mult = -1
             guess = ([mult * -0.1, mult * 0.1] * neqs)[:neqs]
             lam_1_g[eqnumb, :neqs, None] = np.array([guess]).T*np.random.random()
 
     outs = bsr.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method=method,
-                        ftol=1e-950, xtol=1e-950, maxfev=1000000000,
+                        ftol=1e-3, xtol=1e-3, maxfev=1000000000,
                         full_output=False)
 
     lam_0, lam_1, delta_1, mu, phi, sig, a_solve, b_solve, cov_x, output = outs
@@ -135,7 +135,7 @@ def flatten(array):
         for index in range(np.shape(rshape)[0]):
             a_list.append(rshape[index])
         return a_list
-    
+
 def select_rows(rows, array):
     """
     Creates 2-dim submatrix only of rows from list rows

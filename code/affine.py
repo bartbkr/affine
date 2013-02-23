@@ -34,7 +34,7 @@ class Affine(LikelihoodModel):
                     latent=False, no_err=None):
         """
         Attempts to solve affine model
-        yc_data : DataFrame 
+        yc_data : DataFrame
             yield curve data
         var_data : DataFrame
             data for var model
@@ -46,7 +46,7 @@ class Affine(LikelihoodModel):
             frequency of data
         no_err : list of ints
             list of the column indexes of yields to be measured without error
-            ex: [0, 3, 4] 
+            ex: [0, 3, 4]
             (1st, 4th, and 5th columns in yc_data to be estimatd without error)
         """
         self.yc_data = yc_data
@@ -182,7 +182,7 @@ class Affine(LikelihoodModel):
                     self._pass_ols(delta_1=delta_1_g, mu=mu_g, phi=phi_g,
                                    sigma=sigma_g)
 
-            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g, 
+            params = self._params_to_list(lam_0=lam_0_g, lam_1=lam_1_g,
                     delta_1=delta_1_g, mu=mu_g, phi=phi_g, sigma=sigma_g)
 
         else:
@@ -229,7 +229,7 @@ class Affine(LikelihoodModel):
 
         #This will need to be reworked
         #if full_output:
-            #return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output 
+            #return lam_0, lam_1, delta_1, phi, sigma, a_solve, b_solve, output
         if method == "nls":
             return lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, \
                     solv_cov, output
@@ -354,6 +354,9 @@ class Affine(LikelihoodModel):
                                               delta_1=delta_1, mu=mu,phi=phi,
                                               sigma=sigma)
 
+        #print lam_0
+        #print a_solve
+
         errs = []
 
         for index, period in enumerate(mths):
@@ -377,7 +380,7 @@ class Affine(LikelihoodModel):
 
         Returns
         -------
-        var_data_c : DataFrame 
+        var_data_c : DataFrame
             VAR data including unobserved factors
         jacob : array (neqs * k_ar + num_yields)**2
             Jacobian used in likelihood
@@ -423,7 +426,7 @@ class Affine(LikelihoodModel):
                     b_in[no_err_mth[ix] - 1][neqs * k_ar:]
         #now solve for unknown factors using long matrices
 
-        unobs = np.dot(la.inv(b_sel_unobs), 
+        unobs = np.dot(la.inv(b_sel_unobs),
                     yc_data.filter(items=noerr_cols)[lat:].values.T - a_sel - \
                     np.dot(b_sel_obs, var_data.values.T))
 
@@ -452,10 +455,10 @@ class Affine(LikelihoodModel):
             row_index = yc_data_names.index(col)
             meas_mat[row_index, col_index] = 1
 
-        jacob = self._construct_J(b_obs=b_all_obs, 
+        jacob = self._construct_J(b_obs=b_all_obs,
                                     b_unobs=b_all_unobs, meas_mat=meas_mat)
-        
-        return var_data_c, jacob, yield_errs 
+
+        return var_data_c, jacob, yield_errs
 
     def _mths_list(self):
         """
@@ -590,7 +593,7 @@ class Affine(LikelihoodModel):
         for col, mth in enumerate(orig.columns):
             new[col*obs:(col+1)*obs] = orig[mth].values
         return new
-    
+
     def _params_to_list(self, lam_0=None, lam_1=None, delta_1=None, mu=None,
                         phi=None, sigma=None):
         """
@@ -617,7 +620,7 @@ class Affine(LikelihoodModel):
         neqs = self.neqs
         guess_list = []
         #we assume that those params corresponding to lags are set to zero
-        if lat: 
+        if lat:
             #we are assuming independence between macro factors and latent
             #factors
             guess_list.append(flatten(lam_0[:neqs]))
@@ -637,12 +640,12 @@ class Affine(LikelihoodModel):
         #flatten this list into one dimension
         flatg_list = [item for sublist in guess_list for item in sublist]
         return flatg_list
-    
+
     def _gen_OLS_res(self):
         """
         Runs VAR on macro data and retrieves parameters
         """
-        #run VAR to generate parameters for known 
+        #run VAR to generate parameters for known
         var_data = self.var_data
         k_ar = self.k_ar
         neqs = self.neqs
@@ -666,7 +669,7 @@ class Affine(LikelihoodModel):
         sigma = np.zeros([k_ar * neqs, k_ar * neqs])
         sigma[:neqs, :neqs] = sigma_u
         sigma[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
-        
+
         return mu, phi, sigma
 
     def _pass_ols(self, delta_1, mu, phi, sigma):
@@ -763,11 +766,11 @@ class Affine(LikelihoodModel):
 
         return no_err_mth, err_mth
 
-    def _construct_J(self, b_obs, b_unobs, meas_mat): 
+    def _construct_J(self, b_obs, b_unobs, meas_mat):
         """
         Consruct jacobian matrix
-        meas_mat : array 
-        LEFT OFF here 
+        meas_mat : array
+        LEFT OFF here
         """
         k_ar = self.k_ar
         neqs = self.neqs
@@ -776,7 +779,7 @@ class Affine(LikelihoodModel):
         num_obsrv = neqs * k_ar
 
         #now construct Jacobian
-        msize = neqs * k_ar + num_yields 
+        msize = neqs * k_ar + num_yields
         jacob = np.zeros([msize, msize])
         jacob[:num_obsrv, :num_obsrv] = np.identity(neqs*k_ar)
 
