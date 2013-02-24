@@ -75,7 +75,7 @@ mod_yc_data = to_mth(mod_yc_data)
 # Setup model
 meth = "ls"
 run_groups = []
-atts = 2
+atts = 25
 np.random.seed(101)
 collect_0 = []
 collect_1 = []
@@ -116,7 +116,7 @@ pickle_file(collect_lam_0, "../temp_res/collect_lam_0_ls")
 pickle_file(collect_lam_1, "../temp_res/collect_lam_1_ls")
 
 #use medians to guess for next 50 sims
-atts2 = 2
+atts2 = 10
 print "Second round estimation"
 lam_0_all  = np.zeros((atts2, neqs*k_ar, 1))
 lam_1_all  = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
@@ -127,7 +127,6 @@ collect_cov_ref = []
 for a in range(atts2):
     print str(a)
     #third element is median
-    pdb.set_trace()
     sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data,
             lam_0_g=collect_lam_0[3][1], lam_1_g=collect_lam_1[3][1],
             start_date=start_date, passwd=passwd)
