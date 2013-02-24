@@ -67,7 +67,7 @@ def robust(mod_data, mod_yc_data, method=None, lam_0_g=None, lam_1_g=None,
             lam_1_g[eqnumb, :neqs, None] = np.array([guess]).T*np.random.random()
 
     outs = bsr.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method=method,
-                        ftol=1e-3, xtol=1e-3, maxfev=1000000000,
+                        ftol=1e-100, xtol=1e-100, maxfev=1000000000,
                         full_output=False)
 
     lam_0, lam_1, delta_1, mu, phi, sig, a_solve, b_solve, cov_x, output = outs

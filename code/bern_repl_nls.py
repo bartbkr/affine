@@ -151,4 +151,4 @@ pickle_file(collect_lam_1_ref, "../temp_res/collect_lam_1_ref_nls")
 pickle_file(collect_cov_ref, "../temp_res/collect_cov_ref_nls")
 
 #send success email
-success_mail(passwd)
+#success_mail(passwd)
