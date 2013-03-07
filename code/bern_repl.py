@@ -145,7 +145,7 @@ for quant in quantiles:
 
 #Collect results
 pickle_file(lam_0_all, "../temp_res/lam_0_all_ls")
-pickle_file(lam_1_all, "../temp_res/lam_0_all_ls")
+pickle_file(lam_1_all, "../temp_res/lam_1_all_ls")
 pickle_file(cov_all, "../temp_res/cov_all_ls")
 pickle_file(collect_lam_0_ref, "../temp_res/collect_lam_0_ref_ls")
 pickle_file(collect_lam_1_ref, "../temp_res/collect_lam_1_ref_ls")

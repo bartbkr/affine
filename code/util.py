@@ -175,7 +175,7 @@ def to_mth(data):
         elif 'y' in col:
             mth = int(col[6:])*12
             mths.append(mth)
-            mth_only[('l_tr_m' + str(mth))] = data[col]
+            mth_only[('trcr_m' + str(mth))] = data[col]
     col_dict = dict([( mth_only.columns[x], mths[x]) for x in
                 range(n_cols)])
     cols = np.asarray(sorted(col_dict.iteritems(),
