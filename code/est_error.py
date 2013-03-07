@@ -150,4 +150,4 @@ yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr', 'seven_yr',
           'ten_yr']
 for yld in yields:
     print yld + " & " + str(np.std(eval(yld).filter(regex='.*err$').values,
-                            ddof=1))
+                            ddof=1)*100)
