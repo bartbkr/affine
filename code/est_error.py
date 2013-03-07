@@ -36,7 +36,7 @@ mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                    'act_infl',
                                    'inflexp_1yr_mean',
                                     'fed_funds',
-                                    'ed_fut4']).dropna(axis=0)
+                                    'ed_fut']).dropna(axis=0)
 
 neqs = 5
 k_ar = 4
