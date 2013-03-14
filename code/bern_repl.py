@@ -136,12 +136,10 @@ for a in range(atts2):
 
 #These estimates are getting closer to each other throughout the entire span
 
-for quant in quantiles:
-    collect_lam_0_ref.append((str(quant), np.percentile(lam_0_all, quant,
-                                                        axis=0)))
-    collect_lam_1_ref.append((str(quant), np.percentile(lam_1_all, quant,
-                                                        axis=0)))
-    collect_cov_ref.append((str(quant), np.percentile(cov_all, quant, axis=0)))
+for att in range(atts2):
+    collect_lam_0_ref.append((str(att), lam_0_all))
+    collect_lam_1_ref.append((str(att), lam_1_all))
+    collect_cov_ref.append((str(att), cov_all))
 
 #Collect results
 pickle_file(lam_0_all, "../temp_res/lam_0_all_ls")
