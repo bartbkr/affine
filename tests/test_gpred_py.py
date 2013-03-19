@@ -145,9 +145,6 @@ for numb, element in enumerate(guess_params[:30]):
 lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
                     bsr_model._params_to_array(guess_params)
 
-opt_a_solve, opt_b_solve = bsr_model.opt_gen_pred_coef(lam_0, lam_1, delta_0,
-                                                       delta_1, mu, phi, sigma)
-
 a_solve, b_solve = bsr_model.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
                                            phi, sigma)
 
