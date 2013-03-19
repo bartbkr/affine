@@ -15,6 +15,8 @@ from scipy import stats
 from util import pickle_file, success_mail, fail_mail, to_mth, gen_guesses, \
                     robust
 
+import ipdb
+
 ########################################
 # Get macro data                       #
 ########################################
@@ -85,12 +87,12 @@ lam_1_nr = np.zeros([neqs*k_ar, neqs*k_ar])
 sigma_zeros = np.zeros_like(bsr.sigma_ols)
 
 #grab previous run
-pkl_file = open("../results/bern_nls/lam_0_all_nls.pkl", "rb")
-final_lam_0 = pickle.load(pkl_file)[0]
+pkl_file = open("../results/bern_nls/collect_lam_0_ref_nls.pkl", "rb")
+final_lam_0 = pickle.load(pkl_file)[0][1][5]
 pkl_file.close()
 
-pkl_file = open("../results/bern_nls/lam_1_all_nls.pkl", "rb")
-final_lam_1 = pickle.load(pkl_file)[0]
+pkl_file = open("../results/bern_nls/collect_lam_1_ref_nls.pkl", "rb")
+final_lam_1 = pickle.load(pkl_file)[0][1][5]
 pkl_file.close()
 
 
