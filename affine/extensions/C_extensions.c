@@ -186,16 +186,23 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     
     /*  Perform operations */
 
-    a_pre[0] = delta_0_c[0][0];
-    a_fin[0][1] = -a_pre[0];
+    a_pre[0] = -delta_0_c[0][0];
+    a_fin[0][0] = -a_pre[0];
     for (i = 0; i < delta_1_rows; i++) {
-        b_pre[i][0] = delta_1_c[i][1];
+        b_pre[i][0] = -delta_1_c[i][0];
         b_fin[i][0] = -b_pre[i][0];
-        break;
     }
 
     double b_pre_mth[b_pre_rows][1];
     b_pre_mth_c = twodim_to_point(b_pre_rows, 1, b_pre_mth);
+
+    /* Calculate unchanging elements*/
+    /* Debugged this looks good */
+    mat_prodct(sigma_rows, sigma_cols, sigma_c, 
+                lam_0_cols, lam_0_c,
+                dot_sig_lam_0_c);
+    /* Debugged this looks good */
+    mat_subtract(mu_rows, mu_cols, mu_c, dot_sig_lam_0_c, diff_mu_sigl_c);
 
     for (mth = 0; mth < (max_mth - 1); mth++) {
 
@@ -206,18 +213,16 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
             b_pre_mth[i][0] = b_pre[i][mth];
         }
 
-        /* Calculate next a_pre element*/
-        mat_prodct(sigma_rows, sigma_cols, sigma_c, 
-                   lam_0_cols, lam_0_c,
-                   dot_sig_lam_0_c);
-        mat_subtract(mu_rows, mu_cols, mu_c, dot_sig_lam_0_c, diff_mu_sigl_c);
+        /* Debugged this call, seems to be fine */
         mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth_c, 
                           1, diff_mu_sigl_c, 
                           dot_bpre_mu_sig1_c);
 
+        /* debugged this, it looks good */
         mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth_c,
                           sigma_cols, sigma_c, 
                           dot_b_pre_sig_c);
+        /* debugged this call, looks good */
         mat_prodct_tpose2(1, sigma_cols, dot_b_pre_sig_c,
                           sigma_rows, sigma_c,
                           dot_b_sigt_c);
@@ -225,11 +230,12 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                    1, b_pre_mth_c,
                    dot_b_sst_bt_c);
 
+        /* debugged here */
         a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1[0][0] + 
                         (half * dot_b_sst_bt[0][0]) - delta_0_c[0][0];
-        a_fin[next_mth][0] = -a_pre[next_mth] / next_mth;
+        a_fin[next_mth][0] = -a_pre[next_mth] / (next_mth + 1);
 
-        /* Calculate next b_pre element */
+        /* Calculate next b elements */
         mat_prodct(sigma_rows, sigma_cols, sigma_c,
                    lam_1_cols, lam_1_c, 
                    dot_sig_lam_1_c);
@@ -240,8 +246,8 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                           dot_phisig_b_c);
 
         for (i = 0; i < delta_1_rows; i++) {
-            b_pre[i][next_mth] = dot_phisig_b[i][1] - delta_1_c[i][1];
-            b_fin[i][next_mth] = -(b_pre[i][next_mth] / (next_mth));
+            b_pre[i][next_mth] = dot_phisig_b[i][0] - delta_1_c[i][0];
+            b_fin[i][next_mth] = -(b_pre[i][next_mth] / (next_mth + 1));
         }
     }
 

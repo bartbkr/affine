@@ -147,4 +147,3 @@ lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
 
 a_solve, b_solve = bsr_model.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
                                            phi, sigma)
-

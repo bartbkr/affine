@@ -337,26 +337,19 @@ class Affine(LikelihoodModel):
         a_pre[0] = -delta_0
         b_pre = []
         b_pre.append(-delta_1)
-        ipdb.set_trace()
 
         for mth in range(max_mth-1):
             a_pre[mth+1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
                             (mu - np.dot(sigma, lam_0))) + \
                             (1.0/2)*np.dot(np.dot(np.dot(b_pre[mth].T, sigma), \
                             sigma.T), b_pre[mth]) - delta_0)[0][0]
-            ipdb.set_trace()
             b_pre.append(np.dot((phi - np.dot(sigma, lam_1)).T, \
                                 b_pre[mth]) - delta_1)
-            ipdb.set_trace()
         n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
-        ipdb.set_trace()
         a_solve = -(a_pre*n_inv)
-        ipdb.set_trace()
         b_solve = np.zeros_like(b_pre)
-        ipdb.set_trace()
         for mth in range(max_mth):
             b_solve[mth] = np.multiply(-b_pre[mth], n_inv[mth])
-            ipdb.set_trace()
         return a_solve, b_solve
 
     def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,

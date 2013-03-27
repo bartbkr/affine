@@ -4,6 +4,7 @@ gdb python-dbg
 (gdb) run
 (gdb) c
 (gdb) c
+82 times
 ...
 (gdb) finish
 (gdb) br gen_pred_coef
