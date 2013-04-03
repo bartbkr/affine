@@ -452,14 +452,14 @@ class Affine(LikelihoodModel):
         b_sel_unobs = np.zeros([no_err_num, lat])
         for ix, y_pos in enumerate(no_err):
             a_sel[ix, 0] = a_in[no_err_mth[ix] - 1]
-            b_sel_obs[ix, :] = b_in[no_err_mth[ix] - 1][:neqs * k_ar]
-            b_sel_unobs[ix, :] = b_in[no_err_mth[ix] - 1][neqs * k_ar:]
+            b_sel_obs[ix, :] = b_in[no_err_mth[ix] - 1, :neqs * k_ar]
+            b_sel_unobs[ix, :] = b_in[no_err_mth[ix] - 1, neqs * k_ar:]
 
             a_all[y_pos, 0] = a_in[no_err_mth[ix] - 1]
             b_all_obs[y_pos, :] = b_in[no_err_mth[ix] - 1][:neqs * k_ar]
             b_all_unobs[y_pos, :] = b_in[no_err_mth[ix] - 1][neqs * k_ar:]
-        #now solve for unknown factors using long matrices
 
+        #now solve for unknown factors using long arrays
         unobs = np.dot(la.inv(b_sel_unobs),
                     yc_data.filter(items=noerr_cols).values.T - a_sel - \
                     np.dot(b_sel_obs, var_data_vert.values.T))
