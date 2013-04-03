@@ -148,14 +148,14 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     /*  Initialize collector arrays */
     int a_dims[2] = {max_mth, 1};
-    int b_dims[2] = {delta_1_rows, max_mth};
+    int b_dims[2] = {max_mth, delta_1_rows};
     int b_pre_rows = delta_1_rows;
 
     a_fin_array = (PyArrayObject *) PyArray_FromDims(2, a_dims, NPY_DOUBLE);
     b_fin_array = (PyArrayObject *) PyArray_FromDims(2, b_dims, NPY_DOUBLE);
 
     double a_pre[max_mth];
-    double b_pre[delta_1_rows][max_mth];
+    double b_pre[max_mth][delta_1_rows];
 
     a_fin = pymatrix_to_Carrayptrs(a_fin_array);
     b_fin = pymatrix_to_Carrayptrs(b_fin_array);
@@ -189,8 +189,8 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     a_pre[0] = -delta_0_c[0][0];
     a_fin[0][0] = -a_pre[0];
     for (i = 0; i < delta_1_rows; i++) {
-        b_pre[i][0] = -delta_1_c[i][0];
-        b_fin[i][0] = -b_pre[i][0];
+        b_pre[0][i] = -delta_1_c[i][0];
+        b_fin[0][i] = -b_pre[0][i];
     }
 
     double b_pre_mth[b_pre_rows][1];
@@ -210,7 +210,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
         /*  think need this b_pre_mth for proper array reading */
         for (i = 0; i < b_pre_rows; i++) {
-            b_pre_mth[i][0] = b_pre[i][mth];
+            b_pre_mth[i][0] = b_pre[mth][i];
         }
 
         /* Debugged this call, seems to be fine */
@@ -246,8 +246,8 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                           dot_phisig_b_c);
 
         for (i = 0; i < delta_1_rows; i++) {
-            b_pre[i][next_mth] = dot_phisig_b[i][0] - delta_1_c[i][0];
-            b_fin[i][next_mth] = -(b_pre[i][next_mth] / (next_mth + 1));
+            b_pre[next_mth][i] = dot_phisig_b[i][0] - delta_1_c[i][0];
+            b_fin[next_mth][i] = -(b_pre[next_mth][i] / (next_mth + 1));
         }
     }
 
