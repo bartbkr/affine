@@ -1,0 +1,11 @@
+gdb python-dbg
+(gdb) br _PyImport_LoadDynamicModule
+(gdb) set args test_gpred.py
+(gdb) run
+(gdb) c
+(gdb) c
+82 times
+...
+(gdb) finish
+(gdb) br gen_pred_coef
+(gdb) disable 1

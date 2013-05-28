@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 import itertools as it
 
-from affine import affine
+from affine.affine import affine
 
 #check for how long this takes to run
 import datetime as dt
