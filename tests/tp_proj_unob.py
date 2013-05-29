@@ -128,8 +128,7 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
                                                       sigma=sigma_e,
                                                       rf_rate=rf_rate)
 
-bsr_model = Affine(yc_data=yc_data_use, var_data=macro_data_use,
-                   rf_rate=rf_rate, latent=latent, no_err=[1, 3, 6],
+bsr_model = Affine(yc_data=yc_data_use, var_data=macro_data_use, latent=latent,
                    lam_0_e=lam_0_e, lam_1_e=lam_1_e, delta_0_e=delta_0_e,
                    delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e,
                    sigma_e=sigma_e, mths=mths)
