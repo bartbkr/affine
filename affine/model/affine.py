@@ -37,18 +37,16 @@ class Affine(LikelihoodModel):
     """
     This class defines an affine model of the term structure
     """
-    def __init__(self, yc_data, var_data, rf_rate=None, maxlags=4, freq='M',
-                 latent=False, no_err=None, lam_0_e=None, lam_1_e=None,
-                 delta_0_e=None, delta_1_e=None, mu_e=None, phi_e=None,
-                 sigma_e=None, mths=None):
+    def __init__(self, yc_data, var_data, maxlags=4, freq='M', latent=False,
+                 no_err=None, lam_0_e=None, lam_1_e=None, delta_0_e=None,
+                 delta_1_e=None, mu_e=None, phi_e=None, sigma_e=None,
+                 mths=None):
         """
         Attempts to solve affine model
         yc_data : DataFrame
             yield curve data
         var_data : DataFrame
             data for var model
-        rf_rate : DataFrame
-            rf_rate for short_rate, used in latent factor case
         max_lags: int
             number of lags for VAR system
         freq : string
@@ -79,7 +77,6 @@ class Affine(LikelihoodModel):
         """
         self.yc_data = yc_data
         self.var_data = var_data
-        self.rf_rate = rf_rate
         self.yc_names = yc_data.columns
         self.num_yields = len(yc_data.columns)
         self.names = names = var_data.columns
@@ -119,7 +116,6 @@ class Affine(LikelihoodModel):
             #gen position list for processing list input to solver
             self.noerr_cols, self.err_cols = self._gen_col_names()
             #set to unconditional mean of short_rate
-            #self.delta_0 = np.mean(rf_rate)
 
         #with all observed factors, mu, phi, and sigma are directly generated
         #from OLS VAR one step estimation
