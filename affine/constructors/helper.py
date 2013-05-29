@@ -62,8 +62,28 @@ def ap_constructor(neqs, k_ar, lat):
 
     return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma
 
+def bsr_constructor(neqs, k_ar):
+    """
+    Constructor for BSR
+    """
+    dim = neqs * k_ar
+    lam_0 = ma.zeros([dim, 1])
+    lam_1 = ma.zeros([dim, dim])
+    delta_0 = ma.zeros([1, 1])
+    delta_1 = ma.zeros([dim, 1])
+    mu = ma.zeros([dim, 1])
+    phi = ma.zeros([dim, dim])
+    sigma = ma.zeros([dim, dim])
+
+    lam_0[:neqs, 0] = ma.masked
+    lam_1[:neqs, :neqs] = ma.masked
+
+    return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma
+
+
+
 def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
-             rf_rate):
+             rf_rate=None):
     """
     Inserts estimated OLS parameters into appropriate matrices
 
@@ -98,21 +118,24 @@ def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
     sigma_ols = np.zeros([k_ar * neqs, k_ar * neqs])
     sigma_ols[:neqs, :neqs] = sigma_u
     sigma_ols[neqs:obs_var, neqs:obs_var] = np.identity((k_ar - 1) * neqs)
-    sigma_ols = np.tril(sigma_ols)
+    if lat:
+        sigma_ols = np.tril(sigma_ols)
 
-    macro = var_data.copy()[k_ar - 1:]
-    macro["constant"] = 1
-    #we will want to change this next one once we make delta_1 uncontrained
-    #(see top of ang and piazzesi page 759)
-    params = OLS(rf_rate, macro).fit().params
-    delta_0[0, 0] = params[-1]
-    delta_1[:neqs] = params[0:-1].values[None].T
+    if lat:
+        macro = var_data.copy()[k_ar - 1:]
+        macro["constant"] = 1
+        #we will want to change this next one once we make delta_1 uncontrained
+        #(see top of ang and piazzesi page 759)
+        params = OLS(rf_rate, macro).fit().params
+        delta_0[0, 0] = params[-1]
+        delta_1[:neqs] = params[0:-1].values[None].T
 
     mu[:neqs * k_ar, 0, None] = mu_ols[None]
     phi[:neqs * k_ar, :neqs * k_ar] = phi_ols[None]
     sigma[:neqs * k_ar, :neqs * k_ar] = sigma_ols[None]
 
     return delta_0, delta_1, mu, phi, sigma
+
 def params_to_list(lam_0=None, lam_1=None, delta_1=None, mu=None,
                    phi=None, sigma=None, multistep=0):
     """
@@ -211,6 +234,7 @@ def to_mth(data):
     mth_only = mth_only.reindex(columns = cols)
     mths.sort()
     return mth_only
+
 def robust(mod_data, mod_yc_data, method=None):
     """
     Function to run model with guesses, also generating
@@ -220,10 +244,6 @@ def robust(mod_data, mod_yc_data, method=None):
         model data
     mod_yc_data : pandas DataFrame
         model yield curve data
-    lam_0_g : array
-        Guess for lambda 0
-    lam_1_g : array
-        Guess for lambda 1
     """
     # subset to pre 2005
     mod_data = mod_data[:217]
