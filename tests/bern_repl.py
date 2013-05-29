@@ -2,6 +2,7 @@
 This script attempts to replicate the Bernanke, Sack, and Reinhart (2004) model
 """
 import numpy as np
+import numpy.ma as ma
 import pandas as px
 import datetime as dt
 
@@ -11,8 +12,8 @@ import sys
 
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
-from util import pickle_file, success_mail, fail_mail, to_mth, gen_guesses, \
-                    robust
+from affine.constructors.helper import (pickle_file, success_mail, fail_mail,
+                                        to_mth, gen_guesses, robust)
 
 import pdb
 
@@ -94,6 +95,21 @@ mod_yc_data = mod_yc_data.ix[yc_dates]
 #atexit.register(fail_mail, start_date, passwd)
 
 #generate decent guesses
+lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, sigma_e \
+    = bsr_constructor(k_ar=k_ar, neqs=neqs)
+
+delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=mod_data,
+                                                      freq="M", lat=0,
+                                                      k_ar=k_ar, neqs=neqs,
+                                                      delta_0=delta_0_e,
+                                                      delta_1=delta_1_e,
+                                                      mu=mu_e, phi=phi_e,
+                                                      sigma=sigma_e,
+                                                      rf_rate=rf_rate)
+
+
+
+
 lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
 lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
 collect_lam_0 = []
