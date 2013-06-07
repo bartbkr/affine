@@ -14,7 +14,7 @@ from statsmodels.tsa.api import VAR
 from statsmodels.regression.linear_model import OLS
 from affine.model.affine import Affine
 
-import pdb
+import ipdb
 
 def ap_constructor(neqs, k_ar, lat):
     """
@@ -78,9 +78,22 @@ def bsr_constructor(neqs, k_ar):
     lam_0[:neqs, 0] = ma.masked
     lam_1[:neqs, :neqs] = ma.masked
 
+    delta_0[:, :] = ma.masked
+    delta_0[:, :] = ma.nomask
+
+    delta_1[:, :] = ma.masked
+    delta_1[:, :] = ma.nomask
+
+    mu[:, :] = ma.masked
+    mu[:, :] = ma.nomask
+
+    phi[:, :] = ma.masked
+    phi[:, :] = ma.nomask
+
+    sigma[:, :] = ma.masked
+    sigma[:, :] = ma.nomask
+
     return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma
-
-
 
 def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
              rf_rate=None):
@@ -203,37 +216,6 @@ def gen_guesses(neqs, k_ar, lat):
         phi[-lat:, -lat:] = \
                 np.random.random(lat*lat).reshape((lat, -1)) / 100000
     return lam_0, lam_1, delta_1, mu, phi, sigma
-
-def to_mth(data):
-    """
-    This function transforms the yield curve data so that the names are all
-    in months
-    (not sure if this is necessary)
-    """
-    mths = []
-    fnd = 0
-    n_cols = len(data.columns)
-    for col in data.columns:
-        if 'm' in col:
-            mths.append(int(col[6]))
-            if fnd == 0:
-                mth_only = px.DataFrame(data[col],
-                        columns = [col],
-                        index=data.index)
-                fnd = 1
-            else:
-                mth_only[col] = data[col]
-        elif 'y' in col:
-            mth = int(col[6:])*12
-            mths.append(mth)
-            mth_only[('l_tr_m' + str(mth))] = data[col]
-    col_dict = dict([( mth_only.columns[x], mths[x]) for x in
-                range(n_cols)])
-    cols = np.asarray(sorted(col_dict.iteritems(),
-                    key=itemgetter(1)))[:,0].tolist()
-    mth_only = mth_only.reindex(columns = cols)
-    mths.sort()
-    return mth_only
 
 def robust(mod_data, mod_yc_data, method=None):
     """
@@ -394,7 +376,7 @@ def to_mth(data):
         elif 'y' in col:
             mth = int(col[6:])*12
             mths.append(mth)
-            mth_only[('l_tr_m' + str(mth))] = data[col]
+            mth_only[('trcr_m' + str(mth))] = data[col]
     col_dict = dict([( mth_only.columns[x], mths[x]) for x in
                 range(n_cols)])
     cols = np.asarray(sorted(col_dict.iteritems(),

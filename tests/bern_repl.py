@@ -5,6 +5,7 @@ import numpy as np
 import numpy.ma as ma
 import pandas as px
 import datetime as dt
+import matplotlib.pyplot as plt
 
 import atexit
 import keyring
@@ -12,10 +13,10 @@ import sys
 
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters import hpfilter
-from affine.constructors.helper import (pickle_file, success_mail, fail_mail,
-                                        to_mth, gen_guesses, robust)
+from affine.constructors.helper import (to_mth, bsr_constructor, pass_ols)
+from affine.model.affine import Affine
 
-import pdb
+import ipdb
 
 start_date = dt.datetime.now()
 passwd = keyring.get_password("email_auth", "bartbkr")
@@ -23,7 +24,7 @@ passwd = keyring.get_password("email_auth", "bartbkr")
 ########################################
 # Get macro data                       #
 ########################################
-mthdata = px.read_csv("../data/macro_data.csv", na_values="M",
+mthdata = px.read_csv("./data/macro_data.csv", na_values="M",
                         index_col = 0, parse_dates=True, sep=";")
 nonfarm = mthdata['Total_Nonfarm_employment_seas'].dropna()
 
@@ -59,7 +60,7 @@ for t in range(k_ar-1):
 #remove missing values
 x_t = x_t_na.dropna(axis=0)
 
-ycdata = px.read_csv("../data/yield_curve.csv", na_values = "M", index_col=0,
+ycdata = px.read_csv("./data/yield_curve.csv", na_values = "M", index_col=0,
                      parse_dates=True, sep=";")
 
 mod_yc_data_nodp = ycdata.reindex(columns=['trcr_m3', 'trcr_m6',
@@ -73,6 +74,9 @@ mod_yc_data = mod_yc_data.drop(['fed_funds'], axis=1)
 
 mod_yc_data = to_mth(mod_yc_data)
 
+mths = [3, 6, 12, 24, 36, 60, 84, 120]
+del mod_yc_data['trcr_m1']
+
 # Setup model
 meth = "ls"
 run_groups = []
@@ -85,6 +89,7 @@ collect_1 = []
 
 var_dates = px.date_range("3/1/1982", "12/1/2004", freq="MS").to_pydatetime()
 yc_dates = px.date_range("6/1/1982", "12/1/2004", freq="MS").to_pydatetime()
+
 
 mod_data = mod_data.ix[var_dates]
 mod_yc_data = mod_yc_data.ix[yc_dates]
@@ -104,66 +109,78 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=mod_data,
                                                       delta_0=delta_0_e,
                                                       delta_1=delta_1_e,
                                                       mu=mu_e, phi=phi_e,
-                                                      sigma=sigma_e,
-                                                      rf_rate=rf_rate)
+                                                      sigma=sigma_e)
+delta_1_e[np.argmax(mod_data.columns == 'fed_funds')] = 1
 
-
-
-
-lam_0_coll = np.zeros((atts, neqs*k_ar, 1))
-lam_1_coll = np.zeros((atts, neqs*k_ar, neqs*k_ar))
-collect_lam_0 = []
-collect_lam_1 = []
 print "Initial estimation"
-for a in range(atts):
-    print str(a)
-    sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data)
-    lam_0_coll[a] = sim_run[0]
-    lam_1_coll[a] = sim_run[1]
+bsr_model = Affine(yc_data=mod_yc_data, var_data=mod_data, lam_0_e=lam_0_e,
+                   lam_1_e=lam_1_e, delta_0_e=delta_0_e, delta_1_e=delta_1_e,
+                   mu_e=mu_e, phi_e=phi_e, sigma_e=sigma_e, mths=mths)
 
-quantiles = [0, 10, 25, 50, 75, 90, 100]
-for quant in quantiles:
-    collect_lam_0.append((str(quant), np.percentile(lam_0_coll, quant,
-                                                    axis=0)))
-    collect_lam_1.append((str(quant), np.percentile(lam_1_coll, quant,
-                                                    axis=0)))
 
-pickle_file(collect_lam_0, "../temp_res/collect_lam_0_ls")
-pickle_file(collect_lam_1, "../temp_res/collect_lam_1_ls")
+guess_length = bsr_model.guess_length
+guess_params = [0.0000] * guess_length
 
-#use medians to guess for next 50 sims
-atts2 = 10
-print "Second round estimation"
-lam_0_all  = np.zeros((atts2, neqs*k_ar, 1))
-lam_1_all  = np.zeros((atts2, neqs*k_ar, neqs*k_ar))
-cov_all  = np.zeros((atts2, neqs + neqs**2, neqs + neqs**2))
-collect_lam_0_ref = []
-collect_lam_1_ref = []
-collect_cov_ref = []
-for a in range(atts2):
-    print str(a)
-    #third element is median
-    sim_run = robust(method=meth, mod_data=mod_data, mod_yc_data=mod_yc_data,
-            lam_0_g=collect_lam_0[3][1], lam_1_g=collect_lam_1[3][1],
-            start_date=start_date, passwd=passwd)
-    lam_0_all[a] = sim_run[0]
-    lam_1_all[a] = sim_run[1]
-    cov_all[a] = sim_run[2]
+levels = [1e-1,
+          9e-2,
+          8e-2,
+          7e-2,
+          6e-2,
+          5e-2,
+          4e-2,
+          3e-2,
+          2e-2,
+          1e-2,
+          1e-3,
+          1e-4,
+          1e-5]
 
-#These estimates are getting closer to each other throughout the entire span
+for est in levels:
+    print "Level " + str(est)
+    out_bsr = bsr_model.solve(guess_params=guess_params, method='nls',
+                              ftol=est, xtol=est, maxfev=10000000,
+                              full_output=False)
 
-for att in range(atts2):
-    collect_lam_0_ref.append((str(att), lam_0_all))
-    collect_lam_1_ref.append((str(att), lam_1_all))
-    collect_cov_ref.append((str(att), cov_all))
+    lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+                    b_solve, solv_cov = out_bsr
 
-#Collect results
-pickle_file(lam_0_all, "../temp_res/lam_0_all_ls")
-pickle_file(lam_1_all, "../temp_res/lam_1_all_ls")
-pickle_file(cov_all, "../temp_res/cov_all_ls")
-pickle_file(collect_lam_0_ref, "../temp_res/collect_lam_0_ref_ls")
-pickle_file(collect_lam_1_ref, "../temp_res/collect_lam_1_ref_ls")
-pickle_file(collect_cov_ref, "../temp_res/collect_cov_ref_ls")
+    a_rsk, b_rsk = bsr_model.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
+                                           delta_0=delta_0, delta_1=delta_1,
+                                           mu=mu, phi=phi, sigma=sigma)
 
-#send success email
-#success_mail(passwd)
+    #generate no risk results
+    lam_0_nr = np.zeros([neqs*k_ar, 1])
+    lam_1_nr = np.zeros([neqs*k_ar, neqs*k_ar])
+    sigma_zeros = np.zeros_like(sigma)
+    a_nrsk, b_nrsk = bsr_model.gen_pred_coef(lam_0=lam_0_nr, lam_1=lam_1_nr,
+                                             delta_0=delta_0, delta_1=delta_1,
+                                             mu=mu, phi=phi, sigma=sigma_zeros)
+    #gen BSR predicted
+    X_t = bsr_model.var_data_vert
+    per = bsr_model.yc_data.index
+    act_pred = px.DataFrame(index=per)
+    for i in mths:
+        act_pred[str(i) + '_mth_act'] = bsr_model.yc_data['trcr_m' + str(i)]
+        act_pred[str(i) + '_mth_pred'] = a_rsk[i-1] + \
+                                        np.dot(b_rsk[i-1], X_t.values.T)
+        act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
+                                        np.dot(b_nrsk[i-1].T, X_t.values.T)
+        act_pred[str(i) + '_mth_err'] = np.abs(act_pred[str(i) + '_mth_act'] -
+                                                act_pred[str(i) + '_mth_pred'])
+    ten_yr = act_pred.reindex(columns = filter(lambda x: '120' in x, act_pred))
+    seven_yr = act_pred.reindex(columns = filter(lambda x: '84' in x,
+                                                 act_pred))
+    five_yr = act_pred.reindex(columns = filter(lambda x: '60' in x,act_pred))
+    three_yr = act_pred.reindex(columns = filter(lambda x: '36' in x,act_pred))
+    two_yr = act_pred.reindex(columns = filter(lambda x: '24' in x,act_pred))
+    one_yr = act_pred.reindex(columns = ['12_mth_act', '12_mth_pred',
+                                         '12_mth_nrsk', '12_mth_err'])
+    six_mth = act_pred.reindex(columns = ['6_mth_act', '6_mth_pred',
+                                          '6_mth_nrsk', '6_mth_err'])
+
+    #generate st dev of residuals
+    yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr', 'seven_yr',
+              'ten_yr']
+    for yld in yields:
+        print yld + " & " + str(np.std(eval(yld).filter(regex='.*err$').values,
+                                ddof=1)*100)

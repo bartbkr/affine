@@ -322,6 +322,7 @@ class Affine(LikelihoodModel):
         lam_1 : array
         delta_0 : array
         delta_1 : array
+        mu : array
         phi : array
         sigma : array
         """
@@ -553,8 +554,8 @@ class Affine(LikelihoodModel):
         pred = px.DataFrame(index=yc_data.index)
 
         for i in mths:
-            pred["l_tr_m" + str(i)] = a_test[i-1] + np.dot(b_test[i-1].T,
-                                      data.T).T[:,0]
+            pred["l_tr_m" + str(i)] = solve_a[i-1] + np.dot(solve_b[i-1],
+                                      data.T)
 
         pred = self._stack_yields(pred)
 
@@ -568,7 +569,7 @@ class Affine(LikelihoodModel):
         obs = len(orig)
         new = np.zeros((len(mths) * obs))
         for col, mth in enumerate(orig.columns):
-            new[col*obs:(col+1)*obs] = orig[mth].values
+            new[col * obs:(col + 1) * obs] = orig[mth].values
         return new
 
     def _gen_arg_sep(self, arg_lengths):
