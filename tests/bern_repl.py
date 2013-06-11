@@ -121,7 +121,7 @@ bsr_model = Affine(yc_data=mod_yc_data, var_data=mod_data, lam_0_e=lam_0_e,
 guess_length = bsr_model.guess_length
 guess_params = [0.0000] * guess_length
 
-levels = [1e-1,
+ftols = [1e-1,
           9e-2,
           8e-2,
           7e-2,
@@ -130,57 +130,95 @@ levels = [1e-1,
           4e-2,
           3e-2,
           2e-2,
+          1.5e-2,
+          1.4e-2,
+          1.3e-2,
+          1.2e-2,
+          1.1e-2,
           1e-2,
-          1e-3,
-          1e-4,
-          1e-5]
+          #1e-3,
+          #1e-4,
+          #1e-5]
+          ]
 
-for est in levels:
-    print "Level " + str(est)
-    out_bsr = bsr_model.solve(guess_params=guess_params, method='nls',
-                              ftol=est, xtol=est, maxfev=10000000,
-                              full_output=False)
+xtols = [1e-1,
+          9e-2,
+          8e-2,
+          7e-2,
+          6e-2,
+          5e-2,
+          4e-2,
+          3e-2,
+          2e-2,
+          1.5e-2,
+          1.4e-2,
+          1.3e-2,
+          1.2e-2,
+          1.1e-2,
+          1e-2,
+          #1e-3,
+          #1e-4,
+          #1e-5]
+          ]
 
-    lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-                    b_solve, solv_cov = out_bsr
+for xtol in xtols:
+    for ftol in ftols:
+        print "xtol " + str(xtol)
+        print "ftol " + str(ftol)
+        out_bsr = bsr_model.solve(guess_params=guess_params, method='nls',
+                                ftol=ftol, xtol=xtol, maxfev=10000000,
+                                full_output=False)
 
-    a_rsk, b_rsk = bsr_model.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
-                                           delta_0=delta_0, delta_1=delta_1,
-                                           mu=mu, phi=phi, sigma=sigma)
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+                        b_solve, solv_cov = out_bsr
 
-    #generate no risk results
-    lam_0_nr = np.zeros([neqs*k_ar, 1])
-    lam_1_nr = np.zeros([neqs*k_ar, neqs*k_ar])
-    sigma_zeros = np.zeros_like(sigma)
-    a_nrsk, b_nrsk = bsr_model.gen_pred_coef(lam_0=lam_0_nr, lam_1=lam_1_nr,
-                                             delta_0=delta_0, delta_1=delta_1,
-                                             mu=mu, phi=phi, sigma=sigma_zeros)
-    #gen BSR predicted
-    X_t = bsr_model.var_data_vert
-    per = bsr_model.yc_data.index
-    act_pred = px.DataFrame(index=per)
-    for i in mths:
-        act_pred[str(i) + '_mth_act'] = bsr_model.yc_data['trcr_m' + str(i)]
-        act_pred[str(i) + '_mth_pred'] = a_rsk[i-1] + \
-                                        np.dot(b_rsk[i-1], X_t.values.T)
-        act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
-                                        np.dot(b_nrsk[i-1].T, X_t.values.T)
-        act_pred[str(i) + '_mth_err'] = np.abs(act_pred[str(i) + '_mth_act'] -
-                                                act_pred[str(i) + '_mth_pred'])
-    ten_yr = act_pred.reindex(columns = filter(lambda x: '120' in x, act_pred))
-    seven_yr = act_pred.reindex(columns = filter(lambda x: '84' in x,
-                                                 act_pred))
-    five_yr = act_pred.reindex(columns = filter(lambda x: '60' in x,act_pred))
-    three_yr = act_pred.reindex(columns = filter(lambda x: '36' in x,act_pred))
-    two_yr = act_pred.reindex(columns = filter(lambda x: '24' in x,act_pred))
-    one_yr = act_pred.reindex(columns = ['12_mth_act', '12_mth_pred',
-                                         '12_mth_nrsk', '12_mth_err'])
-    six_mth = act_pred.reindex(columns = ['6_mth_act', '6_mth_pred',
-                                          '6_mth_nrsk', '6_mth_err'])
+        a_rsk, b_rsk = bsr_model.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
+                                            delta_0=delta_0, delta_1=delta_1,
+                                            mu=mu, phi=phi, sigma=sigma)
 
-    #generate st dev of residuals
-    yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr', 'seven_yr',
-              'ten_yr']
-    for yld in yields:
-        print yld + " & " + str(np.std(eval(yld).filter(regex='.*err$').values,
-                                ddof=1)*100)
+        #generate no risk results
+        lam_0_nr = np.zeros([neqs*k_ar, 1])
+        lam_1_nr = np.zeros([neqs*k_ar, neqs*k_ar])
+        sigma_zeros = np.zeros_like(sigma)
+        a_nrsk, b_nrsk = bsr_model.gen_pred_coef(lam_0=lam_0_nr,
+                                                 lam_1=lam_1_nr,
+                                                 delta_0=delta_0,
+                                                 delta_1=delta_1, mu=mu,
+                                                 phi=phi, sigma=sigma_zeros)
+        #gen BSR predicted
+        X_t = bsr_model.var_data_vert
+        per = bsr_model.yc_data.index
+        act_pred = px.DataFrame(index=per)
+        for i in mths:
+            act_pred[str(i) + '_mth_act'] = bsr_model.yc_data['trcr_m'
+                                                              + str(i)]
+            act_pred[str(i) + '_mth_pred'] = a_rsk[i-1] + \
+                                            np.dot(b_rsk[i-1], X_t.values.T)
+            act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
+                                            np.dot(b_nrsk[i-1].T, X_t.values.T)
+            act_pred[str(i) + '_mth_err'] = np.abs(act_pred[str(i)
+                                                            + '_mth_act']
+                                                   - act_pred[str(i)
+                                                              + '_mth_pred'])
+        ten_yr = act_pred.reindex(columns = filter(lambda x: '120' in x,
+                                                   act_pred))
+        seven_yr = act_pred.reindex(columns = filter(lambda x: '84' in x,
+                                                    act_pred))
+        five_yr = act_pred.reindex(columns = filter(lambda x: '60' in
+                                                    x,act_pred))
+        three_yr = act_pred.reindex(columns = filter(lambda x: '36' in
+                                                     x,act_pred))
+        two_yr = act_pred.reindex(columns = filter(lambda x: '24' in
+                                                   x,act_pred))
+        one_yr = act_pred.reindex(columns = ['12_mth_act', '12_mth_pred',
+                                            '12_mth_nrsk', '12_mth_err'])
+        six_mth = act_pred.reindex(columns = ['6_mth_act', '6_mth_pred',
+                                            '6_mth_nrsk', '6_mth_err'])
+
+        #generate st dev of residuals
+        yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr',
+                  'seven_yr', 'ten_yr']
+        for yld in yields:
+            print yld + " & " + str(np.std(eval(yld).filter(
+                                                regex= '.*err$').values,
+                                                ddof=1)*100)
