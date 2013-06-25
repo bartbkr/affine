@@ -199,7 +199,7 @@ class Affine(LikelihoodModel):
             func = self._affine_nsum_errs
             solver = retry(optimize.leastsq, attempts)
             reslt = solver(func, guess_params, maxfev=maxfev, xtol=xtol,
-                           full_output=full_output)
+                           ftol=ftol, full_output=full_output)
             solve_params = reslt[0]
             output = reslt[1:]
 
@@ -210,20 +210,22 @@ class Affine(LikelihoodModel):
             #run optmization
             solver = retry(optimize.curve_fit, attempts)
             reslt = solver(func, var_data_vert, yield_stack, p0=guess_params,
-                           maxfev=maxfev, xtol=xtol, full_output=True)
+                           maxfev=maxfev, xtol=xtol, ftol=ftol,
+                           full_output=True)
             solve_params = reslt[0]
             solv_cov = reslt[1]
 
         elif method == "ml":
             solver = retry(self.fit, attempts)
             solve = solver(start_params=guess_params, method=alg,
-                           maxiter=maxiter, maxfun=maxfev, xtol=xtol)
+                           maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                           ftol=ftol)
             solve_params = solve.params
             tvalues = solve.tvalues
 
         elif method == "angpiazml":
             solve = solver(start_params=params, method=alg, maxiter=maxiter,
-                    maxfun=maxfev, xtol=xtol)
+                           maxfun=maxfev, xtol=xtol, ftol=ftol)
             solve_params = solve.params
             tvalues = solve.tvalues
 
