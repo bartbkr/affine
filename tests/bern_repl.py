@@ -121,23 +121,19 @@ bsr_model = Affine(yc_data=mod_yc_data, var_data=mod_data, lam_0_e=lam_0_e,
 guess_length = bsr_model.guess_length
 guess_params = [0.0000] * guess_length
 
-xtols = [3e-2,
-         2e-2,
-         9e-3,
-         7e-3,
-         5e-3,
-         3e-3,
-         1e-3,
-         9e-4,
-         7e-4,
-         5e-4,
-         3e-4,
-         1e-4,
+xtols = [0.1,
+         0.05,
+         0.03,
+         0.01,
+         0.009,
+         0.005,
+         0.001,
+         0.0001
         ]
 
-ftols = [1e-1,
-          5e-2,
-          1e-2,
+ftols = [1.49012e-8
+          #5e-2,
+          #1e-2,
           #1e-3,
           #1e-4,
           #1e-5]
