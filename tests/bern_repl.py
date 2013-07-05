@@ -142,6 +142,9 @@ for xtol in xtols:
     for ftol in ftols:
         print "xtol " + str(xtol)
         print "ftol " + str(ftol)
+        print "Begin " + str(yc_dates[0])
+        print "End " + str(yc_dates[-1])
+        print "variables " + str(list(bsr_model.names))
         out_bsr = bsr_model.solve(guess_params=guess_params, method='nls',
                                 ftol=ftol, xtol=xtol, maxfev=10000000,
                                 full_output=False)
