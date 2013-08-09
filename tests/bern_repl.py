@@ -40,7 +40,7 @@ mthdata['ed_fut'] = 100 - mthdata['ed4_end_mth']
 #define final data set
 mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                    'act_infl',
-                                   'inflexp_1yr_mean',
+                                   'gnp_gdp_deflat_nxtyr',
                                     'fed_funds',
                                     'ed_fut']).dropna(axis=0)
 
