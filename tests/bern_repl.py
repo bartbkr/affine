@@ -130,13 +130,7 @@ xtols = [0.1,
          0.0001
         ]
 
-ftols = [1.49012e-8
-          #5e-2,
-          #1e-2,
-          #1e-3,
-          #1e-4,
-          #1e-5]
-          ]
+ftols = [1.49012e-8]
 
 for xtol in xtols:
     for ftol in ftols:
