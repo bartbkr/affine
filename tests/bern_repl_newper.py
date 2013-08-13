@@ -38,11 +38,11 @@ mthdata['act_infl'] = \
 mthdata['ed_fut'] = 100 - mthdata['ed4_end_mth']
 
 #define final data set
-mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
-                                   'act_infl',
-                                   'gnp_gdp_deflat_nxtyr',
-                                    'fed_funds',
-                                    'ed_fut']).dropna(axis=0)
+mod_data = mthdata[['tr_empl_gap_perc',
+                    'act_infl',
+                    'gnp_gdp_deflat_nxtyr',
+                    'fed_funds',
+                    'ed_fut']].dropna(axis=0)
 
 neqs = 5
 k_ar = 4
@@ -67,6 +67,7 @@ mod_yc_data_nodp = ycdata.reindex(columns=['trcr_m3', 'trcr_m6',
                                       'trcr_y1', 'trcr_y2',
                                       'trcr_y3', 'trcr_y5',
                                       'trcr_y7', 'trcr_y10'])
+
 mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
 mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
 mod_yc_data.insert(0, 'trcr_m1', mod_yc_data['fed_funds'])
@@ -87,8 +88,8 @@ collect_1 = []
 
 #subset to range specified in BSR
 
-var_dates = px.date_range("5/1/1985", "8/1/2012", freq="MS").to_pydatetime()
-yc_dates = px.date_range("9/1/1985", "8/1/2012", freq="MS").to_pydatetime()
+var_dates = px.date_range("5/1/1985", "5/1/2012", freq="MS").to_pydatetime()
+yc_dates = px.date_range("8/1/1985", "5/1/2012", freq="MS").to_pydatetime()
 
 mod_data = mod_data.ix[var_dates]
 mod_yc_data = mod_yc_data.ix[yc_dates]
