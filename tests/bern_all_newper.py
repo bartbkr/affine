@@ -89,8 +89,8 @@ collect_1 = []
 
 #subset to range specified in BSR
 
-var_dates = px.date_range("5/1/1985", "5/1/2012", freq="MS").to_pydatetime()
-yc_dates = px.date_range("8/1/1985", "5/1/2012", freq="MS").to_pydatetime()
+var_dates = px.date_range("5/1/1990", "5/1/2012", freq="MS").to_pydatetime()
+yc_dates = px.date_range("8/1/1990", "5/1/2012", freq="MS").to_pydatetime()
 
 mod_data = mod_data.ix[var_dates]
 mod_yc_data = mod_yc_data.ix[yc_dates]
