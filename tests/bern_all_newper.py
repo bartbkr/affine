@@ -36,7 +36,7 @@ mthdata['tr_empl_gap_perc'] = mthdata['tr_empl_gap']/mthdata['hp_ch'] * 100
 mthdata['act_infl'] = \
     mthdata['PCE_seas'].diff(periods=12)/mthdata['PCE_seas']*100
 mthdata['ed_fut'] = 100 - mthdata['ed4_end_mth']
-mthdata['uncert'] = mthdata['gnp_gdp_top10'] = mthdata['gnp_gdp_bot10']
+mthdata['uncert'] = mthdata['gnp_gdp_top10'] - mthdata['gnp_gdp_bot10']
 
 #define final data set
 mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
