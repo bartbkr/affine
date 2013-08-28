@@ -1,2026 +1,582 @@
 Initial estimation
 xtol 0.1
-ftol 0.1
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
+ftol 1.49012e-08
+Begin 1982-06-01 00:00:00
+End 2004-08-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 38.3808454982
+one_yr & 106.956867656
+two_yr & 97.3121673866
+three_yr & 139.458153546
+five_yr & 151.942530356
+seven_yr & 172.454883923
+ten_yr & 198.036691799
+xtol 0.05
+ftol 1.49012e-08
+Begin 1982-06-01 00:00:00
+End 2004-08-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 50.7960016222
+one_yr & 89.4985015403
+two_yr & 99.2470225775
+three_yr & 100.769199124
+five_yr & 103.625287019
+seven_yr & 109.979810437
+ten_yr & 121.635010375
+xtol 0.03
+ftol 1.49012e-08
+Begin 1982-06-01 00:00:00
+End 2004-08-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 50.7960016222
+one_yr & 89.4985015403
+two_yr & 99.2470225775
+three_yr & 100.769199124
+five_yr & 103.625287019
+seven_yr & 109.979810437
+ten_yr & 121.635010375
+xtol 0.01
+ftol 1.49012e-08
+Begin 1982-06-01 00:00:00
+End 2004-08-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 26.1257384312
+one_yr & 40.6132491906
+two_yr & 53.4483884595
+three_yr & 54.1979292125
+five_yr & 52.2339817771
+seven_yr & 54.7707872569
+ten_yr & 57.4552194825
+xtol 0.009
+ftol 1.49012e-08
+Begin 1982-06-01 00:00:00
+End 2004-08-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 26.1257384312
+one_yr & 40.6132491906
+two_yr & 53.4483884595
+three_yr & 54.1979292125
+five_yr & 52.2339817771
+seven_yr & 54.7707872569
+ten_yr & 57.4552194825
+xtol 0.005
+ftol 1.49012e-08
+Begin 1982-06-01 00:00:00
+End 2004-08-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 26.6358324761
+one_yr & 39.2067972136
+two_yr & 52.5440657841
+three_yr & 54.2428026494
+five_yr & 51.6781879916
+seven_yr & 52.3232952691
+ten_yr & 53.8108604022
+xtol 0.001
+ftol 1.49012e-08
+Begin 1982-06-01 00:00:00
+End 2004-08-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 24.7146293095
+one_yr & 36.4098788837
+two_yr & 49.045462089
+three_yr & 50.934789125
+five_yr & 48.8947357843
+seven_yr & 48.2490035425
+ten_yr & 46.3491610299
+xtol 0.0001
+ftol 1.49012e-08
+Begin 1982-06-01 00:00:00
+End 2004-08-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 23.1744148015
+one_yr & 34.3938079088
+two_yr & 46.3385626801
+three_yr & 49.0928393415
+five_yr & 47.94962067
+seven_yr & 46.8597732094
+ten_yr & 44.7329086508
+Initial estimation
 xtol 0.1
-ftol 0.09
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 16.4089330242
+one_yr & 31.7875888767
+two_yr & 61.6286324624
+three_yr & 76.9820894503
+five_yr & 121.680766749
+seven_yr & 128.707914467
+ten_yr & 130.273542229
+xtol 0.05
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 16.9326862891
+one_yr & 32.8236542862
+two_yr & 58.5312081347
+three_yr & 70.5328791456
+five_yr & 77.8739302459
+seven_yr & 135.128838084
+ten_yr & 139.365344703
+xtol 0.03
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 16.9326862891
+one_yr & 32.8236542862
+two_yr & 58.5312081347
+three_yr & 70.5328791456
+five_yr & 77.8739302459
+seven_yr & 135.128838084
+ten_yr & 139.365344703
+xtol 0.01
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 16.8870542617
+one_yr & 32.9956405172
+two_yr & 58.2250360144
+three_yr & 67.8636498831
+five_yr & 93.2163185321
+seven_yr & 96.0138770277
+ten_yr & 84.8904992828
+xtol 0.009
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 16.3947950524
+one_yr & 19.9361209217
+two_yr & 24.129115005
+three_yr & 25.3988614328
+five_yr & 26.3176877869
+seven_yr & 28.6548555253
+ten_yr & 41.8782250331
+xtol 0.005
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 16.5702074594
+one_yr & 19.7029130589
+two_yr & 23.3702859491
+three_yr & 23.4654221957
+five_yr & 24.7967103784
+seven_yr & 26.8657305227
+ten_yr & 38.5122764492
+xtol 0.001
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 12.0110442773
+one_yr & 17.9296284197
+two_yr & 18.6678519099
+three_yr & 19.1445748448
+five_yr & 20.9873325304
+seven_yr & 21.5278626631
+ten_yr & 21.7192098757
+xtol 0.0001
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut']
+six_mth & 11.2996520768
+one_yr & 16.9185589116
+two_yr & 18.6357349402
+three_yr & 19.8468848573
+five_yr & 21.1118527429
+seven_yr & 21.2421699425
+ten_yr & 21.5604037371
+Initial estimation
 xtol 0.1
-ftol 0.08
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+six_mth & 18.4493366467
+one_yr & 46.2058078698
+two_yr & 72.8083358695
+three_yr & 79.5848027324
+five_yr & 91.0667356445
+seven_yr & 92.3973241136
+ten_yr & 90.0235374574
+xtol 0.05
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+six_mth & 17.4662534364
+one_yr & 30.9496175034
+two_yr & 53.5291472948
+three_yr & 60.5498012548
+five_yr & 67.1015185553
+seven_yr & 50.5710013267
+ten_yr & 70.8300623493
+xtol 0.03
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+six_mth & 17.8039192415
+one_yr & 25.219435502
+two_yr & 33.2720718711
+three_yr & 34.9479196069
+five_yr & 50.4516654556
+seven_yr & 59.2385558835
+ten_yr & 58.0175368258
+xtol 0.01
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+six_mth & 17.8039192415
+one_yr & 25.219435502
+two_yr & 33.2720718711
+three_yr & 34.9479196069
+five_yr & 50.4516654556
+seven_yr & 59.2385558835
+ten_yr & 58.0175368258
+xtol 0.009
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+six_mth & 17.8039192415
+one_yr & 25.219435502
+two_yr & 33.2720718711
+three_yr & 34.9479196069
+five_yr & 50.4516654556
+seven_yr & 59.2385558835
+ten_yr & 58.0175368258
+xtol 0.005
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+six_mth & 17.5137791706
+one_yr & 24.5467111207
+two_yr & 29.4043242667
+three_yr & 33.0311680624
+five_yr & 38.1607098089
+seven_yr & 40.26574062
+ten_yr & 38.9732085713
+xtol 0.001
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+six_mth & 14.8097672198
+one_yr & 21.0292735036
+two_yr & 27.2407288848
+three_yr & 29.9808497007
+five_yr & 32.8263937182
+seven_yr & 33.215533455
+ten_yr & 31.8210786967
+xtol 0.0001
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+six_mth & 14.9059621894
+one_yr & 21.1295511771
+two_yr & 26.945089428
+three_yr & 30.088940466
+five_yr & 33.2628108918
+seven_yr & 33.2097476343
+ten_yr & 31.6793735694
+Initial estimation
 xtol 0.1
-ftol 0.07
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'djia_std']
+six_mth & 27.6329526272
+one_yr & 48.1312741281
+two_yr & 84.0276102648
+three_yr & 103.361055441
+five_yr & 105.367888197
+seven_yr & 127.20652572
+ten_yr & 126.996758995
+xtol 0.05
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'djia_std']
+six_mth & 27.61783093
+one_yr & 40.2580530423
+two_yr & 51.7578929182
+three_yr & 100.766673239
+five_yr & 88.3105361926
+seven_yr & 127.599976787
+ten_yr & 127.17941252
+xtol 0.03
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'djia_std']
+six_mth & 27.61783093
+one_yr & 40.2580530423
+two_yr & 51.7578929182
+three_yr & 100.766673239
+five_yr & 88.3105361926
+seven_yr & 127.599976787
+ten_yr & 127.17941252
+xtol 0.01
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'djia_std']
+six_mth & 27.5736544187
+one_yr & 39.4453203664
+two_yr & 58.8741155132
+three_yr & 63.7948754079
+five_yr & 74.528924169
+seven_yr & 77.4620338889
+ten_yr & 73.9160212979
+xtol 0.009
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'djia_std']
+six_mth & 27.5736544187
+one_yr & 39.4453203664
+two_yr & 58.8741155132
+three_yr & 63.7948754079
+five_yr & 74.528924169
+seven_yr & 77.4620338889
+ten_yr & 73.9160212979
+xtol 0.005
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'djia_std']
+six_mth & 27.5736544187
+one_yr & 39.4453203664
+two_yr & 58.8741155132
+three_yr & 63.7948754079
+five_yr & 74.528924169
+seven_yr & 77.4620338889
+ten_yr & 73.9160212979
+xtol 0.001
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'djia_std']
+six_mth & 17.1554429574
+one_yr & 26.1836130261
+two_yr & 37.9263642338
+three_yr & 43.9935244448
+five_yr & 53.8465834765
+seven_yr & 59.8081314134
+ten_yr & 63.9408209441
+xtol 0.0001
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'djia_std']
+six_mth & 16.2206712094
+one_yr & 23.1666553738
+two_yr & 31.688754011
+three_yr & 35.6908339245
+five_yr & 37.2057430695
+seven_yr & 36.0301423996
+ten_yr & 33.1903354676
+Initial estimation
 xtol 0.1
-ftol 0.06
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+six_mth & 12.7986172195
+one_yr & 28.586688856
+two_yr & 28.0790930218
+three_yr & 44.7559746972
+five_yr & 69.3570763187
+seven_yr & 90.8524932653
+ten_yr & 101.214592233
+xtol 0.05
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+six_mth & 12.7986172195
+one_yr & 28.586688856
+two_yr & 28.0790930218
+three_yr & 44.7559746972
+five_yr & 69.3570763187
+seven_yr & 90.8524932653
+ten_yr & 101.214592233
+xtol 0.03
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+six_mth & 13.1090717371
+one_yr & 19.693589729
+two_yr & 26.3994440977
+three_yr & 27.7118677545
+five_yr & 53.6517585648
+seven_yr & 66.0591631518
+ten_yr & 85.6260877413
+xtol 0.01
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+six_mth & 13.1090717371
+one_yr & 19.693589729
+two_yr & 26.3994440977
+three_yr & 27.7118677545
+five_yr & 53.6517585648
+seven_yr & 66.0591631518
+ten_yr & 85.6260877413
+xtol 0.009
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+six_mth & 13.1090717371
+one_yr & 19.693589729
+two_yr & 26.3994440977
+three_yr & 27.7118677545
+five_yr & 53.6517585648
+seven_yr & 66.0591631518
+ten_yr & 85.6260877413
+xtol 0.005
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+six_mth & 12.8345400852
+one_yr & 19.5647265731
+two_yr & 26.667921158
+three_yr & 27.4125969379
+five_yr & 42.2455285839
+seven_yr & 51.1694107532
+ten_yr & 59.5085160001
+xtol 0.001
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+six_mth & 10.6050056518
+one_yr & 12.7915420247
+two_yr & 14.4512179645
+three_yr & 16.6039390407
+five_yr & 19.1263657351
+seven_yr & 19.5157285379
+ten_yr & 20.1802882465
+xtol 0.0001
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+six_mth & 10.0813563235
+one_yr & 12.9104611702
+two_yr & 14.6845121776
+three_yr & 16.4345205421
+five_yr & 19.0071148728
+seven_yr & 19.3726444907
+ten_yr & 19.8517062008
+Initial estimation
 xtol 0.1
-ftol 0.05
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.04
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.03
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.02
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.015
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.014
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.013
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.012
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.011
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.1
-ftol 0.01
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.1
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.09
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.08
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.07
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.06
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.05
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.04
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.03
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.02
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.015
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.014
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.013
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.012
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.011
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.09
-ftol 0.01
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.1
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.09
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.08
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.07
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.06
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.05
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.04
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.03
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.02
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.015
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.014
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.013
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.012
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.011
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.08
-ftol 0.01
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.1
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.09
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.08
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.07
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.06
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.05
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.04
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.03
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.02
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.015
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.014
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.013
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.012
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.011
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.07
-ftol 0.01
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.1
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.09
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.08
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.07
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.06
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.05
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.04
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.03
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.02
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.015
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.014
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.013
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.012
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.011
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.06
-ftol 0.01
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
+ftol 1.49012e-08
+Begin 1985-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
+six_mth & 27.0936920684
+one_yr & 33.9568762311
+two_yr & 53.8546246644
+three_yr & 67.7021090044
+five_yr & 88.1978263283
+seven_yr & 101.815697867
+ten_yr & 115.8372826
 xtol 0.05
-ftol 0.1
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.09
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.08
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.07
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.06
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.05
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.04
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.03
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.02
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.015
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.014
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.013
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.012
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.011
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.05
-ftol 0.01
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.1
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.09
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.08
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.07
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.06
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.05
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.04
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.03
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.02
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.015
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.014
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.013
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.012
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.011
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
-xtol 0.04
-ftol 0.01
-six_mth & 46.9469895562
-one_yr & 97.3692262212
-two_yr & 153.519251249
-three_yr & 185.909870169
-five_yr & 188.394007753
-seven_yr & 122.942279886
-ten_yr & 175.816096475
+ftol 1.49012e-08
+Begin 1985-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
+six_mth & 18.3157050858
+one_yr & 20.8931950868
+two_yr & 44.0804978043
+three_yr & 60.8158069771
+five_yr & 80.5236838764
+seven_yr & 93.7529433672
+ten_yr & 83.2835602761
 xtol 0.03
-ftol 0.1
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.09
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.08
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.07
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.06
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.05
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.04
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.03
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.02
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.015
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.014
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.013
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.012
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.011
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.03
-ftol 0.01
-six_mth & 38.6141426845
-one_yr & 72.0960966039
-two_yr & 112.048109538
-three_yr & 107.326236777
-five_yr & 122.040834503
-seven_yr & 125.182589665
-ten_yr & 122.311661145
-xtol 0.02
-ftol 0.1
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.09
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.08
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.07
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.06
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.05
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.04
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.03
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.02
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.015
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.014
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.013
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.012
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.011
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.02
-ftol 0.01
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.1
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.09
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.08
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.07
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.06
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.05
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.04
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.03
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.02
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.015
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.014
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.013
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.012
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.011
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.015
-ftol 0.01
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.1
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.09
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.08
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.07
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.06
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.05
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.04
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.03
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.02
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.015
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.014
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.013
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.012
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.011
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.014
-ftol 0.01
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.1
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.09
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.08
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.07
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.06
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.05
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.04
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.03
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.02
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.015
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.014
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.013
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.012
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.011
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.013
-ftol 0.01
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.1
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.09
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.08
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.07
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.06
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.05
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.04
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.03
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.02
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.015
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.014
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.013
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.012
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.011
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.012
-ftol 0.01
-six_mth & 35.0321028207
-one_yr & 68.577929201
-two_yr & 105.372034344
-three_yr & 103.074356466
-five_yr & 113.544604273
-seven_yr & 113.88727981
-ten_yr & 116.013672069
-xtol 0.011
-ftol 0.1
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.09
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.08
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.07
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.06
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.05
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.04
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.03
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.02
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.015
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.014
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.013
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.012
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.011
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.011
-ftol 0.01
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
+ftol 1.49012e-08
+Begin 1985-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
+six_mth & 18.3157050858
+one_yr & 20.8931950868
+two_yr & 44.0804978043
+three_yr & 60.8158069771
+five_yr & 80.5236838764
+seven_yr & 93.7529433672
+ten_yr & 83.2835602761
 xtol 0.01
-ftol 0.1
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.09
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.08
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.07
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.06
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.05
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.04
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.03
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.02
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.015
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.014
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.013
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.012
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.011
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
-xtol 0.01
-ftol 0.01
-six_mth & 25.584423708
-one_yr & 41.1749024937
-two_yr & 68.8609953037
-three_yr & 68.5189151165
-five_yr & 81.0727120392
-seven_yr & 77.8395827862
-ten_yr & 90.9244508374
+ftol 1.49012e-08
+Begin 1985-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
+six_mth & 18.1737715252
+one_yr & 21.6583304024
+two_yr & 29.5525650953
+three_yr & 34.6719503092
+five_yr & 49.7509805339
+seven_yr & 58.6475796259
+ten_yr & 61.5446991654
+xtol 0.009
+ftol 1.49012e-08
+Begin 1985-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
+six_mth & 18.1737715252
+one_yr & 21.6583304024
+two_yr & 29.5525650953
+three_yr & 34.6719503092
+five_yr & 49.7509805339
+seven_yr & 58.6475796259
+ten_yr & 61.5446991654
+xtol 0.005
+ftol 1.49012e-08
+Begin 1985-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
+six_mth & 18.1737715252
+one_yr & 21.6583304024
+two_yr & 29.5525650953
+three_yr & 34.6719503092
+five_yr & 49.7509805339
+seven_yr & 58.6475796259
+ten_yr & 61.5446991654
+xtol 0.001
+ftol 1.49012e-08
+Begin 1985-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
+six_mth & 18.4317297522
+one_yr & 22.7355361437
+two_yr & 27.904328033
+three_yr & 28.8941854439
+five_yr & 32.9102996018
+seven_yr & 37.0039851072
+ten_yr & 43.1334913659
+xtol 0.0001
+ftol 1.49012e-08
+Begin 1985-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
+six_mth & 18.559030809
+one_yr & 21.0812559811
+two_yr & 22.4762961856
+three_yr & 22.9697174412
+five_yr & 22.9490256518
+seven_yr & 24.5514926411
+ten_yr & 28.5393934343
