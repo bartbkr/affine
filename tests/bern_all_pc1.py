@@ -211,4 +211,3 @@ for xtol in xtols:
             print yld + " & " + str(np.std(eval(yld).filter(
                                                 regex= '.*err$').values,
                                                 ddof=1)*100)
-"""

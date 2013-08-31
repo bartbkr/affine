@@ -42,7 +42,7 @@ mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                    'act_infl',
                                    'gnp_gdp_deflat_nxtyr',
                                     'fed_funds',
-                                    'djia_std']).dropna(axis=0)
+                                    'djialog_std']).dropna(axis=0)
 
 neqs = 5
 k_ar = 4
