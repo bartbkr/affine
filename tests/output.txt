@@ -294,7 +294,7 @@ xtol 0.1
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'disag']
 six_mth & 18.4493366467
 one_yr & 46.2058078698
 two_yr & 72.8083358695
@@ -306,7 +306,7 @@ xtol 0.05
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'disag']
 six_mth & 17.4662534364
 one_yr & 30.9496175034
 two_yr & 53.5291472948
@@ -318,7 +318,7 @@ xtol 0.03
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'disag']
 six_mth & 17.8039192415
 one_yr & 25.219435502
 two_yr & 33.2720718711
@@ -330,7 +330,7 @@ xtol 0.01
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'disag']
 six_mth & 17.8039192415
 one_yr & 25.219435502
 two_yr & 33.2720718711
@@ -342,7 +342,7 @@ xtol 0.009
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'disag']
 six_mth & 17.8039192415
 one_yr & 25.219435502
 two_yr & 33.2720718711
@@ -354,7 +354,7 @@ xtol 0.005
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'disag']
 six_mth & 17.5137791706
 one_yr & 24.5467111207
 two_yr & 29.4043242667
@@ -366,7 +366,7 @@ xtol 0.001
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'disag']
 six_mth & 14.8097672198
 one_yr & 21.0292735036
 two_yr & 27.2407288848
@@ -378,7 +378,7 @@ xtol 0.0001
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'disag']
 six_mth & 14.9059621894
 one_yr & 21.1295511771
 two_yr & 26.945089428
@@ -488,7 +488,7 @@ xtol 0.1
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'disag']
 six_mth & 12.7986172195
 one_yr & 28.586688856
 two_yr & 28.0790930218
@@ -500,7 +500,7 @@ xtol 0.05
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'disag']
 six_mth & 12.7986172195
 one_yr & 28.586688856
 two_yr & 28.0790930218
@@ -512,7 +512,7 @@ xtol 0.03
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'disag']
 six_mth & 13.1090717371
 one_yr & 19.693589729
 two_yr & 26.3994440977
@@ -524,7 +524,7 @@ xtol 0.01
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'disag']
 six_mth & 13.1090717371
 one_yr & 19.693589729
 two_yr & 26.3994440977
@@ -536,7 +536,7 @@ xtol 0.009
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'disag']
 six_mth & 13.1090717371
 one_yr & 19.693589729
 two_yr & 26.3994440977
@@ -548,7 +548,7 @@ xtol 0.005
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'disag']
 six_mth & 12.8345400852
 one_yr & 19.5647265731
 two_yr & 26.667921158
@@ -560,7 +560,7 @@ xtol 0.001
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'disag']
 six_mth & 10.6050056518
 one_yr & 12.7915420247
 two_yr & 14.4512179645
@@ -572,7 +572,7 @@ xtol 0.0001
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'uncert']
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'disag']
 six_mth & 10.0813563235
 one_yr & 12.9104611702
 two_yr & 14.6845121776
@@ -585,95 +585,95 @@ xtol 0.1
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
-six_mth & 21.9565167262
-one_yr & 37.8374242333
-two_yr & 64.532521306
-three_yr & 77.648754328
-five_yr & 90.5197720313
-seven_yr & 96.7616443529
-ten_yr & 102.591606791
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djialog_std']
+six_mth & 22.8815478536
+one_yr & 43.1319054527
+two_yr & 74.650328095
+three_yr & 86.6756387104
+five_yr & 87.3851929507
+seven_yr & 80.4303580441
+ten_yr & 72.6306074398
 xtol 0.05
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
-six_mth & 22.46835721
-one_yr & 40.1196313123
-two_yr & 70.1200215149
-three_yr & 84.6202237372
-five_yr & 99.2202113383
-seven_yr & 105.131556195
-ten_yr & 110.161332121
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djialog_std']
+six_mth & 22.8815478536
+one_yr & 43.1319054527
+two_yr & 74.650328095
+three_yr & 86.6756387104
+five_yr & 87.3851929507
+seven_yr & 80.4303580441
+ten_yr & 72.6306074398
 xtol 0.03
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
-six_mth & 22.5156071005
-one_yr & 40.142486228
-two_yr & 70.3137391758
-three_yr & 85.2288937808
-five_yr & 100.209282926
-seven_yr & 105.997150303
-ten_yr & 110.778487808
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djialog_std']
+six_mth & 22.3136539876
+one_yr & 42.1999076935
+two_yr & 71.9376018275
+three_yr & 81.8545360712
+five_yr & 80.6584369223
+seven_yr & 74.6761211685
+ten_yr & 68.3595869974
 xtol 0.01
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
-six_mth & 22.5156071005
-one_yr & 40.142486228
-two_yr & 70.3137391758
-three_yr & 85.2288937808
-five_yr & 100.209282926
-seven_yr & 105.997150303
-ten_yr & 110.778487808
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djialog_std']
+six_mth & 15.1765438743
+one_yr & 34.7412010351
+two_yr & 69.720378679
+three_yr & 78.5139425397
+five_yr & 76.6474289331
+seven_yr & 71.5849444316
+ten_yr & 66.6440056794
 xtol 0.009
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
-six_mth & 23.2396756303
-one_yr & 41.4272265607
-two_yr & 73.3376856248
-three_yr & 78.6664053133
-five_yr & 107.070366813
-seven_yr & 61.6608039419
-ten_yr & 75.7571250913
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djialog_std']
+six_mth & 15.1765438743
+one_yr & 34.7412010351
+two_yr & 69.720378679
+three_yr & 78.5139425397
+five_yr & 76.6474289331
+seven_yr & 71.5849444316
+ten_yr & 66.6440056794
 xtol 0.005
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
-six_mth & 23.2733794194
-one_yr & 40.3027313027
-two_yr & 73.9948188437
-three_yr & 70.1619527327
-five_yr & 101.539395957
-seven_yr & 61.8750083811
-ten_yr & 85.5281573071
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djialog_std']
+six_mth & 15.1765438743
+one_yr & 34.7412010351
+two_yr & 69.720378679
+three_yr & 78.5139425397
+five_yr & 76.6474289331
+seven_yr & 71.5849444316
+ten_yr & 66.6440056794
 xtol 0.001
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
-six_mth & 14.4378330146
-one_yr & 22.3148188955
-two_yr & 33.9729095789
-three_yr & 40.7471847709
-five_yr & 51.2386538674
-seven_yr & 55.9145259488
-ten_yr & 58.9838858314
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djialog_std']
+six_mth & 14.2291692556
+one_yr & 26.1331384638
+two_yr & 42.0794560471
+three_yr & 45.2412092342
+five_yr & 43.6980675795
+seven_yr & 42.6314279972
+ten_yr & 40.9125177517
 xtol 0.0001
 ftol 1.49012e-08
 Begin 1990-08-01 00:00:00
 End 2012-05-01 00:00:00
-variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djia_std']
-six_mth & 13.8582239707
-one_yr & 20.5324261349
-two_yr & 27.3140692987
-three_yr & 31.179804962
-five_yr & 39.1200089878
-seven_yr & 45.9866203952
-ten_yr & 52.4446422064
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'djialog_std']
+six_mth & 11.6046621001
+one_yr & 15.3556819704
+two_yr & 19.3357031466
+three_yr & 21.7037371948
+five_yr & 22.9544646294
+seven_yr & 23.2188539176
+ten_yr & 23.9401129073
