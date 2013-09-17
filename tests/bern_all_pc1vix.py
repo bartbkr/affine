@@ -40,7 +40,7 @@ mthdata['ed_fut'] = 100 - mthdata['ed4_end_mth']
 mthdata['uncert'] = mthdata['gnp_gdp_top10'] - mthdata['gnp_gdp_bot10']
 
 #normalize uncert and djialog_std to zero mean and unit variance
-for var in ['uncert', 'voe_cboe']:
+for var in ['uncert', 'vix_cboe']:
     mthdata[var + "_norm"] = (mthdata[var] - mthdata[var].mean()) / \
                                   mthdata[var].std()
 norm_vals = mthdata.filter(regex='.*_norm').dropna()
