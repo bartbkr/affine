@@ -44,7 +44,7 @@ mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                     'fed_funds',
                                     'ed_fut',
                                     'disag',
-                                    'voe_cboe']).dropna(axis=0)
+                                    'vix_cboe']).dropna(axis=0)
 
 neqs = 7
 k_ar = 4

@@ -1,4 +1,4 @@
-Date;Total_Nonfarm_employment_seas;PCE_seas;CPI_seas;PPI_seas;unemployment_seas;indust_prod_noseas;indust_prod_seas;annual_infl;inflexp_1yr_mean;inflexp_1yr_median;fed_funds;one_year_ED;help_wanted_index;real_gnp_gdp_nxtyr;gnp_gdp_deflat_nxtyr;cpi_nxtyr;int_shrtterm_nxtyr;unem_nxtyr;hous_starts_nxtyr;ed4_end_mth;ed_1_mth;gnp_gdp_top10;gnp_gdp_bot10;gnp_gdpdefl_top10;gnp_gdpdefl_bot10;djia_std;djialog_std;voe_cboe;SP500_voe_cboe
+Date;Total_Nonfarm_employment_seas;PCE_seas;CPI_seas;PPI_seas;unemployment_seas;indust_prod_noseas;indust_prod_seas;annual_infl;inflexp_1yr_mean;inflexp_1yr_median;fed_funds;one_year_ED;help_wanted_index;real_gnp_gdp_nxtyr;gnp_gdp_deflat_nxtyr;cpi_nxtyr;int_shrtterm_nxtyr;unem_nxtyr;hous_starts_nxtyr;ed4_end_mth;ed_1_mth;gnp_gdp_top10;gnp_gdp_bot10;gnp_gdpdefl_top10;gnp_gdpdefl_bot10;djia_std;djialog_std;vix_cboe;SP100_vix_cboe
 1/1/1939;29923;M;M;M;M;7.0883;7.0357;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;5.1399586574;0.0352946059;M;M
 2/1/1939;30100;M;M;M;M;7.0883;7.0894;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;1.3333085496;0.0092127943;M;M
 3/1/1939;30280;M;M;M;M;7.0883;7.1162;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;M;5.407670004;0.0376389548;M;M
