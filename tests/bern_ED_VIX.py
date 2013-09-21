@@ -42,9 +42,10 @@ mod_data = mthdata[['tr_empl_gap_perc',
                     'act_infl',
                     'gnp_gdp_deflat_nxtyr',
                     'fed_funds',
-                    'ed_fut']].dropna(axis=0)
+                    'ed_fut',
+                    'vix_cboe']].dropna(axis=0)
 
-neqs = 5
+neqs = 6
 k_ar = 4
 
 #########################
@@ -128,7 +129,8 @@ xtols = [0.1,
          0.009,
          0.005,
          0.001,
-         0.0001
+         0.0001,
+         0.00001
         ]
 
 ftols = [1.49012e-8]
