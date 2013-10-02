@@ -36,15 +36,15 @@ mthdata['tr_empl_gap_perc'] = mthdata['tr_empl_gap']/mthdata['hp_ch'] * 100
 mthdata['act_infl'] = \
     mthdata['PCE_seas'].diff(periods=12)/mthdata['PCE_seas']*100
 mthdata['ed_fut'] = 100 - mthdata['ed4_end_mth']
+mthdata['disag'] = mthdata['gnp_gdp_top10'] - mthdata['gnp_gdp_bot10']
 
 #define final data set
 mod_data = mthdata.reindex(columns=['tr_empl_gap_perc',
                                    'act_infl',
                                    'gnp_gdp_deflat_nxtyr',
-                                    'fed_funds',
-                                    'vix_cboe']).dropna(axis=0)
+                                    'fed_funds']).dropna(axis=0)
 
-neqs = 5
+neqs = 4
 k_ar = 4
 
 #########################
@@ -60,21 +60,25 @@ for t in range(k_ar-1):
 #remove missing values
 x_t = x_t_na.dropna(axis=0)
 
-ycdata = px.read_csv("./data/yield_curve.csv", na_values = "M", index_col=0,
-                     parse_dates=True, sep=";")
+ycdata = px.read_csv("./data/fama-bliss_formatted.csv", na_values = "M", index_col=0,
+                     parse_dates=True, sep=",")
 
-mod_yc_data_nodp = ycdata.reindex(columns=['trcr_m3', 'trcr_m6',
-                                      'trcr_y1', 'trcr_y2',
-                                      'trcr_y3', 'trcr_y5',
-                                      'trcr_y7', 'trcr_y10'])
-mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
+yc_cols = ['TMYTM_1','TMYTM_2','TMYTM_3','TMYTM_4','TMYTM_5']
+mod_yc_data_nodp = ycdata[yc_cols]
+mod_yc_data_nodp['year'] = mod_yc_data_nodp.index.year
+mod_yc_data_nodp['month'] = mod_yc_data_nodp.index.month
+mod_yc_data_nodp['day'] = 1
+mod_yc_data_nodp['new_dt'] = mod_yc_data_nodp.apply(
+    lambda row: dt.datetime(int(row['year']), int(row['month']),
+                            int(row['day'])), axis=1)
+mod_yc_data_nodp.set_index('new_dt', inplace=True)
+
+mod_yc_data = mod_yc_data_nodp.dropna(axis=0)[yc_cols]
 mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
 mod_yc_data.insert(0, 'trcr_m1', mod_yc_data['fed_funds'])
 mod_yc_data = mod_yc_data.drop(['fed_funds'], axis=1)
 
-mod_yc_data = to_mth(mod_yc_data)
-
-mths = [3, 6, 12, 24, 36, 60, 84, 120]
+mths = [12, 24, 36, 48, 60]
 del mod_yc_data['trcr_m1']
 
 # Setup model
@@ -166,8 +170,8 @@ for xtol in xtols:
         per = bsr_model.yc_data.index
         act_pred = px.DataFrame(index=per)
         for i in mths:
-            act_pred[str(i) + '_mth_act'] = bsr_model.yc_data['trcr_m'
-                                                              + str(i)]
+            act_pred[str(i) + '_mth_act'] = bsr_model.yc_data['TMYTM_'
+                                                              + str(i/12)]
             act_pred[str(i) + '_mth_pred'] = a_rsk[i-1] + \
                                             np.dot(b_rsk[i-1], X_t.values.T)
             act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
@@ -176,24 +180,19 @@ for xtol in xtols:
                                                             + '_mth_act']
                                                    - act_pred[str(i)
                                                               + '_mth_pred'])
-        ten_yr = act_pred.reindex(columns = filter(lambda x: '120' in x,
-                                                   act_pred))
-        seven_yr = act_pred.reindex(columns = filter(lambda x: '84' in x,
-                                                    act_pred))
         five_yr = act_pred.reindex(columns = filter(lambda x: '60' in
+                                                    x,act_pred))
+        four_yr = act_pred.reindex(columns = filter(lambda x: '48' in
                                                     x,act_pred))
         three_yr = act_pred.reindex(columns = filter(lambda x: '36' in
                                                      x,act_pred))
         two_yr = act_pred.reindex(columns = filter(lambda x: '24' in
                                                    x,act_pred))
-        one_yr = act_pred.reindex(columns = ['12_mth_act', '12_mth_pred',
-                                            '12_mth_nrsk', '12_mth_err'])
-        six_mth = act_pred.reindex(columns = ['6_mth_act', '6_mth_pred',
-                                            '6_mth_nrsk', '6_mth_err'])
+        one_yr = act_pred.reindex(columns = filter(lambda x: '12' in
+                                                   x,act_pred))
 
         #generate st dev of residuals
-        yields = ['six_mth', 'one_yr', 'two_yr', 'three_yr', 'five_yr',
-                  'seven_yr', 'ten_yr']
+        yields = ['one_yr', 'two_yr', 'three_yr', 'four_yr', 'five_yr']
         for yld in yields:
             print yld + " & " + str(np.std(eval(yld).filter(
                                                 regex= '.*err$').values,
