@@ -117,19 +117,6 @@ class Affine(LikelihoodModel):
             self.noerr_cols, self.err_cols = self._gen_col_names()
             #set to unconditional mean of short_rate
 
-        #with all observed factors, mu, phi, and sigma are directly generated
-        #from OLS VAR one step estimation
-        else:
-            self.delta_0 = 0
-            self.lat = 0
-            delta_1 = np.zeros([neqs*k_ar, 1])
-            #delta_1 is vector of zeros, with one grabbing fed_funds rate
-            #this will need to be removed, is now specified in model setup
-            delta_1[np.argmax(var_data.columns == 'fed_funds')] = 1
-            self.delta_1_nolat = delta_1
-
-        #self.mu_ols, self.phi_ols, self.sigma_ols = self._gen_OLS_res()
-
         #maybe this should be done in setup script...
         #get VAR input data ready
         x_t_na = var_data.copy()
@@ -282,7 +269,8 @@ class Affine(LikelihoodModel):
         #all of the params don't seem to be moving
         #only seems to be for certain solution methods
 
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = self._params_to_array(params)
+        lam_0, lam_1, delta_0, delta_1, mu, phi, \
+            sigma = self._params_to_array(params)
 
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
@@ -331,25 +319,28 @@ class Affine(LikelihoodModel):
         #Thiu should be passed to a C function, it is really slow right now
         #Should probably set this so its not recalculated every run
         max_mth = self.max_mth
+        b_width = self.k_ar * self.neqs + self.lat
         #generate predictions
         a_pre = np.zeros((max_mth, 1))
         a_pre[0] = -delta_0
-        b_pre = []
-        b_pre.append(-delta_1)
+        b_pre = np.zeros((max_mth, b_width))
+        b_pre[0] = -delta_1
+
+        n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
+        a_solve = a_pre.copy()
+        b_solve = b_pre.copy()
 
         for mth in range(max_mth-1):
-            a_pre[mth+1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
+            a_pre[mth + 1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
                             (mu - np.dot(sigma, lam_0))) + \
-                            (1.0/2)*np.dot(np.dot(np.dot(b_pre[mth].T, sigma), \
+                            (1.0/2)*np.dot(np.dot(np.dot(b_pre[mth].T, sigma),
                             sigma.T), b_pre[mth]) - delta_0)[0][0]
-            b_pre.append(np.dot((phi - np.dot(sigma, lam_1)).T, \
-                                b_pre[mth]) - delta_1)
-        n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
+            a_solve[mth + 1] = -a_pre[mth + 1] * n_inv[mth + 1]
+            b_pre[mth + 1] = np.dot((phi - np.dot(sigma, lam_1)).T, \
+                                  b_pre[mth]) - delta_1 
+            b_solve[mth + 1] = -b_pre[mth + 1] * n_inv[mth + 1]
         a_solve = -(a_pre*n_inv)
-        b_solve = np.zeros_like(b_pre)
-        for mth in range(max_mth):
-            b_solve[mth] = np.multiply(-b_pre[mth], n_inv[mth])
-        b_solve = b_solve[:,:,0]
+
         return a_solve, b_solve
 
     def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
@@ -669,7 +660,7 @@ class Affine(LikelihoodModel):
                 "Shape of lam_1_e incorrect"
 
         if self.latent:
-            assert np.shape(self.delta_1_e) == (dim, 1), "Shape of delta_1_e" \
+            assert np.shape(self.delta_1_e) == (dim,), "Shape of delta_1_e" \
                 "incorrect"
             assert np.shape(self.mu_e) == (dim, 1), "Shape of mu incorrect"
             assert np.shape(self.phi_e) == (dim, dim), \
