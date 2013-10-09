@@ -102,7 +102,7 @@ void mat_prodct_tpose2(int row1, int col1, double **arr1,
 
 static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma,
-                  *a_fin_array, *b_fin_array;
+                  *a_fin_array, *b_fin_array, *a_solved, *b_solved;
     int lam_0_cols, lam_1_cols, delta_1_rows, mu_rows, mu_cols, phi_rows,
         phi_cols, sigma_rows, sigma_cols, max_mth, mth, next_mth, i;
 
@@ -112,12 +112,15 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
            **dot_b_sst_bt_c, **dot_sig_lam_1_c, **diff_phi_sig_c,
            **dot_phisig_b_c, **b_pre_mth_c;
 
+    double **a_solved_c, **b_solved_c;
+
     /* Parse input arguments to function */
 
-    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!i",
+    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!iO!O!",
         &PyArray_Type, &lam_0, &PyArray_Type, &lam_1, &PyArray_Type, &delta_0,
         &PyArray_Type, &delta_1, &PyArray_Type, &mu, &PyArray_Type, &phi,
-        &PyArray_Type, &sigma, &max_mth))
+        &PyArray_Type, &sigma, &max_mth, &PyArray_Type, &a_solved,
+        &PyArray_Type, &b_solved))
         return NULL;
     if (NULL == lam_0 || NULL == lam_1 || NULL == delta_0 || NULL == delta_1 ||
         NULL == mu || NULL == phi || NULL == sigma) return NULL;
@@ -134,10 +137,13 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     sigma_rows=sigma->dimensions[0];
     sigma_cols=sigma->dimensions[1];
 
+    /* Debugging */
+    a_solved_c = pymatrix_to_Carrayptrs(a_solved);
+    b_solved_c = pymatrix_to_Carrayptrs(b_solved);
+
     /*  Create C arrays */
     /* Maybe should be constants??? */
 
-    /* Debugging */
     lam_0_c = pymatrix_to_Carrayptrs(lam_0);
     lam_1_c = pymatrix_to_Carrayptrs(lam_1);
     delta_0_c = pymatrix_to_Carrayptrs(delta_0);
@@ -189,7 +195,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     a_pre[0] = -delta_0_c[0][0];
     a_fin[0][0] = -a_pre[0];
     for (i = 0; i < delta_1_rows; i++) {
-        b_pre[0][i] = -delta_1_c[i][0];
+        b_pre[0][i] = -delta_1_c[0][i];
         b_fin[0][i] = -b_pre[0][i];
     }
 
@@ -246,7 +252,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                           dot_phisig_b_c);
 
         for (i = 0; i < delta_1_rows; i++) {
-            b_pre[next_mth][i] = dot_phisig_b[i][0] - delta_1_c[i][0];
+            b_pre[next_mth][i] = dot_phisig_b[i][0] - delta_1_c[0][i];
             b_fin[next_mth][i] = -(b_pre[next_mth][i] / (next_mth + 1));
         }
     }
@@ -271,7 +277,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 /* ==== Create Carray from PyArray ======================
     Assumes PyArray is contiguous in memory.
     Memory is allocated!                                    */
-double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin)  {
+double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin) {
     double **c, *a;
     int i,n,m;
     
@@ -286,7 +292,7 @@ double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin)  {
 
 /* ==== Allocate a double *vector (vec of pointers) ======================
     Memory is Allocated!  See void free_Carray(double ** )                  */
-double **ptrvector(long n)  {
+double **ptrvector(long n) {
     double **v;
     v=(double **)malloc((size_t) (n*sizeof(double)));
     if (!v)   {

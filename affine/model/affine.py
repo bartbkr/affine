@@ -320,27 +320,26 @@ class Affine(LikelihoodModel):
         #Should probably set this so its not recalculated every run
         max_mth = self.max_mth
         b_width = self.k_ar * self.neqs + self.lat
+        half = np.int64(1.0/2.0)
         #generate predictions
         a_pre = np.zeros((max_mth, 1))
         a_pre[0] = -delta_0
         b_pre = np.zeros((max_mth, b_width))
         b_pre[0] = -delta_1
 
-        n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
-        a_solve = a_pre.copy()
-        b_solve = b_pre.copy()
+        n_inv = np.float64(1.0)/np.add(range(max_mth), 1).reshape((max_mth, 1))
+        a_solve = -a_pre.copy()
+        b_solve = -b_pre.copy()
 
         for mth in range(max_mth-1):
             a_pre[mth + 1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
                             (mu - np.dot(sigma, lam_0))) + \
-                            (1.0/2)*np.dot(np.dot(np.dot(b_pre[mth].T, sigma),
+                            (half)*np.dot(np.dot(np.dot(b_pre[mth].T, sigma),
                             sigma.T), b_pre[mth]) - delta_0)[0][0]
             a_solve[mth + 1] = -a_pre[mth + 1] * n_inv[mth + 1]
             b_pre[mth + 1] = np.dot((phi - np.dot(sigma, lam_1)).T, \
                                   b_pre[mth]) - delta_1 
             b_solve[mth + 1] = -b_pre[mth + 1] * n_inv[mth + 1]
-        a_solve = -(a_pre*n_inv)
-
         return a_solve, b_solve
 
     def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
@@ -358,8 +357,12 @@ class Affine(LikelihoodModel):
 
         #should probably do some checking here
 
+        a_solved, b_solved = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
+                                                mu, phi, sigma)
+
         return _C_extensions.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
-                                           phi, sigma, max_mth)
+                                           phi, sigma, max_mth, a_solved,
+                                           b_solved)
 
     def _affine_nsum_errs(self, params):
         """
