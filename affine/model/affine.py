@@ -327,11 +327,18 @@ class Affine(LikelihoodModel):
         b_pre = np.zeros((max_mth, b_width))
         b_pre[0] = -delta_1
 
+        checker1 = np.zeros((max_mth, 1))
+        checker2 = np.zeros((max_mth, 1))
+        checker3 = np.zeros((max_mth, b_width))
+
         n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
         a_solve = -a_pre.copy()
         b_solve = -b_pre.copy()
 
         for mth in range(max_mth-1):
+            checker1[mth] = np.dot(b_pre[mth].T, (mu - np.dot(sigma, lam_0)))
+            checker2[mth] = np.dot(np.dot(np.dot(b_pre[mth].T, sigma),
+                            sigma.T), b_pre[mth])
             a_pre[mth + 1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
                             (mu - np.dot(sigma, lam_0))) + \
                             (half)*np.dot(np.dot(np.dot(b_pre[mth].T, sigma),
@@ -339,9 +346,12 @@ class Affine(LikelihoodModel):
             a_solve[mth + 1] = -a_pre[mth + 1] * n_inv[mth + 1]
             b_pre[mth + 1] = np.dot((phi - np.dot(sigma, lam_1)).T, \
                                   b_pre[mth]) - delta_1 
+             
+            checker3[mth] = np.dot((phi - np.dot(sigma, lam_1)).T, \
+                                  b_pre[mth])
+
             b_solve[mth + 1] = -b_pre[mth + 1] * n_inv[mth + 1]
-        ipdb.set_trace()
-        return a_solve, b_solve
+        return a_solve, b_solve, a_pre, b_pre, checker1, checker2, checker3
 
     def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
                           sigma):
@@ -358,12 +368,14 @@ class Affine(LikelihoodModel):
 
         #should probably do some checking here
 
-        a_solved, b_solved = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
+        a_solved, b_solved, a_pre, b_pre, checker1, checker2, checker3 \
+            = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
                                                 mu, phi, sigma)
 
         return _C_extensions.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
-                                           phi, sigma, max_mth, a_solved,
-                                           b_solved)
+                                           phi, sigma, max_mth, 
+                                           a_solved, b_solved, a_pre, 
+                                           b_pre, checker1, checker2, checker3)
 
     def _affine_nsum_errs(self, params):
         """

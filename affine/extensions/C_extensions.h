@@ -22,6 +22,6 @@ void mat_prodct_tpose2(int row1, int col1, double **arr1,
 /* .... C matrix utility functions ..................*/
 PyArrayObject *pymatrix(PyObject *objin);
 double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin);
-double **twodim_to_point(int rows, int cols, double array[rows][cols]);
+double **twodim_to_point(int rows, int cols);
 double **ptrvector(long n);
 void free_Carrayptrs(double **v);
