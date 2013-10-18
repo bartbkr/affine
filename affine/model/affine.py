@@ -116,6 +116,8 @@ class Affine(LikelihoodModel):
             #gen position list for processing list input to solver
             self.noerr_cols, self.err_cols = self._gen_col_names()
             #set to unconditional mean of short_rate
+        else:
+            self.lat = 0
 
         #maybe this should be done in setup script...
         #get VAR input data ready
@@ -325,7 +327,7 @@ class Affine(LikelihoodModel):
         a_pre = np.zeros((max_mth, 1))
         a_pre[0] = -delta_0
         b_pre = np.zeros((max_mth, b_width))
-        b_pre[0] = -delta_1
+        b_pre[0] = -delta_1[:,0]
 
         n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
         a_solve = -a_pre.copy()
@@ -338,7 +340,7 @@ class Affine(LikelihoodModel):
                             sigma.T), b_pre[mth]) - delta_0)[0][0]
             a_solve[mth + 1] = -a_pre[mth + 1] * n_inv[mth + 1]
             b_pre[mth + 1] = np.dot((phi - np.dot(sigma, lam_1)).T, \
-                                  b_pre[mth]) - delta_1
+                                     b_pre[mth]) - delta_1[:, 0]
             b_solve[mth + 1] = -b_pre[mth + 1] * n_inv[mth + 1]
         return a_solve, b_solve
 
@@ -354,8 +356,6 @@ class Affine(LikelihoodModel):
         sigma : array
         """
         max_mth = self.max_mth
-
-        #should probably do some checking here
 
         return _C_extensions.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
                                            phi, sigma, max_mth)
