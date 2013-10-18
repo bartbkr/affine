@@ -28,8 +28,8 @@ def ap_constructor(neqs, k_ar, lat):
     lam_0 = ma.zeros([dim, 1])
     lam_1 = ma.zeros([dim, dim])
     delta_0 = ma.zeros([1, 1])
-    delta_1 = ma.zeros([dim, 1])
-    delta_1[-lat:, ] = np.array([[-0.0001], [0.0000], [0.0001]])
+    delta_1 = ma.zeros([dim, ])
+    delta_1[-lat:, ] = [-0.0001, 0.0000, 0.0001]
     mu = ma.zeros([dim, 1])
     phi = ma.zeros([dim, dim])
     sigma = ma.zeros([dim, dim])
@@ -50,7 +50,7 @@ def ap_constructor(neqs, k_ar, lat):
     delta_0[:, :] = ma.masked
     delta_0[:, :] = ma.nomask
 
-    delta_1[-lat:, 0] = ma.masked
+    delta_1[-lat:, ] = ma.masked
 
     mu[-lat:, 0] = ma.masked
 
@@ -141,7 +141,7 @@ def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
         #(see top of ang and piazzesi page 759)
         params = OLS(rf_rate, macro).fit().params
         delta_0[0, 0] = params[-1]
-        delta_1[:neqs] = params[0:-1].values[None].T
+        delta_1[:neqs] = params[:-1]
 
     mu[:neqs * k_ar, 0, None] = mu_ols[None]
     phi[:neqs * k_ar, :neqs * k_ar] = phi_ols[None]

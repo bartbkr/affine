@@ -4,7 +4,7 @@
 #include <math.h>
 
 /* === Constants used in rest of program === */
-const double half = 0.5;
+const double half = 1.0/2.0;
 
 /* ==== Set up the methods table ====================== */
 static PyMethodDef _C_extensionsMethods[] = {
@@ -103,14 +103,18 @@ void mat_prodct_tpose2(int row1, int col1, double **arr1,
 static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma,
                   *a_fin_array, *b_fin_array;
-    int lam_0_cols, lam_1_cols, delta_1_rows, mu_rows, mu_cols, phi_rows,
-        phi_cols, sigma_rows, sigma_cols, max_mth, mth, next_mth, i;
+
+    int lam_0_cols, lam_1_cols, mu_rows, mu_cols, phi_rows,
+        phi_cols, sigma_rows, sigma_cols, mth, bp_offset,
+        bp_noffset, next_mth, i;
+
+    const int max_mth;
 
     double **lam_0_c, **lam_1_c, **delta_0_c, **delta_1_c, **mu_c, **phi_c,
            **sigma_c, **a_fin, **b_fin, **dot_sig_lam_0_c, **diff_mu_sigl_c,
            **dot_bpre_mu_sig1_c, **dot_b_pre_sig_c, **dot_b_sigt_c,
            **dot_b_sst_bt_c, **dot_sig_lam_1_c, **diff_phi_sig_c,
-           **dot_phisig_b_c, **b_pre_mth_c;
+           **dot_phisig_b_c, **b_pre_mth_c, divisor;
 
     /* Parse input arguments to function */
 
@@ -126,7 +130,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     lam_0_cols=lam_0->dimensions[1];
     lam_1_cols=lam_1->dimensions[1];
-    delta_1_rows=delta_1->dimensions[0];
+    const int delta_1_rows=delta_1->dimensions[0];
     mu_rows=mu->dimensions[0];
     mu_cols=mu->dimensions[1];
     phi_rows=phi->dimensions[0];
@@ -137,7 +141,6 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     /*  Create C arrays */
     /* Maybe should be constants??? */
 
-    /* Debugging */
     lam_0_c = pymatrix_to_Carrayptrs(lam_0);
     lam_1_c = pymatrix_to_Carrayptrs(lam_1);
     delta_0_c = pymatrix_to_Carrayptrs(delta_0);
@@ -155,46 +158,36 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     b_fin_array = (PyArrayObject *) PyArray_FromDims(2, b_dims, NPY_DOUBLE);
 
     double a_pre[max_mth];
-    double b_pre[max_mth][delta_1_rows];
+    double b_pre[max_mth * delta_1_rows];
 
     a_fin = pymatrix_to_Carrayptrs(a_fin_array);
     b_fin = pymatrix_to_Carrayptrs(b_fin_array);
 
     /* Initialize intermediate arrays */
     /*  Elements for a_pre calculation */
-    double dot_sig_lam_0[sigma_rows][lam_0_cols];
-    dot_sig_lam_0_c = twodim_to_point(sigma_rows, lam_0_cols, dot_sig_lam_0);
-    double diff_mu_sigl[mu_rows][1];
-    diff_mu_sigl_c = twodim_to_point(mu_rows, 1, diff_mu_sigl);
-    double dot_bpre_mu_sig1[1][1];
-    dot_bpre_mu_sig1_c = twodim_to_point(1, 1, dot_bpre_mu_sig1);
+    dot_sig_lam_0_c = twodim_to_point(sigma_rows, lam_0_cols);
+    diff_mu_sigl_c = twodim_to_point(mu_rows, 1);
+    dot_bpre_mu_sig1_c = twodim_to_point(1, 1);
 
-    double dot_b_pre_sig[1][sigma_cols];
-    dot_b_pre_sig_c = twodim_to_point(1, sigma_cols, dot_b_pre_sig);
-    double dot_b_sigt[1][sigma_rows];
-    dot_b_sigt_c = twodim_to_point(1, sigma_rows, dot_b_sigt);
-    double dot_b_sst_bt[1][1];
-    dot_b_sst_bt_c = twodim_to_point(1, 1, dot_b_sst_bt);
+    dot_b_pre_sig_c = twodim_to_point(1, sigma_cols);
+    dot_b_sigt_c = twodim_to_point(1, sigma_rows);
+    dot_b_sst_bt_c = twodim_to_point(1, 1);
 
     /*  Elements for b_pre calculation */
-    double dot_sig_lam_1[sigma_rows][lam_1_cols];
-    dot_sig_lam_1_c = twodim_to_point(sigma_rows, lam_1_cols, dot_sig_lam_1);
-    double diff_phi_sig[phi_rows][phi_cols];
-    diff_phi_sig_c = twodim_to_point(phi_rows, phi_cols, diff_phi_sig);
-    double dot_phisig_b[phi_cols][1];
-    dot_phisig_b_c = twodim_to_point(phi_cols, 1, dot_phisig_b);
+    dot_sig_lam_1_c = twodim_to_point(sigma_rows, lam_1_cols);
+    diff_phi_sig_c = twodim_to_point(phi_rows, phi_cols);
+    dot_phisig_b_c = twodim_to_point(phi_cols, 1);
     
     /*  Perform operations */
 
     a_pre[0] = -delta_0_c[0][0];
     a_fin[0][0] = -a_pre[0];
     for (i = 0; i < delta_1_rows; i++) {
-        b_pre[0][i] = -delta_1_c[i][0];
-        b_fin[0][i] = -b_pre[0][i];
+        b_pre[i] = -delta_1_c[0][i];
+        b_fin[0][i] = -b_pre[i];
     }
 
-    double b_pre_mth[b_pre_rows][1];
-    b_pre_mth_c = twodim_to_point(b_pre_rows, 1, b_pre_mth);
+    b_pre_mth_c = twodim_to_point(b_pre_rows, 1);
 
     /* Calculate unchanging elements*/
     /* Debugged this looks good */
@@ -208,9 +201,13 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
         next_mth = mth + 1;
 
+        //Setup indexes
+        bp_offset = mth * delta_1_rows;
+        bp_noffset = next_mth * delta_1_rows;
+
         /*  think need this b_pre_mth for proper array reading */
         for (i = 0; i < b_pre_rows; i++) {
-            b_pre_mth[i][0] = b_pre[mth][i];
+            b_pre_mth_c[i][0] = b_pre[bp_offset + i];
         }
 
         /* Debugged this call, seems to be fine */
@@ -231,8 +228,8 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                    dot_b_sst_bt_c);
 
         /* debugged here */
-        a_pre[next_mth] = a_pre[mth] +  dot_bpre_mu_sig1[0][0] + 
-                        (half * dot_b_sst_bt[0][0]) - delta_0_c[0][0];
+        a_pre[next_mth] = a_pre[mth] + dot_bpre_mu_sig1_c[0][0] +
+                        (half * dot_b_sst_bt_c[0][0]) - delta_0_c[0][0];
         a_fin[next_mth][0] = -a_pre[next_mth] / (next_mth + 1);
 
         /* Calculate next b elements */
@@ -245,9 +242,14 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                           1, b_pre_mth_c,
                           dot_phisig_b_c);
 
+        //Divisor to prepare for b_fin calculation
+        divisor = (double)1 / ((double)next_mth + 1);
+        
+        //Issue seems to be that b_fin is not able to dynaically allocate these
+        //doubles using both
         for (i = 0; i < delta_1_rows; i++) {
-            b_pre[next_mth][i] = dot_phisig_b[i][0] - delta_1_c[i][0];
-            b_fin[next_mth][i] = -(b_pre[next_mth][i] / (next_mth + 1));
+            b_pre[bp_noffset + i] = dot_phisig_b_c[i][0] - delta_1_c[0][i];
+            b_fin[next_mth][i] = -b_pre[bp_noffset + i] * divisor;
         }
     }
 
@@ -271,24 +273,42 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 /* ==== Create Carray from PyArray ======================
     Assumes PyArray is contiguous in memory.
     Memory is allocated!                                    */
-double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin)  {
+double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin) {
     double **c, *a;
     int i,n,m;
     
-    n=arrayin->dimensions[0];
-    m=arrayin->dimensions[1];
-    c=ptrvector(n);
-    a=(double *) arrayin->data;  /* pointer to arrayin data as double */
+    n = arrayin->dimensions[0];
+    m = arrayin->dimensions[1];
+    c = ptrvector(n);
+    a = (double *) arrayin->data;  /* pointer to arrayin data as double */
     for ( i=0; i<n; i++)  {
-        c[i]=a+i*m;  }
+        c[i] = a + i * m;  
+    }
+    return c;
+}
+
+// Setup function
+double **pymatrix_to_Carray(PyArrayObject *arrayin) {
+    double **c, *a;
+    int i, rows, cols;
+    //what i need to do here is create a series of pointers to both dimensions
+    //of pyarray
+    
+    rows = arrayin->dimensions[0];
+    cols = arrayin->dimensions[1];
+    c = ptrvector(rows);
+    a = (double *) arrayin->data;  /* pointer to arrayin data as double */
+    for ( i=0; i<rows; i++)  {
+        c[i] = a + i * cols;  
+    }
     return c;
 }
 
 /* ==== Allocate a double *vector (vec of pointers) ======================
     Memory is Allocated!  See void free_Carray(double ** )                  */
-double **ptrvector(long n)  {
+double **ptrvector(long n) {
     double **v;
-    v=(double **)malloc((size_t) (n*sizeof(double)));
+    v=(double **)malloc((n*sizeof(double)));
     if (!v)   {
         printf("In **ptrvector. Allocation of memory for double array failed.");
         exit(0);  }
@@ -296,19 +316,16 @@ double **ptrvector(long n)  {
 }
 
 /*  ==== Create ** double from double 2-dim array === */
-double **twodim_to_point(int rows, int cols, double array[rows][cols]) {
+double **twodim_to_point(int rows, int cols) {
     int row;
-    double **pointer, *a;
-    pointer=(double **)malloc((size_t) (rows*sizeof(double)));
-    if (!pointer)   {
-        printf("In **twodim_to_point. Allocation of memory for array failed.");
-        exit(0);  }
-    a = (double *) array;
-    for (row=0; row < rows; row++) {
-        pointer[row] = a + row * cols;
+    double **pointer = malloc(rows * sizeof(double *));
+    pointer[0] = malloc(rows * cols * sizeof(double));
+    for(row = 1; row < rows; row++) {
+        pointer[row] = pointer[0] + row * cols;
     }
     return pointer;
 }
+
 
 /* ==== Free a double *vector (vec of pointers) ========================== */ 
 void free_Carrayptrs(double **v)  {
