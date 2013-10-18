@@ -101,7 +101,8 @@ void mat_prodct_tpose2(int row1, int col1, double **arr1,
 }
 
 static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
-    PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma;
+    PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma,
+                  *a_fin_array, *b_fin_array;
 
     int lam_0_cols, lam_1_cols, mu_rows, mu_cols, phi_rows,
         phi_cols, sigma_rows, sigma_cols, mth, bp_offset,
