@@ -327,10 +327,6 @@ class Affine(LikelihoodModel):
         b_pre = np.zeros((max_mth, b_width))
         b_pre[0] = -delta_1
 
-        checker1 = np.zeros((max_mth, 1))
-        checker2 = np.zeros((max_mth, 1))
-        checker3 = np.zeros((max_mth, b_width))
-
         n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
         a_solve = -a_pre.copy()
         b_solve = -b_pre.copy()
@@ -360,9 +356,6 @@ class Affine(LikelihoodModel):
         max_mth = self.max_mth
 
         #should probably do some checking here
-
-        a_solved, b_solved = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
-                                                mu, phi, sigma)
 
         return _C_extensions.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
                                            phi, sigma, max_mth)
