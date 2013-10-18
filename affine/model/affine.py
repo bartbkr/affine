@@ -336,22 +336,15 @@ class Affine(LikelihoodModel):
         b_solve = -b_pre.copy()
 
         for mth in range(max_mth-1):
-            checker1[mth] = np.dot(b_pre[mth].T, (mu - np.dot(sigma, lam_0)))
-            checker2[mth] = np.dot(np.dot(np.dot(b_pre[mth].T, sigma),
-                            sigma.T), b_pre[mth])
             a_pre[mth + 1] = (a_pre[mth] + np.dot(b_pre[mth].T, \
                             (mu - np.dot(sigma, lam_0))) + \
                             (half)*np.dot(np.dot(np.dot(b_pre[mth].T, sigma),
                             sigma.T), b_pre[mth]) - delta_0)[0][0]
             a_solve[mth + 1] = -a_pre[mth + 1] * n_inv[mth + 1]
             b_pre[mth + 1] = np.dot((phi - np.dot(sigma, lam_1)).T, \
-                                  b_pre[mth]) - delta_1 
-             
-            checker3[mth] = np.dot((phi - np.dot(sigma, lam_1)).T, \
-                                  b_pre[mth])
-
+                                  b_pre[mth]) - delta_1
             b_solve[mth + 1] = -b_pre[mth + 1] * n_inv[mth + 1]
-        return a_solve, b_solve, a_pre, b_pre, checker1, checker2, checker3
+        return a_solve, b_solve
 
     def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
                           sigma):
@@ -368,14 +361,11 @@ class Affine(LikelihoodModel):
 
         #should probably do some checking here
 
-        a_solved, b_solved, a_pre, b_pre, checker1, checker2, checker3 \
-            = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
+        a_solved, b_solved = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
                                                 mu, phi, sigma)
 
         return _C_extensions.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
-                                           phi, sigma, max_mth, 
-                                           a_solved, b_solved, a_pre, 
-                                           b_pre, checker1, checker2, checker3)
+                                           phi, sigma, max_mth)
 
     def _affine_nsum_errs(self, params):
         """

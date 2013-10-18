@@ -1,3 +1,15 @@
+display inv_checker
+display b_fin_dcheck10
+display b_fin_dcheck9 
+display b_fin_dcheck8 
+display b_fin_dcheck7 
+display b_fin_dcheck6 
+display b_fin_dcheck5 
+display b_fin_dcheck4 
+display b_fin_dcheck3 
+display b_fin_dcheck2 
+display b_fin_dcheck1 
+display b_fin_dcheck0 
 display b_fin_check10
 display b_fin_check9 
 display b_fin_check8 

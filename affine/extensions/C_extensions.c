@@ -101,13 +101,11 @@ void mat_prodct_tpose2(int row1, int col1, double **arr1,
 }
 
 static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
-    PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma,
-                  *a_fin_array, *b_fin_array, *a_solved, *b_solved, *a_pre_in, 
-                  *b_pre_in, *checker1, *checker2, *checker3;
+    PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma;
 
     int lam_0_cols, lam_1_cols, mu_rows, mu_cols, phi_rows,
-        phi_cols, sigma_rows, sigma_cols, mth, next_mth, i, bp_offset,
-        bp_noffset;
+        phi_cols, sigma_rows, sigma_cols, mth, bp_offset,
+        bp_noffset, next_mth, i;
 
     const int max_mth;
 
@@ -115,29 +113,14 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
            **sigma_c, **a_fin, **b_fin, **dot_sig_lam_0_c, **diff_mu_sigl_c,
            **dot_bpre_mu_sig1_c, **dot_b_pre_sig_c, **dot_b_sigt_c,
            **dot_b_sst_bt_c, **dot_sig_lam_1_c, **diff_phi_sig_c,
-           **dot_phisig_b_c, **b_pre_mth_c;
-
-    double **a_solved_c, **b_solved_c, **a_pre_c, **b_pre_c, **checker1_c, 
-           **checker2_c, **checker3_c, checker3_diff0, checker3_diff1,
-           checker3_diff2, checker3_diff3, checker3_diff4, checker3_diff5,
-           checker3_diff6, checker3_diff7, checker3_diff8, checker3_diff9,
-           checker3_diff10, b_pre_check0, b_pre_check1, b_pre_check2,
-           b_pre_check3, b_pre_check4, b_pre_check5, b_pre_check6,
-           b_pre_check7, b_pre_check8, b_pre_check9, b_pre_check10,
-           b_fin_check0, b_fin_check1, b_fin_check2, b_fin_check3,
-           b_fin_check4, b_fin_check5, b_fin_check6, b_fin_check7,
-           b_fin_check8, b_fin_check9, b_fin_check10, diff_a_pre,
-           diff_a_fin, checker1_diff, checker2_diff;
+           **dot_phisig_b_c, **b_pre_mth_c, divisor;
 
     /* Parse input arguments to function */
 
-    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!iO!O!O!O!O!O!O!",
+    if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!i",
         &PyArray_Type, &lam_0, &PyArray_Type, &lam_1, &PyArray_Type, &delta_0,
         &PyArray_Type, &delta_1, &PyArray_Type, &mu, &PyArray_Type, &phi,
-        &PyArray_Type, &sigma, &max_mth, &PyArray_Type, &a_solved,
-        &PyArray_Type, &b_solved, &PyArray_Type, &a_pre_in, &PyArray_Type, 
-        &b_pre_in, &PyArray_Type, &checker1, &PyArray_Type, &checker2,
-        &PyArray_Type, &checker3))
+        &PyArray_Type, &sigma, &max_mth))
         return NULL;
     if (NULL == lam_0 || NULL == lam_1 || NULL == delta_0 || NULL == delta_1 ||
         NULL == mu || NULL == phi || NULL == sigma) return NULL;
@@ -153,15 +136,6 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     phi_cols=phi->dimensions[1];
     sigma_rows=sigma->dimensions[0];
     sigma_cols=sigma->dimensions[1];
-
-    /* Debugging */
-    a_solved_c = pymatrix_to_Carrayptrs(a_solved);
-    b_solved_c = pymatrix_to_Carrayptrs(b_solved);
-    a_pre_c = pymatrix_to_Carrayptrs(a_pre_in);
-    b_pre_c = pymatrix_to_Carrayptrs(b_pre_in);
-    checker1_c = pymatrix_to_Carrayptrs(checker1);
-    checker2_c = pymatrix_to_Carrayptrs(checker2);
-    checker3_c = pymatrix_to_Carrayptrs(checker3);
 
     /*  Create C arrays */
     /* Maybe should be constants??? */
@@ -257,11 +231,6 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                         (half * dot_b_sst_bt_c[0][0]) - delta_0_c[0][0];
         a_fin[next_mth][0] = -a_pre[next_mth] / (next_mth + 1);
 
-        double diff_a_pre = a_pre[next_mth] - a_pre_c[next_mth][0];
-        double diff_a_fin = a_fin[next_mth][0] - a_solved_c[0][next_mth];
-        double checker1_diff = dot_bpre_mu_sig1_c[0][0] - checker1_c[mth][0];
-        double checker2_diff = dot_b_sst_bt_c[0][0] - checker2_c[mth][0];
-
         /* Calculate next b elements */
         mat_prodct(sigma_rows, sigma_cols, sigma_c,
                    lam_1_cols, lam_1_c, 
@@ -272,49 +241,15 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                           1, b_pre_mth_c,
                           dot_phisig_b_c);
 
+        //Divisor to prepare for b_fin calculation
+        divisor = (double)1 / ((double)next_mth + 1);
+        
         //Issue seems to be that b_fin is not able to dynaically allocate these
         //doubles using both
         for (i = 0; i < delta_1_rows; i++) {
             b_pre[bp_noffset + i] = dot_phisig_b_c[i][0] - delta_1_c[0][i];
-
-            b_fin[next_mth][i] = -(b_pre[bp_noffset + i] * 
-                                     (1 / (next_mth + 1.0)));
+            b_fin[next_mth][i] = -b_pre[bp_noffset + i] * divisor;
         }
-
-        checker3_diff0 = dot_phisig_b_c[0][0] - checker3_c[mth][0];
-        checker3_diff1 = dot_phisig_b_c[1][0] - checker3_c[mth][1];
-        checker3_diff2 = dot_phisig_b_c[2][0] - checker3_c[mth][2];
-        checker3_diff3 = dot_phisig_b_c[3][0] - checker3_c[mth][3];
-        checker3_diff4 = dot_phisig_b_c[4][0] - checker3_c[mth][4];
-        checker3_diff5 = dot_phisig_b_c[5][0] - checker3_c[mth][5];
-        checker3_diff6 = dot_phisig_b_c[6][0] - checker3_c[mth][6];
-        checker3_diff7 = dot_phisig_b_c[7][0] - checker3_c[mth][7];
-        checker3_diff8 = dot_phisig_b_c[8][0] - checker3_c[mth][8];
-        checker3_diff9 = dot_phisig_b_c[9][0] - checker3_c[mth][9];
-        checker3_diff10 = dot_phisig_b_c[10][0] - checker3_c[mth][10];
-        b_pre_check0 = b_pre[bp_noffset + 0] - b_pre_c[next_mth][0];
-        b_pre_check1 = b_pre[bp_noffset + 1] - b_pre_c[next_mth][1];
-        b_pre_check2 = b_pre[bp_noffset + 2] - b_pre_c[next_mth][2];
-        b_pre_check3 = b_pre[bp_noffset + 3] - b_pre_c[next_mth][3];
-        b_pre_check4 = b_pre[bp_noffset + 4] - b_pre_c[next_mth][4];
-        b_pre_check5 = b_pre[bp_noffset + 5] - b_pre_c[next_mth][5];
-        b_pre_check6 = b_pre[bp_noffset + 6] - b_pre_c[next_mth][6];
-        b_pre_check7 = b_pre[bp_noffset + 7] - b_pre_c[next_mth][7];
-        b_pre_check8 = b_pre[bp_noffset + 8] - b_pre_c[next_mth][8];
-        b_pre_check9 = b_pre[bp_noffset + 9] - b_pre_c[next_mth][9];
-        b_pre_check10 = b_pre[bp_noffset + 10] - b_pre_c[next_mth][10];
-        b_fin_check0 = b_fin[next_mth][0] - b_solved_c[next_mth][0];
-        b_fin_check1 = b_fin[next_mth][1] - b_solved_c[next_mth][1];
-        b_fin_check2 = b_fin[next_mth][2] - b_solved_c[next_mth][2];
-        b_fin_check3 = b_fin[next_mth][3] - b_solved_c[next_mth][3];
-        b_fin_check4 = b_fin[next_mth][4] - b_solved_c[next_mth][4];
-        b_fin_check5 = b_fin[next_mth][5] - b_solved_c[next_mth][5];
-        b_fin_check6 = b_fin[next_mth][6] - b_solved_c[next_mth][6];
-        b_fin_check7 = b_fin[next_mth][7] - b_solved_c[next_mth][7];
-        b_fin_check8 = b_fin[next_mth][8] - b_solved_c[next_mth][8];
-        b_fin_check9 = b_fin[next_mth][9] - b_solved_c[next_mth][9];
-        b_fin_check10 = b_fin[next_mth][10] - b_solved_c[next_mth][10];
-        double whatthe = 0;
     }
 
     free_Carrayptrs(lam_0_c);
