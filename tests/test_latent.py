@@ -125,13 +125,13 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
                                                       sigma=sigma_e,
                                                       rf_rate=rf_rate)
 
-bsr_model = Affine(yc_data=yc_data_use, var_data=macro_data_use,
+mod_init = Affine(yc_data=yc_data_use, var_data=macro_data_use,
                    latent=latent, no_err=[0, 2, 4],
                    lam_0_e=lam_0_e, lam_1_e=lam_1_e, delta_0_e=delta_0_e,
                    delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e,
                    sigma_e=sigma_e, mths=mths)
 
-guess_length = bsr_model.guess_length
+guess_length = mod_init.guess_length
 
 guess_params = [0.0000] * guess_length
 
@@ -141,8 +141,35 @@ for numb, element in enumerate(guess_params[:30]):
     element = 0.0001
     guess_params[numb] = element * (np.random.random() - 0.5)
 
-lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
-                    bsr_model._params_to_array(guess_params)
-
-opt_a_solve, opt_b_solve = bsr_model.opt_gen_pred_coef(lam_0, lam_1, delta_0,
-                                                       delta_1, mu, phi, sigma)
+# #This is for nls method, only need guesses for lam_0, lam_1
+# #bsr_solve = mod_init.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
+bsr_solve = mod_init.solve(guess_params=guess_params, method="ml",
+                            alg="newton", maxfev=10000000, maxiter=10000000)
+#
+# lam_0 = bsr_solve[0]
+# lam_1 = bsr_solve[1]
+#
+# lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, tvalues = bsr_solve
+#
+# print "lam_0"
+# print lam_0
+# print "lam_1"
+# print lam_1
+# print "delta_1"
+# print delta_1
+# print "mu"
+# print mu
+# print "phi"
+# print phi
+# print "sigma"
+# print sigma
+# print "a_solve"
+# print a_solve
+# print "b_solve"
+# print b_solve
+# print "tvalues"
+# print tvalues
+#
+# #send success email
+# passwd = keyring.get_password("email_auth", "bartbkr")
+# success_mail(passwd)
