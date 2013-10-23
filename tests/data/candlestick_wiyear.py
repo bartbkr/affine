@@ -16,7 +16,7 @@ ranges['disag_infl'] = ranges['gnp_gdpdefl_top10_wiyear'] - \
                        ranges['gnp_gdpdefl_bot10_wiyear']
 
 odis_saxes = ranges['disag_output'].plot()
-odis_saxes.set_ylabel("90% - 10% GDP forecast")
+odis_saxes.set_ylabel("Disagreement")
 odis_saxes.axvspan(pa.Timestamp('1987-07-01 00:00:00', tz=None),
                    pa.Timestamp('1989-01-01 00:00:00', tz=None),
                    facecolor='r', alpha=0.5)
@@ -53,7 +53,7 @@ fig, ax = plt.subplots()
 ax.set_xticks(np.arange(0, len(gdp_monthly)))
 ax.set_xticklabels(gdp_monthly.index)
 ax.set_xlabel("Month")
-ax.set_ylabel("90% - 10% GDP forecast")
+ax.set_ylabel("Disagreement")
 candlestick2(ax, gdp_monthly['3rd quart'], gdp_monthly['1st quart'],
             gdp_monthly['max'], gdp_monthly['min'], width=0.5)
 ax.set_xlim([-1, 12])
