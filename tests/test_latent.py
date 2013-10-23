@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as px
+import datetime as dt
 
 import socket
 import atexit
@@ -12,8 +13,8 @@ from scipy import stats
 from affine.model.affine import Affine
 from affine.constructors.helper import (pickle_file, success_mail, to_mth,
                                         gen_guesses, ap_constructor, pass_ols)
-import pdb
 
+import ipdb
 ########################################
 # Get macro data                       #
 ########################################
@@ -68,8 +69,7 @@ macro_data = output.join(prices)
 
 macro_data = macro_data.join(mthdata).reindex(columns=['price_pca1',
                                                        'output_pca1']).dropna()
-
-macro_data_ind = macro_data.index
+macro_data = macro_data.join(mthdata['fed_funds'], how='left')
 #########################################
 # Set up affine affine model            #
 #########################################
@@ -98,16 +98,32 @@ ycdata["trb_m1"] = mthdata["fed_funds"]
 ycdata = px.read_csv("./data/fama-bliss_formatted.csv", na_values = "M",
                      index_col=0, parse_dates=True, sep=",")
 
+yc_cols = ['TMYTM_1','TMYTM_2','TMYTM_3','TMYTM_4','TMYTM_5']
+mod_yc_data_nodp = ycdata[yc_cols]
+mod_yc_data_nodp['year'] = mod_yc_data_nodp.index.year
+mod_yc_data_nodp['month'] = mod_yc_data_nodp.index.month
+mod_yc_data_nodp['day'] = 1
+mod_yc_data_nodp['new_dt'] = mod_yc_data_nodp.apply(
+    lambda row: dt.datetime(int(row['year']),
+                            int(row['month']),
+                            int(row['day'])), axis=1)
+mod_yc_data_nodp.set_index('new_dt', inplace=True)
+
+mod_yc_data = mod_yc_data_nodp.dropna(axis=0)[yc_cols]
+mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
+mod_yc_data.insert(0, 'trcr_m1', mod_yc_data['fed_funds'])
+rf_rate = mod_yc_data['fed_funds']
+mod_yc_data = mod_yc_data.drop(['fed_funds'], axis=1)
+
 mths = [12, 24, 36, 48, 60]
-final_ind = ycdata.index
-yc_data_use = ycdata.reindex(index=final_ind[k_ar - 1:])
+del mod_yc_data['trcr_m1']
+
+macro_data_use = macro_data.dropna().reindex(columns=['price_pca1',
+                                                      'output_pca1'])
+yc_data_use = mod_yc_data
 
 #align number of obs between yields and grab rf rate
 #mth_only = to_mth(mod_yc_data)
-
-#for affine model, only want two macro vars
-macro_data_use = macro_data.reindex(index=final_ind)
-rf_rate = macro_data_use["fed_funds"]
 
 neqs = len(macro_data_use.columns)
 
@@ -126,7 +142,7 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
                                                       rf_rate=rf_rate)
 
 mod_init = Affine(yc_data=yc_data_use, var_data=macro_data_use,
-                   latent=latent, no_err=[0, 2, 4],
+                   latent=latent, no_err=[2],
                    lam_0_e=lam_0_e, lam_1_e=lam_1_e, delta_0_e=delta_0_e,
                    delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e,
                    sigma_e=sigma_e, mths=mths)
