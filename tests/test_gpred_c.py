@@ -95,20 +95,19 @@ ycdata = px.read_csv("./data/yield_curve.csv", na_values = "M", sep=";",
 
 ycdata["trb_m1"] = mthdata["fed_funds"]
 
-yc_data_use = ycdata.reindex(columns=['trb_m1', 'trb_m3', 'trb_m6', 'trcr_y1',
-                                      'trcr_y3', 'trcr_y5', 'trcr_y10'],
-                             index=macro_data_ind).dropna()
+ycdata = px.read_csv("./data/fama-bliss_formatted.csv", na_values = "M",
+                     index_col=0, parse_dates=True, sep=",")
 
-mths = [1, 3, 6, 12, 36, 60, 120]
-final_ind = yc_data_use.index
-yc_data_use = yc_data_use.reindex(index=final_ind[k_ar - 1:])
+mths = [12, 24, 36, 48, 60]
+final_ind = ycdata.index
+yc_data_use = ycdata.reindex(index=final_ind[k_ar - 1:])
 
 #align number of obs between yields and grab rf rate
 #mth_only = to_mth(mod_yc_data)
 
 #for affine model, only want two macro vars
 macro_data_use = macro_data.reindex(index=final_ind)
-rf_rate = yc_data_use["trb_m1"]
+rf_rate = macro_data_use["fed_funds"]
 
 neqs = len(macro_data_use.columns)
 
@@ -127,7 +126,7 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
                                                       rf_rate=rf_rate)
 
 bsr_model = Affine(yc_data=yc_data_use, var_data=macro_data_use,
-                   latent=latent, no_err=[0, 3, 6],
+                   latent=latent, no_err=[0, 2, 4],
                    lam_0_e=lam_0_e, lam_1_e=lam_1_e, delta_0_e=delta_0_e,
                    delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e,
                    sigma_e=sigma_e, mths=mths)
