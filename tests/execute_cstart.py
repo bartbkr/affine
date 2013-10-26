@@ -16,8 +16,6 @@ from statsmodels.tsa.filters import hpfilter
 from affine.constructors.helper import (to_mth, bsr_constructor, pass_ols)
 from affine.model.affine import Affine
 
-import ipdb
-
 xtols = [#0.1,
          #0.05,
          #0.03,
