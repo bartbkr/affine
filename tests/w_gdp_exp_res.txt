@@ -1,0 +1,28 @@
+=================================
+Initial estimation
+fbliss
+xtol 1e-06
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'real_gnp_gdp_nxtyr']
+one_yr & 12.5804628912
+two_yr & 17.7114924632
+three_yr & 20.0403469006
+four_yr & 21.5580979599
+five_yr & 20.2231093167
+=================================
+Initial estimation
+orig
+xtol 1e-06
+ftol 1.49012e-08
+Begin 1990-08-01 00:00:00
+End 2012-05-01 00:00:00
+variables ['tr_empl_gap_perc', 'act_infl', 'gnp_gdp_deflat_nxtyr', 'fed_funds', 'ed_fut', 'real_gnp_gdp_nxtyr']
+six_mth & 10.7279360663
+one_yr & 15.5172360198
+two_yr & 19.7773956771
+three_yr & 21.8560629314
+five_yr & 22.9063581582
+seven_yr & 22.6653300483
+ten_yr & 20.8095407645
