@@ -284,10 +284,12 @@ for source in sources:
 
                     #generate st dev of residuals
                     yields = ['one_yr', 'two_yr', 'three_yr', 'five_yr']
-                    for yld in yields:
-                        print yld + " & " + str(np.std(eval(yld).filter(
-                                                        regex= '.*err$').values,
-                                                        ddof=1)*100)
+                    ynames = ['one', 'two', 'three', 'five']
+                    for yix, yld in enumerate(yields):
+                        df = ynames[yix] + '_year_res_' + source
+                        col = model_names[mix]
+                        print df + col
+                        eval(df)[col] = eval(yld).filter(regex='.*err$')
                 else:
                     #gen BSR predicted
                     X_t = bsr_model.var_data_vert
