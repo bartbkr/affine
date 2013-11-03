@@ -18,8 +18,8 @@ from affine.model.affine import Affine
 
 import ipdb
 
-xtols = [0.1,
-         #0.000001,
+xtols = [#0.1,
+         0.000001,
         ]
 
 ftols = [1.49012e-8]
