@@ -18,8 +18,8 @@ from affine.model.affine import Affine
 
 import ipdb
 
-xtols = [#0.1,
-         0.000001,
+xtols = [0.1,
+         #0.000001,
         ]
 
 ftols = [1.49012e-8]
@@ -290,6 +290,7 @@ for source in sources:
                         col = model_names[mix]
                         print df + col
                         eval(df)[col] = eval(yld).filter(regex='.*err$')
+
                 else:
                     #gen BSR predicted
                     X_t = bsr_model.var_data_vert
@@ -321,6 +322,7 @@ for source in sources:
                     #generate st dev of residuals
                     yields = ['one_yr', 'two_yr', 'three_yr', 'five_yr']
                     ynames = ['one', 'two', 'three', 'five']
+                    ipdb.set_trace()
                     for yix, yld in enumerate(yields):
                         df = ynames[yix] + '_year_res_' + source
                         col = model_names[mix]
