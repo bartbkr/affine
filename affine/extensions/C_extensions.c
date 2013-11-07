@@ -253,6 +253,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
         }
     }
 
+    /* Free core arrays */
     free_Carrayptrs(lam_0_c);
     free_Carrayptrs(lam_1_c);
     free_Carrayptrs(delta_0_c);
@@ -262,6 +263,19 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     free_Carrayptrs(sigma_c);
     free_Carrayptrs(a_fin);
     free_Carrayptrs(b_fin);
+
+    /* Free secondary arrays */
+    free_Carrayptrs(dot_sig_lam_0_c);
+    free_Carrayptrs(diff_mu_sigl_c);
+    free_Carrayptrs(dot_bpre_mu_sig1_c);
+    free_Carrayptrs(dot_b_pre_sig_c);
+    free_Carrayptrs(dot_b_sigt_c);
+    free_Carrayptrs(dot_b_sst_bt_c);
+    free_Carrayptrs(dot_sig_lam_1_c);
+    free_Carrayptrs(diff_phi_sig_c);
+    free_Carrayptrs(dot_phisig_b_c);
+    free_Carrayptrs(b_pre_mth_c);
+
 
     PyObject *Result = Py_BuildValue("OO", a_fin_array, b_fin_array);
     Py_DECREF(a_fin_array);
