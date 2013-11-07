@@ -34,3 +34,7 @@
 #temp files
 *.swp
 *.un~
+
+#Output Files
+My*
+*.lsf
