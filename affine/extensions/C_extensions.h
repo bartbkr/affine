@@ -24,4 +24,4 @@ PyArrayObject *pymatrix(PyObject *objin);
 double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin);
 double **twodim_to_point(int rows, int cols);
 double **ptrvector(long n);
-void free_Carrayptrs(double **v);
+void free_Carrayptrs(double **v, int rows);
