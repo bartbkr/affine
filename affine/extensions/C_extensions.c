@@ -104,9 +104,9 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma,
                   *a_fin_array, *b_fin_array;
 
-    int lam_0_cols, lam_1_cols, mu_rows, mu_cols, phi_rows,
-        phi_cols, sigma_rows, sigma_cols, mth, bp_offset,
-        bp_noffset, next_mth, i;
+    int lam_0_rows, lam_0_cols, lam_1_rows, lam_1_cols, mu_rows, mu_cols,
+        phi_rows, phi_cols, sigma_rows, sigma_cols, mth, bp_offset, bp_noffset,
+        next_mth, i;
 
     const int max_mth;
 
@@ -128,7 +128,9 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     /* Get dimesions of all input arrays */
 
+    lam_0_rows=lam_0->dimensions[0];
     lam_0_cols=lam_0->dimensions[1];
+    lam_1_rows=lam_1->dimensions[0];
     lam_1_cols=lam_1->dimensions[1];
     const int delta_1_rows=delta_1->dimensions[0];
     mu_rows=mu->dimensions[0];
@@ -227,7 +229,6 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                    1, b_pre_mth_c,
                    dot_b_sst_bt_c);
 
-        /* debugged here */
         a_pre[next_mth] = a_pre[mth] + dot_bpre_mu_sig1_c[0][0] +
                         (half * dot_b_sst_bt_c[0][0]) - delta_0_c[0][0];
         a_fin[next_mth][0] = -a_pre[next_mth] / (next_mth + 1);
@@ -254,28 +255,27 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     }
 
     /* Free core arrays */
-    free_Carrayptrs(lam_0_c);
-    free_Carrayptrs(lam_1_c);
-    free_Carrayptrs(delta_0_c);
-    free_Carrayptrs(delta_1_c);
-    free_Carrayptrs(mu_c);
-    free_Carrayptrs(phi_c);
-    free_Carrayptrs(sigma_c);
-    free_Carrayptrs(a_fin);
-    free_Carrayptrs(b_fin);
+    free_Carrayptrs(lam_0_c, lam_0_rows);
+    free_Carrayptrs(lam_1_c, lam_1_rows);
+    free_Carrayptrs(delta_0_c, 0);
+    free_Carrayptrs(delta_1_c, 0);
+    free_Carrayptrs(mu_c, mu_rows);
+    free_Carrayptrs(phi_c, phi_rows);
+    free_Carrayptrs(sigma_c, sigma_rows);
+    free_Carrayptrs(a_fin, max_mth);
+    free_Carrayptrs(b_fin, max_mth);
 
     /* Free secondary arrays */
-    free_Carrayptrs(dot_sig_lam_0_c);
-    free_Carrayptrs(diff_mu_sigl_c);
-    free_Carrayptrs(dot_bpre_mu_sig1_c);
-    free_Carrayptrs(dot_b_pre_sig_c);
-    free_Carrayptrs(dot_b_sigt_c);
-    free_Carrayptrs(dot_b_sst_bt_c);
-    free_Carrayptrs(dot_sig_lam_1_c);
-    free_Carrayptrs(diff_phi_sig_c);
-    free_Carrayptrs(dot_phisig_b_c);
-    free_Carrayptrs(b_pre_mth_c);
-
+    free_Carrayptrs(dot_sig_lam_0_c, sigma_rows);
+    free_Carrayptrs(diff_mu_sigl_c, mu_rows);
+    free_Carrayptrs(dot_bpre_mu_sig1_c, 1);
+    free_Carrayptrs(dot_b_pre_sig_c, 1);
+    free_Carrayptrs(dot_b_sigt_c, 1);
+    free_Carrayptrs(dot_b_sst_bt_c, 1);
+    free_Carrayptrs(dot_sig_lam_1_c, sigma_rows);
+    free_Carrayptrs(diff_phi_sig_c, phi_rows);
+    free_Carrayptrs(dot_phisig_b_c, phi_cols);
+    free_Carrayptrs(b_pre_mth_c, b_pre_rows);
 
     PyObject *Result = Py_BuildValue("OO", a_fin_array, b_fin_array);
     Py_DECREF(a_fin_array);
@@ -342,6 +342,10 @@ double **twodim_to_point(int rows, int cols) {
 
 
 /* ==== Free a double *vector (vec of pointers) ========================== */ 
-void free_Carrayptrs(double **v)  {
-    free((char*) v);
+void free_Carrayptrs(double **v, int rows)  {
+    int i;
+    for (i = 0; i < rows; i++) {
+        free(v[i]);
+    }
+    free(v);
 }
