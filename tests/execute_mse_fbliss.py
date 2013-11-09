@@ -3,7 +3,7 @@ This script attempts to replicate the Bernanke, Sack, and Reinhart (2004) model
 """
 import numpy as np
 import numpy.ma as ma
-import pandas as px
+import pandas as pa
 import datetime as dt
 import matplotlib.pyplot as plt
 
@@ -78,25 +78,65 @@ models = [['tr_empl_gap_perc',
            'disag',
            'vix_cboe']]
 
-sources = ['fbliss']
+model_names = ['b',
+               'b+E',
+               'b+D',
+               'b+V',
+               'b+V+D',
+               'b+E+D',
+               'b+E+V',
+               'b+E+D+V']
+
+sources = [#'orig', 
+           'fbliss']
+
+yc_dates = pa.date_range("8/1/1990", "5/1/2012", freq="MS").to_pydatetime()
+
+dfs = ['six_mth_res_orig',
+       'one_yr_res_orig',
+       'two_yr_res_orig',
+       'three_yr_res_orig',
+       'five_yr_res_orig',
+       'seven_yr_res_orig',
+       'ten_yr_res_orig',
+       'one_yr_res_fbliss',
+       'two_yr_res_fbliss',
+       'three_yr_res_fbliss',
+       'four_yr_res_fbliss',
+       'five_yr_res_fbliss']
+
+#set up data frames to hold results
+six_mth_res_orig = pa.DataFrame(index=yc_dates)
+one_yr_res_orig = pa.DataFrame(index=yc_dates)
+two_yr_res_orig = pa.DataFrame(index=yc_dates)
+three_yr_res_orig = pa.DataFrame(index=yc_dates)
+five_yr_res_orig = pa.DataFrame(index=yc_dates)
+seven_yr_res_orig = pa.DataFrame(index=yc_dates)
+ten_yr_res_orig = pa.DataFrame(index=yc_dates)
+
+one_yr_res_fbliss = pa.DataFrame(index=yc_dates)
+two_yr_res_fbliss = pa.DataFrame(index=yc_dates)
+three_yr_res_fbliss = pa.DataFrame(index=yc_dates)
+four_yr_res_fbliss = pa.DataFrame(index=yc_dates)
+five_yr_res_fbliss = pa.DataFrame(index=yc_dates)
 
 for source in sources:
-    for model in models:
+    for mix, model in enumerate(models):
         print "================================="
         for xtol in xtols:
             for ftol in ftols:
                 ########################################
                 # Get macro data                       #
                 ########################################
-                mthdata = px.read_csv("./data/macro_data.csv", na_values="M",
+                mthdata = pa.read_csv("./data/macro_data.csv", na_values="M",
                                         index_col = 0, parse_dates=True, 
                                         sep=";")
                 nonfarm = mthdata['Total_Nonfarm_employment_seas'].dropna()
 
                 tr_empl_gap, hp_ch = hpfilter(nonfarm, lamb=129600)
 
-                mthdata['tr_empl_gap'] = px.Series(tr_empl_gap, index=nonfarm.index)
-                mthdata['hp_ch'] = px.Series(hp_ch, index=nonfarm.index)
+                mthdata['tr_empl_gap'] = pa.Series(tr_empl_gap, index=nonfarm.index)
+                mthdata['hp_ch'] = pa.Series(hp_ch, index=nonfarm.index)
                 mthdata['tr_empl_gap_perc'] = mthdata['tr_empl_gap']/mthdata['hp_ch'] * 100
                 mthdata['act_infl'] = \
                     mthdata['PCE_seas'].diff(periods=12)/mthdata['PCE_seas']*100
@@ -117,13 +157,13 @@ for source in sources:
                 x_t_na = mod_data.copy()
                 for t in range(k_ar-1):
                     for var in mod_data.columns:
-                        x_t_na[var + '_m' + str(t+1)] = px.Series(mod_data[var].values[:-(t+1)],
+                        x_t_na[var + '_m' + str(t+1)] = pa.Series(mod_data[var].values[:-(t+1)],
                                                             index=mod_data.index[t+1:])
                 #remove missing values
                 x_t = x_t_na.dropna(axis=0)
 
                 if source == 'fbliss':
-                    ycdata = px.read_csv("./data/fama-bliss_formatted.csv", 
+                    ycdata = pa.read_csv("./data/fama-bliss_formatted.csv", 
                                          na_values = "M", index_col=0,
                                          parse_dates=True, sep=",")
 
@@ -146,7 +186,7 @@ for source in sources:
                     mths = [12, 24, 36, 48, 60]
                     del mod_yc_data['trcr_m1']
                 else:
-                    ycdata = px.read_csv("./data/yield_curve.csv", 
+                    ycdata = pa.read_csv("./data/yield_curve.csv", 
                                          na_values = "M", index_col=0,
                                          parse_dates=True, sep=";")
 
@@ -175,8 +215,8 @@ for source in sources:
 
                 #subset to range specified in BSR
 
-                var_dates = px.date_range("5/1/1990", "5/1/2012", freq="MS").to_pydatetime()
-                yc_dates = px.date_range("8/1/1990", "5/1/2012", freq="MS").to_pydatetime()
+                var_dates = pa.date_range("5/1/1990", "5/1/2012", freq="MS").to_pydatetime()
+                yc_dates = pa.date_range("8/1/1990", "5/1/2012", freq="MS").to_pydatetime()
 
                 mod_data = mod_data.ix[var_dates]
                 mod_yc_data = mod_yc_data.ix[yc_dates]
@@ -241,7 +281,7 @@ for source in sources:
                     #gen BSR predicted
                     X_t = bsr_model.var_data_vert
                     per = bsr_model.yc_data.index
-                    act_pred = px.DataFrame(index=per)
+                    act_pred = pa.DataFrame(index=per)
                     for i in mths:
                         act_pred[str(i) + '_mth_act'] = bsr_model.yc_data['TMYTM_'
                                                                       + str(i/12)]
@@ -271,11 +311,15 @@ for source in sources:
                         print yld + " & " + str(np.sum(eval(yld).filter(
                                                 regex= '.*err$').values)\
                                                 /len(one_yr))
+                        df = yld + '_res_' + source
+                        col = model_names[mix]
+                        eval(df)[col] = eval(yld).filter(regex='.*err$')
+
                 else:
                     #gen BSR predicted
                     X_t = bsr_model.var_data_vert
                     per = bsr_model.yc_data.index
-                    act_pred = px.DataFrame(index=per)
+                    act_pred = pa.DataFrame(index=per)
                     for i in mths:
                         act_pred[str(i) + '_mth_act'] = bsr_model.yc_data[ \
                                 'trcr_m' + str(i)]
@@ -314,3 +358,9 @@ for source in sources:
                         print yld + " & " + str(np.sum(eval(yld).filter(
                                                 regex= '.*err$').values)\
                                                 /len(one_yr))
+                        df = yld + '_res_' + source
+                        col = model_names[mix]
+                        eval(df)[col] = eval(yld).filter(regex='.*err$')
+
+for df in dfs:
+    eval(df).to_csv('./ss_results/' + df + '.csv', float_format='%.3f')
