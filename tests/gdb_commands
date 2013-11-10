@@ -1,6 +1,28 @@
 br _PyImport_LoadDynamicModule
-set args test_gpred_c.py
+set args execute_mse_fbliss.py
 run
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
+c
 c
 c
 c

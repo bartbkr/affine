@@ -1,3 +1,5 @@
-sudo rm -r /usr/local/lib/python2.7/dist-packages/affine
-sudo rm -r build
-python-dbg setup.py install
+rm -r /opt/debugpython/lib/python2.7/site-packages/affine
+rm -r /opt/debugpython/lib/python2.7/site-packages/py_affine-0.3-py2.7.egg-info
+rm -r build
+/opt/debugpython/bin/python setup.py install
+

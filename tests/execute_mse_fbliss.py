@@ -18,7 +18,7 @@ from affine.model.affine import Affine
 
 import ipdb
 
-xtols = [#0.1,
+xtols = [0.1,
          #0.05,
          #0.03,
          #0.01,
@@ -27,7 +27,7 @@ xtols = [#0.1,
          #0.001,
          #0.0001,
          #0.00001,
-         0.000001,
+         #0.000001,
          #0.0000001,
         ]
 
@@ -37,46 +37,47 @@ models = [['tr_empl_gap_perc',
            'act_infl',
            'gnp_gdp_deflat_nxtyr',
            'fed_funds'],
-          ['tr_empl_gap_perc',
-           'act_infl',
-           'gnp_gdp_deflat_nxtyr',
-           'fed_funds',
-           'ed_fut'],
-          ['tr_empl_gap_perc',
-           'act_infl',
-           'gnp_gdp_deflat_nxtyr',
-           'fed_funds',
-           'disag'],
-          ['tr_empl_gap_perc',
-           'act_infl',
-           'gnp_gdp_deflat_nxtyr',
-           'fed_funds',
-           'vix_cboe'],
-          ['tr_empl_gap_perc',
-           'act_infl',
-           'gnp_gdp_deflat_nxtyr',
-           'fed_funds',
-           'disag',
-           'vix_cboe'],
-          ['tr_empl_gap_perc',
-           'act_infl',
-           'gnp_gdp_deflat_nxtyr',
-           'fed_funds',
-           'ed_fut',
-           'disag'],
-          ['tr_empl_gap_perc',
-           'act_infl',
-           'gnp_gdp_deflat_nxtyr',
-           'fed_funds',
-           'ed_fut',
-           'vix_cboe'],
-          ['tr_empl_gap_perc',
-           'act_infl',
-           'gnp_gdp_deflat_nxtyr',
-           'fed_funds',
-           'ed_fut',
-           'disag',
-           'vix_cboe']]
+          # ['tr_empl_gap_perc',
+          #  'act_infl',
+          #  'gnp_gdp_deflat_nxtyr',
+          #  'fed_funds',
+          #  'ed_fut'],
+          # ['tr_empl_gap_perc',
+          #  'act_infl',
+          #  'gnp_gdp_deflat_nxtyr',
+          #  'fed_funds',
+          #  'disag'],
+          # ['tr_empl_gap_perc',
+          #  'act_infl',
+          #  'gnp_gdp_deflat_nxtyr',
+          #  'fed_funds',
+          #  'vix_cboe'],
+          # ['tr_empl_gap_perc',
+          #  'act_infl',
+          #  'gnp_gdp_deflat_nxtyr',
+          #  'fed_funds',
+          #  'disag',
+          #  'vix_cboe'],
+          # ['tr_empl_gap_perc',
+          #  'act_infl',
+          #  'gnp_gdp_deflat_nxtyr',
+          #  'fed_funds',
+          #  'ed_fut',
+          #  'disag'],
+          # ['tr_empl_gap_perc',
+          #  'act_infl',
+          #  'gnp_gdp_deflat_nxtyr',
+          #  'fed_funds',
+          #  'ed_fut',
+          #  'vix_cboe'],
+          # ['tr_empl_gap_perc',
+          #  'act_infl',
+          #  'gnp_gdp_deflat_nxtyr',
+          #  'fed_funds',
+          #  'ed_fut',
+          #  'disag',
+          #  'vix_cboe']]
+         ]
 
 model_names = ['b',
                'b+E',
@@ -87,7 +88,7 @@ model_names = ['b',
                'b+E+V',
                'b+E+D+V']
 
-sources = [#'orig', 
+sources = [#'orig',
            'fbliss']
 
 yc_dates = pa.date_range("8/1/1990", "5/1/2012", freq="MS").to_pydatetime()
@@ -129,7 +130,7 @@ for source in sources:
                 # Get macro data                       #
                 ########################################
                 mthdata = pa.read_csv("./data/macro_data.csv", na_values="M",
-                                        index_col = 0, parse_dates=True, 
+                                        index_col = 0, parse_dates=True,
                                         sep=";")
                 nonfarm = mthdata['Total_Nonfarm_employment_seas'].dropna()
 
@@ -163,7 +164,7 @@ for source in sources:
                 x_t = x_t_na.dropna(axis=0)
 
                 if source == 'fbliss':
-                    ycdata = pa.read_csv("./data/fama-bliss_formatted.csv", 
+                    ycdata = pa.read_csv("./data/fama-bliss_formatted.csv",
                                          na_values = "M", index_col=0,
                                          parse_dates=True, sep=",")
 
@@ -173,7 +174,7 @@ for source in sources:
                     mod_yc_data_nodp['month'] = mod_yc_data_nodp.index.month
                     mod_yc_data_nodp['day'] = 1
                     mod_yc_data_nodp['new_dt'] = mod_yc_data_nodp.apply(
-                        lambda row: dt.datetime(int(row['year']), 
+                        lambda row: dt.datetime(int(row['year']),
                                                 int(row['month']),
                                                 int(row['day'])), axis=1)
                     mod_yc_data_nodp.set_index('new_dt', inplace=True)
@@ -186,11 +187,11 @@ for source in sources:
                     mths = [12, 24, 36, 48, 60]
                     del mod_yc_data['trcr_m1']
                 else:
-                    ycdata = pa.read_csv("./data/yield_curve.csv", 
+                    ycdata = pa.read_csv("./data/yield_curve.csv",
                                          na_values = "M", index_col=0,
                                          parse_dates=True, sep=";")
 
-                    mod_yc_data_nodp = ycdata.reindex(columns=['trcr_m3', 
+                    mod_yc_data_nodp = ycdata.reindex(columns=['trcr_m3',
                                                           'trcr_m6',
                                                           'trcr_y1', 'trcr_y2',
                                                           'trcr_y3', 'trcr_y5',
@@ -263,8 +264,8 @@ for source in sources:
                                 b_solve, solv_cov = out_bsr
 
                 a_rsk, b_rsk = bsr_model.gen_pred_coef(lam_0=lam_0, lam_1=lam_1,
-                                                    delta_0=delta_0, 
-                                                    delta_1=delta_1, mu=mu, 
+                                                    delta_0=delta_0,
+                                                    delta_1=delta_1, mu=mu,
                                                     phi=phi, sigma=sigma)
 
                 #generate no risk results
@@ -275,7 +276,7 @@ for source in sources:
                                                          lam_1=lam_1_nr,
                                                          delta_0=delta_0,
                                                          delta_1=delta_1, mu=mu,
-                                                         phi=phi, 
+                                                         phi=phi,
                                                          sigma=sigma_zeros)
                 if source == 'fbliss':
                     #gen BSR predicted
@@ -286,10 +287,10 @@ for source in sources:
                         act_pred[str(i) + '_mth_act'] = bsr_model.yc_data['TMYTM_'
                                                                       + str(i/12)]
                         act_pred[str(i) + '_mth_pred'] = a_rsk[i-1] + \
-                                                        np.dot(b_rsk[i-1], 
+                                                        np.dot(b_rsk[i-1],
                                                         X_t.values.T)
                         act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
-                                                        np.dot(b_nrsk[i-1].T, 
+                                                        np.dot(b_nrsk[i-1].T,
                                                                X_t.values.T)
                         act_pred[str(i) + '_mth_err'] = np.abs( \
                             act_pred[str(i) + '_mth_act'] - \
@@ -324,10 +325,10 @@ for source in sources:
                         act_pred[str(i) + '_mth_act'] = bsr_model.yc_data[ \
                                 'trcr_m' + str(i)]
                         act_pred[str(i) + '_mth_pred'] = a_rsk[i-1] + \
-                                                        np.dot(b_rsk[i-1], 
+                                                        np.dot(b_rsk[i-1],
                                                         X_t.values.T)
                         act_pred[str(i) + '_mth_nrsk'] = a_nrsk[i-1] + \
-                                                        np.dot(b_nrsk[i-1].T, 
+                                                        np.dot(b_nrsk[i-1].T,
                                                                X_t.values.T)
                         act_pred[str(i) + '_mth_err'] = np.abs( \
                             act_pred[str(i) + '_mth_act'] - \
@@ -342,13 +343,13 @@ for source in sources:
                         columns = filter(lambda x: '36' in x,act_pred))
                     two_yr = act_pred.reindex( \
                         columns = filter(lambda x: '24' in x,act_pred))
-                    one_yr = act_pred.reindex(columns = ['12_mth_act', 
+                    one_yr = act_pred.reindex(columns = ['12_mth_act',
                                                          '12_mth_pred',
-                                                         '12_mth_nrsk', 
+                                                         '12_mth_nrsk',
                                                          '12_mth_err'])
-                    six_mth = act_pred.reindex(columns = ['6_mth_act', 
+                    six_mth = act_pred.reindex(columns = ['6_mth_act',
                                                           '6_mth_pred',
-                                                          '6_mth_nrsk', 
+                                                          '6_mth_nrsk',
                                                           '6_mth_err'])
 
                     #generate st dev of residuals
