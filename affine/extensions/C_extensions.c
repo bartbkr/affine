@@ -2,6 +2,7 @@
 #include "arrayobject.h"
 #include "C_extensions.h"
 #include <math.h>
+#include <stdio.h>
 
 /* === Constants used in rest of program === */
 const double half = 1.0/2.0;
@@ -104,9 +105,8 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     PyArrayObject *lam_0, *lam_1, *delta_0, *delta_1, *mu, *phi, *sigma,
                   *a_fin_array, *b_fin_array;
 
-    int lam_0_rows, lam_0_cols, lam_1_rows, lam_1_cols, mu_rows, mu_cols,
-        phi_rows, phi_cols, sigma_rows, sigma_cols, mth, bp_offset, bp_noffset,
-        next_mth, i;
+    int lam_0_cols, lam_1_cols, mu_rows, mu_cols, phi_rows, phi_cols,
+        sigma_rows, sigma_cols, mth, bp_offset, bp_noffset, next_mth, i;
 
     const int max_mth;
 
@@ -128,9 +128,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     /* Get dimesions of all input arrays */
 
-    lam_0_rows=lam_0->dimensions[0];
     lam_0_cols=lam_0->dimensions[1];
-    lam_1_rows=lam_1->dimensions[0];
     lam_1_cols=lam_1->dimensions[1];
     const int delta_1_rows=delta_1->dimensions[0];
     mu_rows=mu->dimensions[0];
@@ -255,15 +253,15 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     }
 
     /* Free core arrays */
-    free_Carrayptrs(lam_0_c, lam_0_rows);
-    free_Carrayptrs(lam_1_c, lam_1_rows);
-    free_Carrayptrs(delta_0_c, 0);
-    free_Carrayptrs(delta_1_c, 0);
-    free_Carrayptrs(mu_c, mu_rows);
-    free_Carrayptrs(phi_c, phi_rows);
-    free_Carrayptrs(sigma_c, sigma_rows);
-    free_Carrayptrs(a_fin, max_mth);
-    free_Carrayptrs(b_fin, max_mth);
+    free_CarrayfPy(lam_0_c);
+    free_CarrayfPy(lam_1_c);
+    free_CarrayfPy(delta_0_c);
+    free_CarrayfPy(delta_1_c);
+    free_CarrayfPy(mu_c);
+    free_CarrayfPy(phi_c);
+    free_CarrayfPy(sigma_c);
+    free_CarrayfPy(a_fin);
+    free_CarrayfPy(b_fin);
 
     /* Free secondary arrays */
     free_Carrayptrs(dot_sig_lam_0_c, sigma_rows);
@@ -293,27 +291,10 @@ double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin) {
     
     n = arrayin->dimensions[0];
     m = arrayin->dimensions[1];
-    c = ptrvector(n);
+    c = malloc(n * sizeof(*c) );
     a = (double *) arrayin->data;  /* pointer to arrayin data as double */
     for ( i=0; i<n; i++)  {
         c[i] = a + i * m;  
-    }
-    return c;
-}
-
-// Setup function
-double **pymatrix_to_Carray(PyArrayObject *arrayin) {
-    double **c, *a;
-    int i, rows, cols;
-    //what i need to do here is create a series of pointers to both dimensions
-    //of pyarray
-    
-    rows = arrayin->dimensions[0];
-    cols = arrayin->dimensions[1];
-    c = ptrvector(rows);
-    a = (double *) arrayin->data;  /* pointer to arrayin data as double */
-    for ( i=0; i<rows; i++)  {
-        c[i] = a + i * cols;  
     }
     return c;
 }
@@ -331,11 +312,14 @@ double **ptrvector(long n) {
 
 /*  ==== Create ** double from double 2-dim array === */
 double **twodim_to_point(int rows, int cols) {
-    int row;
     double **pointer = malloc(rows * sizeof(double *));
-    pointer[0] = malloc(rows * cols * sizeof(double));
-    for(row = 1; row < rows; row++) {
-        pointer[row] = pointer[0] + row * cols;
+    int row;
+    if (!pointer) {
+        printf("In **ptrvector. Allocation of memory for double array failed.");
+        exit(0);  
+    }
+    for(row = 0; row < rows; row++) {
+        pointer[row] = malloc(cols * sizeof(double));
     }
     return pointer;
 }
@@ -345,7 +329,12 @@ double **twodim_to_point(int rows, int cols) {
 void free_Carrayptrs(double **v, int rows)  {
     int i;
     for (i = 0; i < rows; i++) {
-        free(v[i]);
+        free(*(v + i));
     }
     free(v);
+    v = NULL;
+}
+
+void free_CarrayfPy(double **v)  {
+    free((char*) v);
 }
