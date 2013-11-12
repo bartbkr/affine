@@ -12,7 +12,7 @@ from scipy import stats
 from affine.model.affine import Affine
 from affine.constructors.helper import (pickle_file, success_mail, to_mth,
                                         gen_guesses, ap_constructor, pass_ols)
-import ipdb
+import pdb
 
 ########################################
 # Get macro data                       #
@@ -144,5 +144,5 @@ for numb, element in enumerate(guess_params[:30]):
 lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
                     bsr_model._params_to_array(guess_params)
 
-a_solve, b_solve = bsr_model.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
-                                           phi, sigma)
+opt_a_solve, opt_b_solve = bsr_model.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                       delta_1, mu, phi, sigma)

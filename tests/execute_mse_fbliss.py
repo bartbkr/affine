@@ -18,7 +18,7 @@ from affine.model.affine import Affine
 
 import ipdb
 
-xtols = [#0.1,
+xtols = [0.1,
          #0.05,
          #0.03,
          #0.01,
@@ -27,7 +27,7 @@ xtols = [#0.1,
          #0.001,
          #0.0001,
          #0.00001,
-         0.000001,
+         #0.000001,
          #0.0000001,
         ]
 

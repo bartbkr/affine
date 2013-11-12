@@ -660,7 +660,7 @@ class Affine(LikelihoodModel):
                 "Shape of lam_1_e incorrect"
 
         if self.latent:
-            assert np.shape(self.delta_1_e) == (dim,), "Shape of delta_1_e" \
+            assert np.shape(self.delta_1_e) == (dim, 1), "Shape of delta_1_e" \
                 "incorrect"
             assert np.shape(self.mu_e) == (dim, 1), "Shape of mu incorrect"
             assert np.shape(self.phi_e) == (dim, dim), \
