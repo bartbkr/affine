@@ -322,14 +322,15 @@ class Affine(LikelihoodModel):
         #Should probably set this so its not recalculated every run
         max_mth = self.max_mth
         b_width = self.k_ar * self.neqs + self.lat
-        half = np.float64(1.0/2.0)
+        half = np.float64(1)/np.float64(2)
         #generate predictions
         a_pre = np.zeros((max_mth, 1))
         a_pre[0] = -delta_0
         b_pre = np.zeros((max_mth, b_width))
         b_pre[0] = -delta_1[:,0]
 
-        n_inv = 1.0/np.add(range(max_mth), 1).reshape((max_mth, 1))
+        n_inv = np.float64(1.0) / \
+                np.float64(np.add(range(max_mth), 1).reshape((max_mth, 1)))
         a_solve = -a_pre.copy()
         b_solve = -b_pre.copy()
 
@@ -659,7 +660,7 @@ class Affine(LikelihoodModel):
                 "Shape of lam_1_e incorrect"
 
         if self.latent:
-            assert np.shape(self.delta_1_e) == (dim,), "Shape of delta_1_e" \
+            assert np.shape(self.delta_1_e) == (dim, 1), "Shape of delta_1_e" \
                 "incorrect"
             assert np.shape(self.mu_e) == (dim, 1), "Shape of mu incorrect"
             assert np.shape(self.phi_e) == (dim, dim), \

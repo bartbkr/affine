@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 /* === Constants used in rest of program === */
-const double half = 1.0/2.0;
+const double half = (double)1 / (double)2;
 
 /* ==== Set up the methods table ====================== */
 static PyMethodDef _C_extensionsMethods[] = {
@@ -227,9 +227,12 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                    1, b_pre_mth_c,
                    dot_b_sst_bt_c);
 
+        //Divisor to prepare for b_fin calculation
+        divisor = (double)1 / ((double)next_mth + (double)1);
+
         a_pre[next_mth] = a_pre[mth] + dot_bpre_mu_sig1_c[0][0] +
                         (half * dot_b_sst_bt_c[0][0]) - delta_0_c[0][0];
-        a_fin[next_mth][0] = -a_pre[next_mth] / (next_mth + 1);
+        a_fin[next_mth][0] = -a_pre[next_mth] * divisor;
 
         /* Calculate next b elements */
         mat_prodct(sigma_rows, sigma_cols, sigma_c,
@@ -241,8 +244,6 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                           1, b_pre_mth_c,
                           dot_phisig_b_c);
 
-        //Divisor to prepare for b_fin calculation
-        divisor = (double)1 / ((double)next_mth + 1);
         
         //Issue seems to be that b_fin is not able to dynaically allocate these
         //doubles using both
@@ -332,7 +333,6 @@ void free_Carrayptrs(double **v, int rows)  {
         free(*(v + i));
     }
     free(v);
-    v = NULL;
 }
 
 void free_CarrayfPy(double **v)  {
