@@ -228,7 +228,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                    dot_b_sst_bt_c);
 
         //Divisor to prepare for b_fin calculation
-        divisor = (double)1 / ((double)next_mth + 1);
+        divisor = (double)1 / ((double)next_mth + (double)1);
 
         a_pre[next_mth] = a_pre[mth] + dot_bpre_mu_sig1_c[0][0] +
                         (half * dot_b_sst_bt_c[0][0]) - delta_0_c[0][0];
