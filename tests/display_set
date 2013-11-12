@@ -43,9 +43,13 @@ display checker3_diff3
 display checker3_diff2 
 display checker3_diff1 
 display checker3_diff0 
-display checker2_diff 
-display checker1_diff 
+display eq_a_fin
+display eq_a_pre 
 display diff_a_fin
 display diff_a_pre 
+display checker2_eq 
+display checker1_eq 
+display checker2_diff 
+display checker1_diff 
 display next_mth
 display mth
