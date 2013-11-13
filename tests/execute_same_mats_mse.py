@@ -18,16 +18,16 @@ from affine.model.affine import Affine
 
 import ipdb
 
-xtols = [0.1,
-         0.05,
-         0.03,
-         0.01,
-         0.009,
-         0.005,
-         0.001,
-         0.0001,
+xtols = [#0.1,
+         #0.05,
+         #0.03,
+         #0.01,
+         #0.009,
+         #0.005,
+         #0.001,
+         #0.0001,
          0.00001,
-         0.000001,
+         #0.000001,
          #0.0000001,
         ]
 
@@ -80,11 +80,11 @@ models = [['tr_empl_gap_perc',
 
 sources = ['orig', 'fbliss']
 
-for model in models:
-    print "================================="
-    for xtol in xtols:
-        for ftol in ftols:
-            for source in sources:
+for source in sources:
+    for model in models:
+        print "================================="
+        for xtol in xtols:
+            for ftol in ftols:
                 ########################################
                 # Get macro data                       #
                 ########################################
