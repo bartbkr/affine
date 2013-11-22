@@ -23,45 +23,59 @@ void init_C_extensions()  {
 
 /*  Array helper functions */
 /*  ==== Matrix sum function ===== */
-void mat_sum(int rows, int cols, double **arr1, double **arr2, 
-             double **result) {
-    int dim_rows, dim_cols;
-    for (dim_rows = 0; dim_rows < rows; dim_rows++) {
-        for (dim_cols = 0; dim_cols < cols; dim_cols++) {
-            result[dim_rows][dim_cols] = arr1[dim_rows][dim_cols]
-                                    + arr2[dim_rows][dim_cols];
-        }
+void mat_sum(int rows, int cols, double *arr1, double *arr2, 
+             double *result) {
+    int mat_size, inc;
+    mat_size = rows * cols;
+    for (inc=0;inc < mat_size;inc++) {
+        *result = *arr1 + *arr2;
+        arr1++;
+        arr2++;
+        result++;
     }
 }
 
 /*  ==== Matrix subtraction function ===== */
-void mat_subtract(int rows, int cols, double **arr1, double **arr2, 
-                  double **result) {
-    int d_row, d_col;
-    for (d_row = 0; d_row < rows; d_row++) {
-        for (d_col = 0; d_col < cols; d_col++) {
-            result[d_row][d_col] = arr1[d_row][d_col] - arr2[d_row][d_col];
-        }
+void mat_subtract(int rows, int cols, double *arr1, double *arr2, 
+                  double *result) {
+    int mat_size, inc;
+    mat_size = rows * cols;
+    for (inc=0;inc < mat_size;inc++) {
+        *result = *arr1 - *arr2;
+        arr1++;
+        arr2++;
+        result++;
     }
 }
 
 /*  ==== Matrix product functions ===== */
-void mat_prodct(int row1, int col1, double **arr1, 
-                int col2, double **arr2, 
-                double **result) {
+void mat_prodct(int row1, int col1, double *arr1, 
+                int col2, double *arr2, 
+                double *result) {
 
     /* What about case when results in single number */
 
-    int dim1_row, dim1_col, dim2_col;
+    int inc, mat_size, dim1_row, dim2_col, dim1_col, col1_mod, row2_mod;
+    double sum, *arr1pt, *arr2pt;
 
+    col1_mod = 0;
+    row2_mod = 0;
     for (dim1_row = 0; dim1_row < row1; dim1_row++) {
+        row2_mod = 0;
         for (dim2_col = 0; dim2_col < col2; dim2_col++) {
-            double sum = 0;
+            arr1pt = &arr1[col1_mod];
+            arr2pt = &arr2[row2_mod];
+            sum = 0;
             for (dim1_col = 0; dim1_col < col1; dim1_col++) {
-                sum += arr1[dim1_row][dim1_col] * arr2[dim1_col][dim2_col];
+                sum += (*arr1pt) * (*arr2pt);
+                arr1pt++;
+                arr2pt+=col1;
             }
-            result[dim1_row][dim2_col] = sum;
+            *result = sum;
+            result++;
+            row2_mod++;
         }
+        col1_mod += col1;
     }
 }
 
@@ -110,11 +124,11 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     const int max_mth;
 
-    double **lam_0_c, **lam_1_c, **delta_0_c, **delta_1_c, **mu_c, **phi_c,
-           **sigma_c, **a_fin, **b_fin, **dot_sig_lam_0_c, **diff_mu_sigl_c,
-           **dot_bpre_mu_sig1_c, **dot_b_pre_sig_c, **dot_b_sigt_c,
-           **dot_b_sst_bt_c, **dot_sig_lam_1_c, **diff_phi_sig_c,
-           **dot_phisig_b_c, **b_pre_mth_c, divisor;
+    double *lam_0_c, *lam_1_c, *delta_0_c, *delta_1_c, *mu_c, *phi_c,
+           *sigma_c, *a_fin, *b_fin, *dot_sig_lam_0_c, *diff_mu_sigl_c,
+           *dot_bpre_mu_sig1_c, *dot_b_pre_sig_c, *dot_b_sigt_c,
+           *dot_b_sst_bt_c, *dot_sig_lam_1_c, *diff_phi_sig_c,
+           *dot_phisig_b_c, *b_pre_mth_c, divisor;
 
     /* Parse input arguments to function */
 
@@ -286,18 +300,20 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 /* ==== Create Carray from PyArray ======================
     Assumes PyArray is contiguous in memory.
     Memory is allocated!                                    */
-double **pymatrix_to_Carrayptrs(PyArrayObject *arrayin) {
-    double **c, *a;
-    int i,n,m;
+double *pymatrix_to_Carrayptrs(PyArrayObject *arrayin) {
+    double *c, *a, *inc;
+    int i, mat_size;
     
-    n = arrayin->dimensions[0];
-    m = arrayin->dimensions[1];
-    c = malloc(n * sizeof(*c) );
-    a = (double *) arrayin->data;  /* pointer to arrayin data as double */
-    for ( i=0; i<n; i++)  {
-        c[i] = a + i * m;  
+    mat_size = n * m;
+    c = malloc(n * m * sizeof(*c));
+    a = (double *) arrayin->data;  
+    inc = c;
+    for (i=0;i < mat_size;i++) {
+        *c = *a;     
+        c++;
+        a++;
     }
-    return c;
+    return inc;
 }
 
 /* ==== Allocate a double *vector (vec of pointers) ======================
