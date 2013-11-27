@@ -55,11 +55,10 @@ void mat_prodct(int row1, int col1, double *arr1,
 
     /* What about case when results in single number */
 
-    int inc, mat_size, dim1_row, dim2_col, dim1_col, col1_mod, row2_mod;
+    int dim1_row, dim2_col, dim1_col, col1_mod, row2_mod;
     double sum, *arr1pt, *arr2pt;
 
     col1_mod = 0;
-    row2_mod = 0;
     for (dim1_row = 0; dim1_row < row1; dim1_row++) {
         row2_mod = 0;
         for (dim2_col = 0; dim2_col < col2; dim2_col++) {
@@ -69,7 +68,7 @@ void mat_prodct(int row1, int col1, double *arr1,
             for (dim1_col = 0; dim1_col < col1; dim1_col++) {
                 sum += (*arr1pt) * (*arr2pt);
                 arr1pt++;
-                arr2pt+=col1;
+                arr2pt+=col2;
             }
             *result = sum;
             result++;
@@ -80,38 +79,58 @@ void mat_prodct(int row1, int col1, double *arr1,
 }
 
 /*  ==== Matrix product functions tpose first argument ===== */
-void mat_prodct_tpose1(int row1, int col1, double **arr1, 
-                       int col2, double **arr2, 
-                       double **result) {
+void mat_prodct_tpose1(int row1, int col1, double *arr1, 
+                       int col2, double *arr2, 
+                       double *result) {
 
-    int dim1_row, dim1_col, dim2_col;
+    int dim1_row, dim1_col, dim2_col, row1_mod, row2_mod;
+    double sum, *arr1pt, *arr2pt;
 
-    for (dim1_col = 0; dim1_col < col1; dim1_col++) {
-        for (dim2_col = 0; dim2_col < col2; dim2_col++) {
-            double sum = 0;
-            for (dim1_row = 0; dim1_row < row1; dim1_row++) {
-                sum += arr1[dim1_row][dim1_col] * arr2[dim1_row][dim2_col];
+    row1_mod = 0;
+    for (dim1_col = 0;dim1_col < col1;dim1_col++) {
+        row2_mod = 0;
+        for (dim2_col = 0;dim2_col < col2;dim2_col++) {
+            arr1pt = &arr1[row1_mod];
+            arr2pt = &arr2[row2_mod];
+            sum = 0;
+            for (dim1_row = 0;dim1_row < row1;dim1_row++) {
+                sum += (*arr1pt) * (*arr2pt);
+                arr1pt+=col1;
+                arr2pt+=col2;
             }
-            result[dim1_col][dim2_col] = sum;
+            *result = sum;
+            result++;
+            row2_mod++;
         }
+        row1_mod++;
     }
 }
 
 /*  ==== Matrix product functions tpose second argument ===== */
-void mat_prodct_tpose2(int row1, int col1, double **arr1,
-                       int row2, double **arr2, 
-                       double **result) {
+void mat_prodct_tpose2(int row1, int col1, double *arr1,
+                       int row2, double *arr2,
+                       double *result) {
 
-    int dim1_row, dim1_col, dim2_row;
+    int dim1_row, dim2_row, dim1_col, col1_mod, col2_mod;
+    double sum, *arr1pt, *arr2pt;
 
+    col1_mod = 0;
     for (dim1_row = 0; dim1_row < row1; dim1_row++) {
+        col2_mod = 0;
         for (dim2_row = 0; dim2_row < row2; dim2_row++) {
-            double sum = 0;
+            arr1pt = &arr1[col1_mod];
+            arr2pt = &arr2[col2_mod];
+            sum = 0;
             for (dim1_col = 0; dim1_col < col1; dim1_col++) {
-                sum += arr1[dim1_row][dim1_col] * arr2[dim2_row][dim1_col];
+                sum += (*arr1pt) * (*arr2pt);
+                arr1pt++;
+                arr2pt++;
             }
-            result[dim1_row][dim2_row] = sum;
+            *result = sum;
+            result++;
+            col2_mod += col1;
         }
+        col1_mod += col1;
     }
 }
 
@@ -125,10 +144,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     const int max_mth;
 
     double *lam_0_c, *lam_1_c, *delta_0_c, *delta_1_c, *mu_c, *phi_c,
-           *sigma_c, *a_fin, *b_fin, *dot_sig_lam_0_c, *diff_mu_sigl_c,
-           *dot_bpre_mu_sig1_c, *dot_b_pre_sig_c, *dot_b_sigt_c,
-           *dot_b_sst_bt_c, *dot_sig_lam_1_c, *diff_phi_sig_c,
-           *dot_phisig_b_c, *b_pre_mth_c, divisor;
+           *sigma_c, divisor;
 
     /* Parse input arguments to function */
 
@@ -168,40 +184,35 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     int b_dims[2] = {max_mth, delta_1_rows};
     int b_pre_rows = delta_1_rows;
 
-    a_fin_array = (PyArrayObject *) PyArray_FromDims(2, a_dims, NPY_DOUBLE);
-    b_fin_array = (PyArrayObject *) PyArray_FromDims(2, b_dims, NPY_DOUBLE);
-
     double a_pre[max_mth];
     double b_pre[max_mth * delta_1_rows];
-
-    a_fin = pymatrix_to_Carrayptrs(a_fin_array);
-    b_fin = pymatrix_to_Carrayptrs(b_fin_array);
+    double a_fin[max_mth];
+    double b_fin[max_mth * delta_1_rows];
 
     /* Initialize intermediate arrays */
     /*  Elements for a_pre calculation */
-    dot_sig_lam_0_c = twodim_to_point(sigma_rows, lam_0_cols);
-    diff_mu_sigl_c = twodim_to_point(mu_rows, 1);
-    dot_bpre_mu_sig1_c = twodim_to_point(1, 1);
+    double dot_sig_lam_0_c[sigma_rows * lam_0_cols];
+    double diff_mu_sigl_c[mu_rows];
+    double dot_bpre_mu_sig1_c[1];
 
-    dot_b_pre_sig_c = twodim_to_point(1, sigma_cols);
-    dot_b_sigt_c = twodim_to_point(1, sigma_rows);
-    dot_b_sst_bt_c = twodim_to_point(1, 1);
+    double dot_b_pre_sig_c[sigma_cols];
+    double dot_b_sigt_c[sigma_rows];
+    double dot_b_sst_bt_c[1];
 
     /*  Elements for b_pre calculation */
-    dot_sig_lam_1_c = twodim_to_point(sigma_rows, lam_1_cols);
-    diff_phi_sig_c = twodim_to_point(phi_rows, phi_cols);
-    dot_phisig_b_c = twodim_to_point(phi_cols, 1);
+    double dot_sig_lam_1_c[sigma_rows * lam_1_cols];
+    double diff_phi_sig_c[phi_rows * phi_cols];
+    double dot_phisig_b_c[phi_cols];
     
     /*  Perform operations */
-
-    a_pre[0] = -delta_0_c[0][0];
-    a_fin[0][0] = -a_pre[0];
-    for (i = 0; i < delta_1_rows; i++) {
-        b_pre[i] = -delta_1_c[0][i];
-        b_fin[0][i] = -b_pre[i];
+    a_pre[0] = -delta_0_c[0];
+    a_fin[0] = -a_pre[0];
+    for (i = 0;i < delta_1_rows;i++) {
+        b_pre[i] = -delta_1_c[i];
+        b_fin[i] = -b_pre[i];
     }
 
-    b_pre_mth_c = twodim_to_point(b_pre_rows, 1);
+    double b_pre_mth_c[b_pre_rows];
 
     /* Calculate unchanging elements*/
     /* Debugged this looks good */
@@ -221,7 +232,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
         /*  think need this b_pre_mth for proper array reading */
         for (i = 0; i < b_pre_rows; i++) {
-            b_pre_mth_c[i][0] = b_pre[bp_offset + i];
+            b_pre_mth_c[i] = b_pre[bp_offset + i];
         }
 
         /* Debugged this call, seems to be fine */
@@ -244,9 +255,9 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
         //Divisor to prepare for b_fin calculation
         divisor = (double)1 / ((double)next_mth + (double)1);
 
-        a_pre[next_mth] = a_pre[mth] + dot_bpre_mu_sig1_c[0][0] +
-                        (half * dot_b_sst_bt_c[0][0]) - delta_0_c[0][0];
-        a_fin[next_mth][0] = -a_pre[next_mth] * divisor;
+        a_pre[next_mth] = a_pre[mth] + dot_bpre_mu_sig1_c[0] +
+                        (half * dot_b_sst_bt_c[0]) - delta_0_c[0];
+        a_fin[next_mth] = -a_pre[next_mth] * divisor;
 
         /* Calculate next b elements */
         mat_prodct(sigma_rows, sigma_cols, sigma_c,
@@ -262,33 +273,23 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
         //Issue seems to be that b_fin is not able to dynaically allocate these
         //doubles using both
         for (i = 0; i < delta_1_rows; i++) {
-            b_pre[bp_noffset + i] = dot_phisig_b_c[i][0] - delta_1_c[0][i];
-            b_fin[next_mth][i] = -b_pre[bp_noffset + i] * divisor;
+            b_pre[bp_noffset + i] = dot_phisig_b_c[i] - delta_1_c[i];
+            b_fin[bp_noffset + i] = -b_pre[bp_noffset + i] * divisor;
         }
+        double checker = 0;
     }
 
     /* Free core arrays */
-    free_CarrayfPy(lam_0_c);
-    free_CarrayfPy(lam_1_c);
-    free_CarrayfPy(delta_0_c);
-    free_CarrayfPy(delta_1_c);
-    free_CarrayfPy(mu_c);
-    free_CarrayfPy(phi_c);
-    free_CarrayfPy(sigma_c);
-    free_CarrayfPy(a_fin);
-    free_CarrayfPy(b_fin);
+    free(lam_0_c);
+    free(lam_1_c);
+    free(delta_0_c);
+    free(delta_1_c);
+    free(mu_c);
+    free(phi_c);
+    free(sigma_c);
 
-    /* Free secondary arrays */
-    free_Carrayptrs(dot_sig_lam_0_c, sigma_rows);
-    free_Carrayptrs(diff_mu_sigl_c, mu_rows);
-    free_Carrayptrs(dot_bpre_mu_sig1_c, 1);
-    free_Carrayptrs(dot_b_pre_sig_c, 1);
-    free_Carrayptrs(dot_b_sigt_c, 1);
-    free_Carrayptrs(dot_b_sst_bt_c, 1);
-    free_Carrayptrs(dot_sig_lam_1_c, sigma_rows);
-    free_Carrayptrs(diff_phi_sig_c, phi_rows);
-    free_Carrayptrs(dot_phisig_b_c, phi_cols);
-    free_Carrayptrs(b_pre_mth_c, b_pre_rows);
+    a_fin_array = PyArray_SimpleNewFromData(2, a_dims, NPY_DOUBLE, a_fin);
+    b_fin_array = PyArray_SimpleNewFromData(2, b_dims, NPY_DOUBLE, b_fin);
 
     PyObject *Result = Py_BuildValue("OO", a_fin_array, b_fin_array);
     Py_DECREF(a_fin_array);
@@ -302,8 +303,10 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     Memory is allocated!                                    */
 double *pymatrix_to_Carrayptrs(PyArrayObject *arrayin) {
     double *c, *a, *inc;
-    int i, mat_size;
+    int i, mat_size, n, m;
     
+    n = arrayin->dimensions[0];
+    m = arrayin->dimensions[1];
     mat_size = n * m;
     c = malloc(n * m * sizeof(*c));
     a = (double *) arrayin->data;  
@@ -315,32 +318,6 @@ double *pymatrix_to_Carrayptrs(PyArrayObject *arrayin) {
     }
     return inc;
 }
-
-/* ==== Allocate a double *vector (vec of pointers) ======================
-    Memory is Allocated!  See void free_Carray(double ** )                  */
-double **ptrvector(long n) {
-    double **v;
-    v=(double **)malloc((n*sizeof(double)));
-    if (!v)   {
-        printf("In **ptrvector. Allocation of memory for double array failed.");
-        exit(0);  }
-    return v;
-}
-
-/*  ==== Create ** double from double 2-dim array === */
-double **twodim_to_point(int rows, int cols) {
-    double **pointer = malloc(rows * sizeof(double *));
-    int row;
-    if (!pointer) {
-        printf("In **ptrvector. Allocation of memory for double array failed.");
-        exit(0);  
-    }
-    for(row = 0; row < rows; row++) {
-        pointer[row] = malloc(cols * sizeof(double));
-    }
-    return pointer;
-}
-
 
 /* ==== Free a double *vector (vec of pointers) ========================== */ 
 void free_Carrayptrs(double **v, int rows)  {
