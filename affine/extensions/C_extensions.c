@@ -180,8 +180,8 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     sigma_c = pymatrix_to_Carrayptrs(sigma);
 
     /*  Initialize collector arrays */
-    int a_dims[2] = {max_mth, 1};
-    int b_dims[2] = {max_mth, delta_1_rows};
+    npy_intp a_dims[2] = {max_mth, 1};
+    npy_intp b_dims[2] = {max_mth, delta_1_rows};
     int b_pre_rows = delta_1_rows;
 
     double a_pre[max_mth];
