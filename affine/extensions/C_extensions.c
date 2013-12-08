@@ -189,14 +189,6 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     double a_fin[max_mth];
     double b_fin[max_mth * delta_1_rows];
 
-    a_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, a_dims, 
-                                                              NPY_DOUBLE, 
-                                                              a_fin);
-    b_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, b_dims, 
-                                                              NPY_DOUBLE,
-                                                              b_fin);
-
-
     /* Initialize intermediate arrays */
     /*  Elements for a_pre calculation */
     double dot_sig_lam_0_c[sigma_rows * lam_0_cols];
@@ -296,6 +288,13 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     free(sigma_c);
     /*free(a_fin);
     free(b_fin);*/
+
+    a_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, a_dims, 
+                                                              NPY_DOUBLE, 
+                                                              a_fin);
+    b_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, b_dims, 
+                                                              NPY_DOUBLE,
+                                                              b_fin);
 
     PyObject *Result = Py_BuildValue("OO", a_fin_array, b_fin_array);
     Py_DECREF(a_fin_array);
