@@ -94,6 +94,16 @@ class Affine(LikelihoodModel):
         self.phi_e = phi_e
         self.sigma_e = sigma_e
 
+        #ensure that arrays are contiguous
+        if fast_gen_pred:
+            np.ascontiguousarray(self.lam_0_e, dtype=np.float64)
+            np.ascontiguousarray(self.lam_1_e, dtype=np.float64)
+            np.ascontiguousarray(self.delta_0_e, dtype=np.float64)
+            np.ascontiguousarray(self.delta_1_e, dtype=np.float64)
+            np.ascontiguousarray(self.mu_e, dtype=np.float64)
+            np.ascontiguousarray(self.phi_e, dtype=np.float64)
+            np.ascontiguousarray(self.sigma_e, dtype=np.float64)
+
         #generates mths: list of mths in yield curve data
         #only works for data labels matching regular expression
         #should probably be phased out
