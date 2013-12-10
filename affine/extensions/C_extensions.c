@@ -286,8 +286,10 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     free(mu_c);
     free(phi_c);
     free(sigma_c);
-    /*free(a_fin);
-    free(b_fin);*/
+
+    for (i = 0;i < max_mth;i++) {
+        printf("Value at %i was %10.3f\n", i, a_fin[i]);
+    }
 
     a_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, a_dims, 
                                                               NPY_DOUBLE, 

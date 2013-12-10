@@ -146,3 +146,4 @@ lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
 
 opt_a_solve, opt_b_solve = bsr_model.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                        delta_1, mu, phi, sigma)
+#print opt_a_solve
