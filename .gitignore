@@ -28,4 +28,13 @@
 
 /code/*.pkl
 /code/store_pass.py
+/temp_res/*
 *.pyc
+
+#temp files
+*.swp
+*.un~
+
+#Output Files
+My*
+*.lsf
