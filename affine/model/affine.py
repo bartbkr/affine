@@ -37,10 +37,10 @@ class Affine(LikelihoodModel):
     """
     This class defines an affine model of the term structure
     """
-    def __init__(self, yc_data, var_data, maxlags=4, freq='M', latent=False,
-                 no_err=None, lam_0_e=None, lam_1_e=None, delta_0_e=None,
-                 delta_1_e=None, mu_e=None, phi_e=None, sigma_e=None,
-                 mths=None):
+    def __init__(self, yc_data, var_data, lags=4, neqs=False, freq='M',
+                 latent=False, no_err=None, lam_0_e=None, lam_1_e=None,
+                 delta_0_e=None, delta_1_e=None, mu_e=None, phi_e=None,
+                 sigma_e=None, mths=None, adjusted=False):
         """
         Attempts to solve affine model
         yc_data : DataFrame
@@ -80,8 +80,11 @@ class Affine(LikelihoodModel):
         self.yc_names = yc_data.columns
         self.num_yields = len(yc_data.columns)
         self.names = names = var_data.columns
-        k_ar = self.k_ar = maxlags
-        neqs = self.neqs = len(names)
+        k_ar = self.k_ar = lags
+        if neqs:
+            self.neqs = neqs
+        else:
+            neqs = self.neqs = len(names)
         self.freq = freq
         self.latent = latent
         self.no_err = no_err
@@ -112,10 +115,6 @@ class Affine(LikelihoodModel):
         self.mths = mths
         self.max_mth = max(mths)
 
-        assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
-                                                - k_ar + 1, \
-            "Number of non-null values unequal in VAR and yield curve data"
-
         if latent:
             #assertions for correction passed in parameters
             lat = self.lat = len(no_err)
@@ -129,15 +128,26 @@ class Affine(LikelihoodModel):
         else:
             self.lat = 0
 
-        #maybe this should be done in setup script...
-        #get VAR input data ready
-        x_t_na = var_data.copy()
-        for lag in range(k_ar-1):
-            for var in var_data.columns:
-                x_t_na[var + '_m' + str(lag + 1)] = px.Series(var_data[var].
-                        values[:-(lag+1)], index=var_data.index[lag + 1:])
+        if adjusted:
+            assert len(yc_data.dropna(axis=0)) == \
+                   len(var_data.dropna(axis=0)), \
+                "Number of non-null values unequal in VAR and yield curve data"
+            var_data_vert = self.var_data_vert = var_data
 
-        var_data_vert = self.var_data_vert = x_t_na.dropna(axis=0)
+        else:
+            assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
+                                                    - k_ar + 1, \
+                "Number of non-null values unequal in VAR and yield curve data"
+
+            #maybe this should be done in setup script...
+            #get VAR input data ready
+            x_t_na = var_data.copy()
+            for lag in range(k_ar-1):
+                for var in var_data.columns:
+                    x_t_na[var + '_m' + str(lag + 1)] = px.Series(var_data[var].
+                            values[:-(lag+1)], index=var_data.index[lag + 1:])
+
+            var_data_vert = self.var_data_vert = x_t_na.dropna(axis=0)
         self.periods = len(self.var_data)
         self.guess_length = self._gen_guess_length()
 
@@ -549,6 +559,8 @@ class Affine(LikelihoodModel):
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
+
+            ipdb.set_trace()
 
         else:
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
