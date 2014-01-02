@@ -186,8 +186,15 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     double a_pre[max_mth];
     double b_pre[max_mth * delta_1_rows];
-    double a_fin[max_mth];
-    double b_fin[max_mth * delta_1_rows];
+    double *a_fin = (double*) malloc(max_mth*sizeof(double));
+    double *b_fin = (double*) malloc(max_mth * delta_1_rows * sizeof(double)); 
+
+    if (a_fin==NULL) {
+        printf("Failed to allocate memory for a_fin\n");
+    }
+    if (b_fin==NULL) {
+        printf("Failed to allocate memory for b_fin\n");
+    }
 
     /* Initialize intermediate arrays */
     /*  Elements for a_pre calculation */
@@ -297,8 +304,8 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     PyArray_UpdateFlags(b_fin_array, NPY_OWNDATA);
 
     PyObject *Result = Py_BuildValue("OO", a_fin_array, b_fin_array);
-    Py_DECREF(a_fin_array);
-    Py_DECREF(b_fin_array);
+    //Py_DECREF(a_fin_array);
+    //Py_DECREF(b_fin_array);
 
     return Result;
 }

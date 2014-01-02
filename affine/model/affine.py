@@ -20,8 +20,6 @@ from operator import itemgetter
 from scipy import optimize
 from util import retry
 
-import ipdb
-
 #C extension
 try:
     import _C_extensions
@@ -132,22 +130,23 @@ class Affine(LikelihoodModel):
             assert len(yc_data.dropna(axis=0)) == \
                    len(var_data.dropna(axis=0)), \
                 "Number of non-null values unequal in VAR and yield curve data"
-            var_data_vert = self.var_data_vert = var_data
+            var_data_vert = self.var_data_vert = var_data.values[:, neqs:]
 
         else:
             assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
-                                                    - k_ar + 1, \
+                                                    - k_ar, \
                 "Number of non-null values unequal in VAR and yield curve data"
 
             #maybe this should be done in setup script...
             #get VAR input data ready
             x_t_na = var_data.copy()
-            for lag in range(k_ar-1):
+            for lag in range(1, k_ar + 1):
                 for var in var_data.columns:
-                    x_t_na[var + '_m' + str(lag + 1)] = px.Series(var_data[var].
-                            values[:-(lag+1)], index=var_data.index[lag + 1:])
+                    x_t_na[var + '_m' + str(lag)] = px.Series(var_data[var].
+                            values[:-(lag)], index=var_data.index[lag:])
 
-            var_data_vert = self.var_data_vert = x_t_na.dropna(axis=0)
+            var_data_vert = self.var_data_vert = x_t_na.dropna(axis=0).values[:, neqs:]
+
         self.periods = len(self.var_data)
         self.guess_length = self._gen_guess_length()
 
@@ -559,8 +558,6 @@ class Affine(LikelihoodModel):
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
-
-            ipdb.set_trace()
 
         else:
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
