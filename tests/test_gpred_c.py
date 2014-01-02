@@ -79,7 +79,7 @@ latent = True
 
 #create BSR x_t
 x_t_na = macro_data.copy()
-for t in range(k_ar-1):
+for t in range(1, k_ar + 1):
     for var in macro_data.columns:
         x_t_na[var + '_m' + str(t+1)] = px.Series(macro_data[var].values[:-(t+1)],
                                             index=macro_data.index[t+1:])
@@ -101,7 +101,7 @@ yc_data_use = ycdata.reindex(columns=['trb_m1', 'trb_m3', 'trb_m6', 'trcr_y1',
 
 mths = [1, 3, 6, 12, 36, 60, 120]
 final_ind = yc_data_use.index
-yc_data_use = yc_data_use.reindex(index=final_ind[k_ar - 1:])
+yc_data_use = yc_data_use.reindex(index=final_ind[k_ar:])
 
 #align number of obs between yields and grab rf rate
 #mth_only = to_mth(mod_yc_data)
