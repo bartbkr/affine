@@ -202,6 +202,7 @@ def params_to_list(lam_0=None, lam_1=None, delta_1=None, mu=None,
 def gen_guesses(neqs, k_ar, lat):
     """
     Generates Ang and Piazzesi guesses for matrices
+    This method is no longer relevant
     """
     dim = neqs * k_ar + lat
     lam_0 = np.zeros([dim, 1])

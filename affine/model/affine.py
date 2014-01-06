@@ -130,7 +130,8 @@ class Affine(LikelihoodModel):
             assert len(yc_data.dropna(axis=0)) == \
                    len(var_data.dropna(axis=0)), \
                 "Number of non-null values unequal in VAR and yield curve data"
-            var_data_vert = self.var_data_vert = var_data.values[:, neqs:]
+            var_data_vert = self.var_data_vert = var_data[ \
+                                                var_data.columns[neqs:]]
 
         else:
             assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
@@ -145,7 +146,8 @@ class Affine(LikelihoodModel):
                     x_t_na[var + '_m' + str(lag)] = px.Series(var_data[var].
                             values[:-(lag)], index=var_data.index[lag:])
 
-            var_data_vert = self.var_data_vert = x_t_na.dropna(axis=0).values[:, neqs:]
+            var_data_vert = self.var_data_vert = x_t_na.dropna( \
+                axis=0)[x_t_na.columns[neqs:]]
 
         self.periods = len(self.var_data)
         self.guess_length = self._gen_guess_length()
@@ -224,12 +226,15 @@ class Affine(LikelihoodModel):
             solv_cov = reslt[1]
 
         elif method == "ml":
-            solver = retry(self.fit, attempts)
-            solve = solver(start_params=guess_params, method=alg,
-                           maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                           ftol=ftol)
+            # solver = retry(self.fit, attempts)
+            # solve = solver(start_params=guess_params, method=alg,
+            #                maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+            #                ftol=ftol)
+            solve = self.fit(start_params=guess_params, method=alg,
+                             maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                             ftol=ftol)
             solve_params = solve.params
-            tvalues = solve.tvalues
+            score = self.score(solve_params)
 
         elif method == "angpiazml":
             solve = solver(start_params=params, method=alg, maxiter=maxiter,
@@ -243,6 +248,10 @@ class Affine(LikelihoodModel):
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
                                               mu, phi, sigma)
 
+        if lat:
+            var_data_wunob, jacob, yield_errs = self._solve_unobs(a_in=a_solve,
+                                                                  b_in=b_solve)
+
         #This will need to be refactored
         #if full_output:
             #return lam_0, lam_1, delta_0, delta_1, phi, sigma, a_solve, b_solve, output
@@ -253,8 +262,12 @@ class Affine(LikelihoodModel):
             return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
                    b_solve, output
         elif method == "ml":
-            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-                   b_solve, tvalues
+            if lat:
+                return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
+                       a_solve, b_solve, solve_params, var_data_wunob
+            else:
+                return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
+                       a_solve, b_solve, solve_params
 
     def score(self, params):
         """
@@ -362,6 +375,7 @@ class Affine(LikelihoodModel):
             b_pre[mth + 1] = np.dot((phi - np.dot(sigma, lam_1)).T, \
                                      b_pre[mth]) - delta_1[:, 0]
             b_solve[mth + 1] = -b_pre[mth + 1] * n_inv[mth + 1]
+
         return a_solve, b_solve
 
     def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
@@ -471,7 +485,7 @@ class Affine(LikelihoodModel):
         #now solve for unknown factors using long arrays
         unobs = np.dot(la.inv(b_sel_unobs),
                     yc_data.filter(items=noerr_cols).values.T - a_sel - \
-                    np.dot(b_sel_obs, var_data_vert.values.T))
+                    np.dot(b_sel_obs, var_data_vert.T))
 
         #re-initialize a_sel, b_sel_obs, and b_sel_obs
         a_sel = np.zeros([err_num, 1])
@@ -485,7 +499,7 @@ class Affine(LikelihoodModel):
                     b_in[err_mth[ix] - 1][neqs * k_ar:]
 
         yield_errs = yc_data.filter(items=err_cols).values.T - a_sel - \
-                        np.dot(b_sel_obs, var_data_vert.values.T) - \
+                        np.dot(b_sel_obs, var_data_vert.T) - \
                         np.dot(b_sel_unobs, unobs)
 
         var_data_c = var_data_vert.copy()
@@ -567,7 +581,7 @@ class Affine(LikelihoodModel):
 
         for i in mths:
             pred["l_tr_m" + str(i)] = solve_a[i-1] + np.dot(solve_b[i-1],
-                                      data.T)
+                                                            data.T)
 
         pred = self._stack_yields(pred)
 
