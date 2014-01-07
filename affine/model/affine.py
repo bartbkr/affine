@@ -566,6 +566,7 @@ class Affine(LikelihoodModel):
         params : list
             guess parameters
         """
+        paramcopy = params[:]
         lam_0_e = self.lam_0_e.copy()
         lam_1_e = self.lam_1_e.copy()
         delta_0_e = self.delta_0_e.copy()
@@ -580,13 +581,20 @@ class Affine(LikelihoodModel):
         arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
                                      all_arrays])
 
+        guesses = []
         #check if each element is masked or not
         for pos, struct in enumerate(all_arrays):
-            for ix in np.nditer(
-            new_mask = params[arg_sep[pos]:arg_sep[pos + 1]]
-            struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
+            it = np.nditer(struct.mask, flags=['multi_index'])
+            while not it.finished:
+                if it[0] == True:
+                    val = paramcopy.pop(0)            
+                    if val == 0:
+                        struct[it.multi_index] = 0
+                    else:
+                        guesses.append(val)
+                it.iternext()
 
-        return tuple(all_arrays)
+        return tuple(all_arrays + [guesses])
 
     def _affine_pred(self, data, *params):
         """
