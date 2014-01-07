@@ -151,6 +151,7 @@ class Affine(LikelihoodModel):
 
         self.periods = len(self.var_data)
         self.guess_length = self._gen_guess_length()
+        assert self.guess_length > 0, "guess_length must be at least 1"
 
         #final size checks
         self._size_checks()
@@ -243,7 +244,7 @@ class Affine(LikelihoodModel):
             tvalues = solve.tvalues
 
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
-                self._params_to_array(solve_params)
+                self.params_to_array(solve_params)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
                                               mu, phi, sigma)
@@ -304,7 +305,7 @@ class Affine(LikelihoodModel):
         #only seems to be for certain solution methods
 
         lam_0, lam_1, delta_0, delta_1, mu, phi, \
-            sigma = self._params_to_array(params)
+            sigma = self.params_to_array(params)
 
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
@@ -405,7 +406,7 @@ class Affine(LikelihoodModel):
         var_data_vert = self.var_data_vert
 
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
-            self._params_to_array(params=params)
+            self.params_to_array(params=params)
 
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
@@ -528,7 +529,7 @@ class Affine(LikelihoodModel):
             mths.append(int(re.match(matcher, column).group(2)))
         return mths
 
-    def _params_to_array(self, params):
+    def params_to_array(self, params):
         """
         Process params input into appropriate arrays
 
@@ -556,6 +557,37 @@ class Affine(LikelihoodModel):
 
         return tuple(all_arrays)
 
+    def params_to_array_zeromask(self, params):
+        """
+        Process params input into appropriate arrays
+
+        Parameters
+        ----------
+        params : list
+            guess parameters
+        """
+        lam_0_e = self.lam_0_e.copy()
+        lam_1_e = self.lam_1_e.copy()
+        delta_0_e = self.delta_0_e.copy()
+        delta_1_e = self.delta_1_e.copy()
+        mu_e = self.mu_e.copy()
+        phi_e = self.phi_e.copy()
+        sigma_e = self.sigma_e.copy()
+
+        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e,
+                      sigma_e]
+
+        arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
+                                     all_arrays])
+
+        #check if each element is masked or not
+        for pos, struct in enumerate(all_arrays):
+            for ix in np.nditer(
+            new_mask = params[arg_sep[pos]:arg_sep[pos + 1]]
+            struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
+
+        return tuple(all_arrays)
+
     def _affine_pred(self, data, *params):
         """
         Function based on lambda and data that generates predicted yields
@@ -567,7 +599,7 @@ class Affine(LikelihoodModel):
         yc_data = self.yc_data
 
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma \
-                = self._params_to_array(params)
+                = self.params_to_array(params)
 
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
