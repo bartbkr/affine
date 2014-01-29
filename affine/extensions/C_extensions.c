@@ -139,9 +139,9 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                   *a_fin_array, *b_fin_array;
 
     int lam_0_cols, lam_1_cols, mu_rows, mu_cols, phi_rows, phi_cols,
-        sigma_rows, sigma_cols, mth, bp_offset, bp_noffset, next_mth, i;
+        sigma_rows, sigma_cols, mat, bp_offset, bp_noffset, next_mat, i;
 
-    const int max_mth;
+    const int max_mat;
 
     double *lam_0_c, *lam_1_c, *delta_0_c, *delta_1_c, *mu_c, *phi_c,
            *sigma_c, divisor;
@@ -151,7 +151,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!i",
         &PyArray_Type, &lam_0, &PyArray_Type, &lam_1, &PyArray_Type, &delta_0,
         &PyArray_Type, &delta_1, &PyArray_Type, &mu, &PyArray_Type, &phi,
-        &PyArray_Type, &sigma, &max_mth))
+        &PyArray_Type, &sigma, &max_mat))
         return NULL;
     if (NULL == lam_0 || NULL == lam_1 || NULL == delta_0 || NULL == delta_1 ||
         NULL == mu || NULL == phi || NULL == sigma) return NULL;
@@ -180,14 +180,14 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     sigma_c = pymatrix_to_Carrayptrs(sigma);
 
     /*  Initialize collector arrays */
-    npy_intp a_dims[2] = {max_mth, 1};
-    npy_intp b_dims[2] = {max_mth, delta_1_rows};
+    npy_intp a_dims[2] = {max_mat, 1};
+    npy_intp b_dims[2] = {max_mat, delta_1_rows};
     int b_pre_rows = delta_1_rows;
 
-    double a_pre[max_mth];
-    double b_pre[max_mth * delta_1_rows];
-    double *a_fin = (double*) malloc(max_mth*sizeof(double));
-    double *b_fin = (double*) malloc(max_mth * delta_1_rows * sizeof(double)); 
+    double a_pre[max_mat];
+    double b_pre[max_mat * delta_1_rows];
+    double *a_fin = (double*) malloc(max_mat*sizeof(double));
+    double *b_fin = (double*) malloc(max_mat * delta_1_rows * sizeof(double)); 
 
     if (a_fin==NULL) {
         printf("Failed to allocate memory for a_fin\n");
@@ -219,7 +219,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
         b_fin[i] = -b_pre[i];
     }
 
-    double b_pre_mth_c[b_pre_rows];
+    double b_pre_mat_c[b_pre_rows];
 
     /* Calculate unchanging elements*/
     /* Debugged this looks good */
@@ -229,26 +229,26 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     /* Debugged this looks good */
     mat_subtract(mu_rows, mu_cols, mu_c, dot_sig_lam_0_c, diff_mu_sigl_c);
 
-    for (mth = 0; mth < (max_mth - 1); mth++) {
+    for (mat = 0; mat < (max_mat - 1); mat++) {
 
-        next_mth = mth + 1;
+        next_mat = mat + 1;
 
         //Setup indexes
-        bp_offset = mth * delta_1_rows;
-        bp_noffset = next_mth * delta_1_rows;
+        bp_offset = mat * delta_1_rows;
+        bp_noffset = next_mat * delta_1_rows;
 
-        /*  think need this b_pre_mth for proper array reading */
+        /*  think need this b_pre_mat for proper array reading */
         for (i = 0; i < b_pre_rows; i++) {
-            b_pre_mth_c[i] = b_pre[bp_offset + i];
+            b_pre_mat_c[i] = b_pre[bp_offset + i];
         }
 
         /* Debugged this call, seems to be fine */
-        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth_c, 
+        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mat_c, 
                           1, diff_mu_sigl_c, 
                           dot_bpre_mu_sig1_c);
 
         /* debugged this, it looks good */
-        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mth_c,
+        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mat_c,
                           sigma_cols, sigma_c, 
                           dot_b_pre_sig_c);
         /* debugged this call, looks good */
@@ -256,15 +256,15 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
                           sigma_rows, sigma_c,
                           dot_b_sigt_c);
         mat_prodct(1, sigma_rows, dot_b_sigt_c,
-                   1, b_pre_mth_c,
+                   1, b_pre_mat_c,
                    dot_b_sst_bt_c);
 
         //Divisor to prepare for b_fin calculation
-        divisor = (double)1 / ((double)next_mth + (double)1);
+        divisor = (double)1 / ((double)next_mat + (double)1);
 
-        a_pre[next_mth] = a_pre[mth] + dot_bpre_mu_sig1_c[0] +
+        a_pre[next_mat] = a_pre[mat] + dot_bpre_mu_sig1_c[0] +
                         (half * dot_b_sst_bt_c[0]) - delta_0_c[0];
-        a_fin[next_mth] = -a_pre[next_mth] * divisor;
+        a_fin[next_mat] = -a_pre[next_mat] * divisor;
 
         /* Calculate next b elements */
         mat_prodct(sigma_rows, sigma_cols, sigma_c,
@@ -273,7 +273,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
         mat_subtract(phi_rows, phi_cols, phi_c, dot_sig_lam_1_c, 
                      diff_phi_sig_c);
         mat_prodct_tpose1(phi_rows, phi_cols, diff_phi_sig_c,
-                          1, b_pre_mth_c,
+                          1, b_pre_mat_c,
                           dot_phisig_b_c);
 
         
