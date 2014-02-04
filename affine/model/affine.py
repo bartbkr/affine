@@ -38,24 +38,28 @@ class Affine(LikelihoodModel, StateSpaceModel):
     """
     This class defines an affine model of the term structure
     """
-    def __init__(self, yc_data, var_data, lags=4, neqs=False, freq='M',
-                 latent=False, no_err=None, lam_0_e=None, lam_1_e=None,
-                 delta_0_e=None, delta_1_e=None, mu_e=None, phi_e=None,
-                 sigma_e=None, mats=None, adjusted=False):
+    def __init__(self, yc_data, var_data, lags=4, neqs=False, latent=False,
+                 no_err=None, lam_0_e=None, lam_1_e=None, delta_0_e=None,
+                 delta_1_e=None, mu_e=None, phi_e=None, sigma_e=None,
+                 mats=None, adjusted=False):
         """
         Attempts to solve affine model
         yc_data : DataFrame
             yield curve data
         var_data : DataFrame
             data for var model
-        max_lags: int
+        lags: int
             number of lags for VAR system
-        freq : string
-            frequency of data
+        neqs: int
+            Number of equations
+            Only respected when adjusted=True
+        latent: int
+            Number of latent variables to estimate
         no_err : list of ints
             list of the column indexes of yields to be measured without error
             ex: [0, 3, 4]
-            (1st, 4th, and 5th columns in yc_data to be estimatd without error)
+            (1st, 4th, and 5th columns in yc_data to be estimated without
+            error)
 
         For all estimate parameter arrays:
             elements marked with 'E' or 'e' are estimated
@@ -86,7 +90,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
             self.neqs = neqs
         else:
             neqs = self.neqs = len(names)
-        self.freq = freq
         self.latent = latent
         self.no_err = no_err
 
