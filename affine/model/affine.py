@@ -39,9 +39,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
     This class defines an affine model of the term structure
     """
     def __init__(self, yc_data, var_data, lags=4, neqs=False, latent=False,
-                 no_err=None, lam_0_e=None, lam_1_e=None, delta_0_e=None,
-                 delta_1_e=None, mu_e=None, phi_e=None, sigma_e=None,
-                 mats=None, adjusted=False):
+                 no_err=None, adjusted=False, lam_0_e=None, lam_1_e=None,
+                 delta_0_e=None, delta_1_e=None, mu_e=None, phi_e=None,
+                 sigma_e=None, mats=None):
         """
         Attempts to solve affine model
         yc_data : DataFrame
@@ -50,6 +50,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
             data for var model
         lags: int
             number of lags for VAR system
+            Only respected when adjusted=False
         neqs: int
             Number of equations
             Only respected when adjusted=True
