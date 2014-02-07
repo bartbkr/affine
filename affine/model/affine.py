@@ -244,9 +244,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solv_cov = reslt[1]
 
         elif method == "ml":
-            self.fit(start_params=guess_params, method=alg, maxiter=maxiter,
-                     maxfun=maxfev, xtol=xtol, ftol=ftol)
-            solve_params = self.params
+            reslt = self.fit(start_params=guess_params, method=alg,
+                             maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                             ftol=ftol)
+            solve_params = reslt.params
             score = self.score(solve_params)
 
         elif method == "kalman":
@@ -350,11 +351,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
         sign, sigma_logdt = nla.slogdet(np.dot(sigma, sigma.T))
         sigma_slogdt = sign * sigma_logdt
 
+        var_yields_errs = np.var(yield_errs, axis=1)
+
         like = -(per - 1) * j_slogdt - (per - 1) * 1.0 / 2 * sigma_slogdt - \
                1.0 / 2 * np.sum(np.dot(np.dot(errors.T, \
                la.inv(np.dot(sigma, sigma.T))), errors)) - (per - 1) / 2.0 * \
-               np.log(np.sum(np.var(yield_errs, axis=1))) - 1.0 / 2 * \
-               np.sum(yield_errs**2/np.var(yield_errs, axis=1)[None].T)
+               np.log(np.sum(var_yields_errs)) - 1.0 / 2 * \
+               np.sum(yield_errs**2/var_yields_errs[None].T)
 
         return like
 
@@ -419,6 +422,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         Returns combined loglikelihood for kalman filter
         Ignores F,A,H,Q,R,
         """
+        paramsorig = params
         if penalty:
             params = np.min((np.max((lowerbounds, params), axis=0),upperbounds),
                 axis=0)
