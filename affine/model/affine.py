@@ -12,6 +12,7 @@ import re
 
 from numpy import linalg as nla
 from numpy import ma
+from scipy.optimize import fmin_I_bfgs_b
 from statsmodels.tsa.api import VAR
 from statsmodels.base.model import LikelihoodModel
 from statsmodels.regression.linear_model import OLS
@@ -242,11 +243,22 @@ class Affine(LikelihoodModel, StateSpaceModel):
             self.noerr_cols, self.err_cols = self._gen_col_names()
             #set to unconditional mean of short_rate
 
-            reslt = self.fit(start_params=guess_params, method=alg,
-                             maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                             ftol=ftol)
-            solve_params = reslt.params
-            score = self.score(solve_params)
+            if method == "bfgs-b"
+                func = self.nloglike
+                bounds = self._gen_bounds(lowerbounds, upperbounds)
+                reslt = fmin_i_bfgs_b(x0=guess_params, approx_grad=True,
+                                      bounds=bounds, m=1e7, maxfun=maxfev,
+                                      maxiter=maxiter)
+                solve_params = reslt[0]
+                score = self.score(solve_params)
+
+            else:
+
+                reslt = self.fit(start_params=guess_params, method=alg,
+                                 maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                                 ftol=ftol)
+                solve_params = reslt.params
+                score = self.score(solve_params)
 
         elif method == "kalman":
             self.fit_kalman(start_params=guess_params, method=alg, xi10=xi10,
@@ -355,6 +367,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
                np.sum(yield_errs**2/var_yields_errs[None].T)
 
         return like
+
+    def nloglike(self, params):
+        """
+        Negative Loglikelihood used in latent factor models
+        """
+        like = self.loglike(params)
+        return -like
 
     def gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi, sigma):
         """
@@ -779,3 +798,21 @@ class Affine(LikelihoodModel, StateSpaceModel):
                     "Shape of phi_e incorrect"
             assert np.shape(self.sigma_e) == (dim, dim), \
                     "Shape of sig_e incorrect"
+
+    def _gen_bounds(self, lowerbounds, upperbounds):
+        if lowerbounds or upperbounds:
+            bounds = []
+            for bix in range(max(len(lowerbounds), len(upperbounds))):
+                tbound = []
+                if lowerbounds:
+                    tbound.append(lowerbounds[bix])
+                else:
+                    tbound.append(-np.inf)
+                if upperbounds:
+                    tbound.append(upperbounds[bix])
+                else:
+                    tbound.append(np.inf)
+                bounds.append(tuple(tbound))
+        else:
+            return None
+
