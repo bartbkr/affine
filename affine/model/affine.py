@@ -12,7 +12,7 @@ import re
 
 from numpy import linalg as nla
 from numpy import ma
-from scipy.optimize import fmin_I_bfgs_b
+from scipy.optimize import fmin_l_bfgs_b
 from statsmodels.tsa.api import VAR
 from statsmodels.base.model import LikelihoodModel
 from statsmodels.regression.linear_model import OLS
@@ -243,10 +243,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
             self.noerr_cols, self.err_cols = self._gen_col_names()
             #set to unconditional mean of short_rate
 
-            if method == "bfgs-b"
+            if method == "bfgs-b":
                 func = self.nloglike
                 bounds = self._gen_bounds(lowerbounds, upperbounds)
-                reslt = fmin_i_bfgs_b(x0=guess_params, approx_grad=True,
+                reslt = fmin_l_bfgs_b(x0=guess_params, approx_grad=True,
                                       bounds=bounds, m=1e7, maxfun=maxfev,
                                       maxiter=maxiter)
                 solve_params = reslt[0]
