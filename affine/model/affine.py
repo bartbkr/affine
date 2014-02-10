@@ -21,8 +21,6 @@ from operator import itemgetter
 from scipy import optimize
 from util import retry
 
-import ipdb
-
 #C extension
 try:
     import _C_extensions
@@ -38,10 +36,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
     """
     This class defines an affine model of the term structure
     """
-    def __init__(self, yc_data, var_data, lags=4, neqs=False, latent=False,
-                 no_err=None, adjusted=False, lam_0_e=None, lam_1_e=None,
-                 delta_0_e=None, delta_1_e=None, mu_e=None, phi_e=None,
-                 sigma_e=None, mats=None):
+    def __init__(self, yc_data, var_data, lags=4, neqs=False, mats=None,
+                 lam_0_e=None, lam_1_e=None, delta_0_e=None, delta_1_e=None,
+                 mu_e=None, phi_e=None, sigma_e=None, latent=False,
+                 adjusted=False):
         """
         Attempts to solve affine model
         yc_data : DataFrame
@@ -56,11 +54,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
             Only respected when adjusted=True
         latent: int
             Number of latent variables to estimate
-        no_err : list of ints
-            list of the column indexes of yields to be measured without error
-            ex: [0, 3, 4]
-            (1st, 4th, and 5th columns in yc_data to be estimated without
-            error)
 
         For all estimate parameter arrays:
             elements marked with 'E' or 'e' are estimated
@@ -92,25 +85,29 @@ class Affine(LikelihoodModel, StateSpaceModel):
         else:
             neqs = self.neqs = len(names)
         self.latent = latent
-        self.no_err = no_err
 
         self.lam_0_e = lam_0_e
         self.lam_1_e = lam_1_e
         self.delta_0_e = delta_0_e
         self.delta_1_e = delta_1_e
+
         self.mu_e = mu_e
         self.phi_e = phi_e
         self.sigma_e = sigma_e
 
+        print "fast_gen_pred = " + str(fast_gen_pred)
+
         #ensure that arrays are contiguous
-        if fast_gen_pred:
-            np.ascontiguousarray(self.lam_0_e, dtype=np.float64)
-            np.ascontiguousarray(self.lam_1_e, dtype=np.float64)
-            np.ascontiguousarray(self.delta_0_e, dtype=np.float64)
-            np.ascontiguousarray(self.delta_1_e, dtype=np.float64)
-            np.ascontiguousarray(self.mu_e, dtype=np.float64)
-            np.ascontiguousarray(self.phi_e, dtype=np.float64)
-            np.ascontiguousarray(self.sigma_e, dtype=np.float64)
+        # if fast_gen_pred:
+        #     self.lam_0_e = np.ascontiguousarray(self.lam_0_e, dtype=np.float64)
+        #     self.lam_1_e = np.ascontiguousarray(self.lam_1_e, dtype=np.float64)
+        #     self.delta_0_e = np.ascontiguousarray(self.delta_0_e,
+        #                                           dtype=np.float64)
+        #     self.delta_1_e = np.ascontiguousarray(self.delta_1_e,
+        #                                           dtype=np.float64)
+        #     self.mu_e = np.ascontiguousarray(self.mu_e, dtype=np.float64)
+        #     self.phi_e = np.ascontiguousarray(self.phi_e, dtype=np.float64)
+        #     self.sigma_e = np.ascontiguousarray(self.sigma_e, dtype=np.float64)
 
         #generates mats: list of mats in yield curve data
         #only works for data labels matching regular expression
@@ -121,16 +118,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.max_mat = max(mats)
 
         if latent:
-            if no_err is None:
-                self.lat = latent
-            #assertions for correction passed in parameters
-            else:
-                lat = self.lat = len(no_err)
-                self.err = list(set(range(len(mats))).difference(no_err))
-                self.no_err_mat, self.err_mat = self._gen_mat_list()
-                #gen position list for processing list input to solver
-                self.noerr_cols, self.err_cols = self._gen_col_names()
-                #set to unconditional mean of short_rate
+            self.lat = latent
         else:
             self.lat = 0
 
@@ -170,23 +158,27 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         super(Affine, self).__init__(var_data_vert)
 
-    def solve(self, guess_params,  method="ls", alg="newton", attempts=5,
-              maxfev=10000, maxiter=10000, ftol=1e-100, xtol=1e-100,
-              xi10=[0], ntrain=1, penalty=False, upperbounds=None,
-              lowerbounds=None, full_output=False):
+    def solve(self, guess_params, method="nls", alg="newton", no_err=None,
+              attempts=5, maxfev=10000, maxiter=10000, ftol=1e-100,
+              xtol=1e-100, xi10=[0], ntrain=1,  penalty=False,
+              upperbounds=None, lowerbounds=None, full_output=False):
         """
         Attempt to solve affine model
 
         guess_params : list
             List of starting values for parameters to be estimated
             In row-order and ordered as masked arrays
+        no_err : list of ints
+            list of the column indexes of yields to be measured without error
+            ex: [0, 3, 4]
+            (1st, 4th, and 5th columns in yc_data to be estimated without
+            error)
 
         method : string
             solution method
-            ls = linear least squares
             nls = nonlinear least squares
-            ml = maximum likelihood
-            angpiazml = ang and piazzesi multi-step ML
+            ml = direct maximum likelihood
+            kalman = kalman filter derived maximum likelihood
         alg : str {'newton','nm','bfgs','powell','cg', or 'ncg'}
             algorithm used for numerical approximation
             Method can be 'newton' for Newton-Raphson, 'nm' for Nelder-Mead,
@@ -215,6 +207,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         """
         k_ar = self.k_ar
         neqs = self.neqs
+        mats = self.mats
         latent = self.latent
         yc_data = self.yc_data
         var_data_vert = self.var_data_vert
@@ -222,14 +215,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         if method == "kalman" and not self.latent:
            raise NotImplementedError( \
             "Kalman filter not supported with no latent factors")
-
-        if method == "ls":
-            func = self._affine_nsum_errs
-            solver = retry(optimize.leastsq, attempts)
-            reslt = solver(func, guess_params, maxfev=maxfev, xtol=xtol,
-                           ftol=ftol, full_output=full_output)
-            solve_params = reslt[0]
-            output = reslt[1:]
 
         elif method == "nls":
             func = self._affine_pred
@@ -244,6 +229,19 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solv_cov = reslt[1]
 
         elif method == "ml":
+            if no_err == None:
+                no_err = []
+            assert len(no_err) == self.lat, \
+                "Number of columns estimated without error must match " + \
+                "number of latent variables"
+            self.no_err = no_err
+            #parameters for identification of yields measured without error
+            self.err = list(set(range(len(mats))).difference(no_err))
+            self.no_err_mat, self.err_mat = self._gen_mat_list()
+            #gen position list for processing list input to solver
+            self.noerr_cols, self.err_cols = self._gen_col_names()
+            #set to unconditional mean of short_rate
+
             reslt = self.fit(start_params=guess_params, method=alg,
                              maxiter=maxiter, maxfun=maxfev, xtol=xtol,
                              ftol=ftol)
@@ -274,9 +272,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         if method == "nls":
             return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
                    b_solve, solv_cov
-        elif method == "ls":
-            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-                   b_solve, output
         elif method == "ml":
             if latent:
                 return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
@@ -466,36 +461,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         return loglike
 
-    def _affine_nsum_errs(self, params):
-        """
-        This function generates the sum of the prediction errors
-        """
-        #This function is slow
-        lat = self.lat
-        mats = self.mats
-        yc_data = self.yc_data
-        var_data_vert = self.var_data_vert
-
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
-            self.params_to_array(params=params)
-
-        if fast_gen_pred:
-            solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
-                                                      delta_1, mu, phi, sigma)
-        else:
-            solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
-                                                  delta_1, mu, phi, sigma)
-        errs = []
-
-        yc_data_val = yc_data.values
-
-        for ix, mat in enumerate(mats):
-            act = yc_data_val[:, ix]
-            pred = a_solve[mat - 1] + np.dot(b_solve[mat - 1].T,
-                                             var_data_vert.T)
-            errs = errs + (act - pred).tolist()
-        return errs
-
     def _solve_unobs(self, a_in, b_in):
         """
         Solves for unknown factors
@@ -600,7 +565,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
             mats.append(int(re.match(matcher, column).group(2)))
         return mats
 
-    def params_to_array(self, params):
+    def params_to_array(self, params, return_mask=False):
         """
         Process params input into appropriate arrays
 
@@ -625,6 +590,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         for pos, struct in enumerate(all_arrays):
             struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
+            if not return_mask:
+                all_arrays[pos] = np.ascontiguousarray(struct,
+                                                       dtype=np.float64)
 
         return tuple(all_arrays)
 
