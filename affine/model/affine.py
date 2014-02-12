@@ -98,18 +98,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         print "fast_gen_pred = " + str(fast_gen_pred)
 
-        #ensure that arrays are contiguous
-        # if fast_gen_pred:
-        #     self.lam_0_e = np.ascontiguousarray(self.lam_0_e, dtype=np.float64)
-        #     self.lam_1_e = np.ascontiguousarray(self.lam_1_e, dtype=np.float64)
-        #     self.delta_0_e = np.ascontiguousarray(self.delta_0_e,
-        #                                           dtype=np.float64)
-        #     self.delta_1_e = np.ascontiguousarray(self.delta_1_e,
-        #                                           dtype=np.float64)
-        #     self.mu_e = np.ascontiguousarray(self.mu_e, dtype=np.float64)
-        #     self.phi_e = np.ascontiguousarray(self.phi_e, dtype=np.float64)
-        #     self.sigma_e = np.ascontiguousarray(self.sigma_e, dtype=np.float64)
-
         #generates mats: list of mats in yield curve data
         #only works for data labels matching regular expression
         #should probably be phased out
@@ -160,9 +148,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
         super(Affine, self).__init__(var_data_vert)
 
     def solve(self, guess_params, method="nls", alg="newton", no_err=None,
-              attempts=5, maxfev=10000, maxiter=10000, ftol=1e-100,
-              xtol=1e-100, xi10=[0], ntrain=1,  penalty=False,
-              upperbounds=None, lowerbounds=None, full_output=False):
+              attempts=5, maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8,
+              xi10=[0], ntrain=1, penalty=False, upperbounds=None,
+              lowerbounds=None, full_output=False):
         """
         Attempt to solve affine model
 
@@ -386,8 +374,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         phi : array
         sigma : array
         """
-        #Thiu should be passed to a C function, it is really slow right now
-        #Should probably set this so its not recalculated every run
         max_mat = self.max_mat
         b_width = self.k_ar * self.neqs + self.lat
         half = np.float64(1)/np.float64(2)

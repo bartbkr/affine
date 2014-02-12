@@ -304,8 +304,6 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     PyArray_UpdateFlags(b_fin_array, NPY_OWNDATA);
 
     PyObject *Result = Py_BuildValue("OO", a_fin_array, b_fin_array);
-    //Py_DECREF(a_fin_array);
-    //Py_DECREF(b_fin_array);
 
     return Result;
 }
