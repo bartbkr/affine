@@ -376,7 +376,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         """
         max_mat = self.max_mat
         b_width = self.k_ar * self.neqs + self.lat
-        half = np.float64(1)/np.float64(2)
+        half = np.float64(1)/2
         #generate predictions
         a_pre = np.zeros((max_mat, 1))
         a_pre[0] = -delta_0
@@ -384,7 +384,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         b_pre[0] = -delta_1[:,0]
 
         n_inv = np.float64(1.0) / \
-                np.float64(np.add(range(max_mat), 1).reshape((max_mat, 1)))
+                np.add(range(max_mat), 1).reshape((max_mat, 1))
         a_solve = -a_pre.copy()
         b_solve = -b_pre.copy()
 
