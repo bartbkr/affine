@@ -6,7 +6,7 @@ This class inherits from statsmodels LikelihoodModel class
 
 import numpy as np
 import statsmodels.api as sm
-import pandas as px
+import pandas as pa
 import scipy.linalg as la
 import re
 
@@ -28,6 +28,8 @@ try:
     fast_gen_pred = True
 except:
     fast_gen_pred = False
+
+import ipdb
 
 #############################################
 # Create affine class system                #
@@ -96,8 +98,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.phi_e = phi_e
         self.sigma_e = sigma_e
 
-        print "fast_gen_pred = " + str(fast_gen_pred)
-
         #generates mats: list of mats in yield curve data
         #only works for data labels matching regular expression
         #should probably be phased out
@@ -116,7 +116,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
                    len(var_data.dropna(axis=0)), \
                 "Number of non-null values unequal in VAR and yield curve data"
             var_data_vert = self.var_data_vert = var_data[ \
-                                                var_data.columns[neqs:]]
+                                                 var_data.columns[neqs:]]
+            var_data_vertm1 = self.var_data_vertm1 = var_data[ \
+                                                     var_data.columns[neqs:]]
 
         else:
             assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
@@ -128,10 +130,12 @@ class Affine(LikelihoodModel, StateSpaceModel):
             x_t_na = var_data.copy()
             for lag in range(1, k_ar + 1):
                 for var in var_data.columns:
-                    x_t_na[var + '_m' + str(lag)] = px.Series(var_data[var].
+                    x_t_na[var + '_m' + str(lag)] = pa.Series(var_data[var].
                             values[:-(lag)], index=var_data.index[lag:])
 
             var_data_vert = self.var_data_vert = x_t_na.dropna( \
+                axis=0)[x_t_na.columns[:-neqs]]
+            var_data_vertm1 = self.var_data_vertm1 = x_t_na.dropna( \
                 axis=0)[x_t_na.columns[neqs:]]
 
         self.var_data_vertc = self.var_data_vert.copy()
@@ -262,8 +266,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
                                               mu, phi, sigma)
 
         if latent:
-            var_data_wunob, jacob, yield_errs = self._solve_unobs(a_in=a_solve,
-                                                                  b_in=b_solve)
+            lat_ser, jacob, yield_errs = self._solve_unobs(a_in=a_solve,
+                                                           b_in=b_solve)
+            var_data_wunob = var_data_vert.join(lat_ser)
 
         #This will need to be refactored
         #if full_output:
@@ -312,8 +317,11 @@ class Affine(LikelihoodModel, StateSpaceModel):
         """
         Loglikelihood used in latent factor models
         """
+
         lat = self.lat
         per = self.periods
+        var_data_vert = self.var_data_vert
+        var_data_vertm1 = self.var_data_vertm1
 
         #all of the params don't seem to be moving
         #only seems to be for certain solution methods
@@ -324,21 +332,26 @@ class Affine(LikelihoodModel, StateSpaceModel):
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
+            if solve_b[-1][-1] == 0:
+                ipdb.set_trace()
 
         else:
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
 
         #first solve for unknown part of information vector
-        var_data_c, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
+        lat_ser, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
                                                            b_in=solve_b)
 
         # here is the likelihood that needs to be used
         # sigma is implied VAR sigma
         # use two matrices to take the difference
+        #!!!! We are shedding one observation here
+        var_data_use = var_data_vert.join(lat_ser)[1:]
+        var_data_usem1 = var_data_vertm1.join(lat_ser.shift())[1:]
 
-        errors = var_data_c.values.T[:, 1:] - mu - np.dot(phi,
-                var_data_c.values.T[:, :-1])
+        errors = var_data_use.values.T - mu - np.dot(phi,
+                                                     var_data_usem1.values.T)
 
         sign, j_logdt = nla.slogdet(jacob)
         j_slogdt = sign * j_logdt
@@ -433,7 +446,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         yc_data = self.yc_data
         X = self.var_data_vertc
-        #add constant to X
 
         obsdim = self.neqs * self.k_ar
         dim = obsdim + lat
@@ -544,19 +556,20 @@ class Affine(LikelihoodModel, StateSpaceModel):
                         np.dot(b_sel_obs, var_data_vert.T) - \
                         np.dot(b_sel_unobs, unobs)
 
-        var_data_c = var_data_vert.copy()
+        lat_ser = pa.DataFrame(index=var_data_vert.index)
         for factor in range(lat):
-            var_data_c["latent_" + str(factor)] = unobs[factor, :]
+            lat_ser["latent_" + str(factor)] = unobs[factor, :]
         meas_mat = np.zeros((num_yields, err_num))
 
         for col_index, col in enumerate(err_cols):
             row_index = yc_data_names.index(col)
             meas_mat[row_index, col_index] = 1
 
-        jacob = self._construct_J(b_obs=b_all_obs,
-                                    b_unobs=b_all_unobs, meas_mat=meas_mat)
+        jacob = self._construct_J(b_obs=b_all_obs, b_unobs=b_all_unobs,
+                                  meas_mat=meas_mat)
 
-        return var_data_c, jacob, yield_errs
+
+        return lat_ser, jacob, yield_errs
 
     def _mats_list(self):
         """
@@ -661,7 +674,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
 
-        pred = px.DataFrame(index=yc_data.index)
+        pred = pa.DataFrame(index=yc_data.index)
 
         for i in mats:
             pred["l_tr_m" + str(i)] = solve_a[i-1] + np.dot(solve_b[i-1],
