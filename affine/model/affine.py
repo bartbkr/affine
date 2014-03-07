@@ -116,7 +116,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
                    len(var_data.dropna(axis=0)), \
                 "Number of non-null values unequal in VAR and yield curve data"
             var_data_vert = self.var_data_vert = var_data[ \
-                                                 var_data.columns[neqs:]]
+                                                 var_data.columns[:-neqs]]
             var_data_vertm1 = self.var_data_vertm1 = var_data[ \
                                                      var_data.columns[neqs:]]
 
@@ -332,8 +332,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
-            if solve_b[-1][-1] == 0:
-                ipdb.set_trace()
 
         else:
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
@@ -352,7 +350,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         errors = var_data_use.values.T - mu - np.dot(phi,
                                                      var_data_usem1.values.T)
-
         sign, j_logdt = nla.slogdet(jacob)
         j_slogdt = sign * j_logdt
 
