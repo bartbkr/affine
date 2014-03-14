@@ -270,13 +270,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
                                                            b_in=b_solve)
             var_data_wunob = var_data_vert.join(lat_ser)
 
-        #This will need to be refactored
-        #if full_output:
-            #return lam_0, lam_1, delta_0, delta_1, phi, sigma, a_solve,
-            #b_solve, output
         if method == "nls":
             return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
                    b_solve, solv_cov
+
         elif method == "ml":
             if latent:
                 return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
@@ -288,6 +285,14 @@ class Affine(LikelihoodModel, StateSpaceModel):
             return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
                     a_solve, b_solve, solve_params
 
+        #create as attributes of object
+        self.lam_0_solve = lam_0
+        self.lam_1_solve = lam_1
+        self.delta_0_solve = delta_0
+        self.delta_1_solve = delta_1
+        self.mu_solve = mu
+        self.phi_solve = phi
+        self.sigma_solve = sigma
 
     def score(self, params):
         """
