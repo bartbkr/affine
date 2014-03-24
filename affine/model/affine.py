@@ -49,12 +49,14 @@ class Affine(LikelihoodModel, StateSpaceModel):
             yield curve data
         var_data : DataFrame
             data for var model
-        lags: int
+        lags : int
             number of lags for VAR system
             Only respected when adjusted=False
-        neqs: int
+        neqs : int
             Number of equations
             Only respected when adjusted=True
+        mats : list of int
+            Maturities in periods of yields included in yc_data
         latent: int
             Number of latent variables to estimate
 
