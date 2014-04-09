@@ -1,5 +1,5 @@
 """
-This defines the class objection Affine, intended to solve affine models of the
+The class provides Affine, intended to solve affine models of the
 term structure
 This class inherits from statsmodels LikelihoodModel class
 """
@@ -37,23 +37,25 @@ import ipdb
 
 class Affine(LikelihoodModel, StateSpaceModel):
     """
-    This class defines an affine model of the term structure
+    Provides affine model of the term structure
     """
     def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
                  delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=False,
                  adjusted=False):
         """
-        Attempts to solve affine model
+        Attempts to instantiate an  affine model object
         yc_data : DataFrame
             yield curve data
         var_data : DataFrame
             data for var model
-        lags: int
+        lags : int
             number of lags for VAR system
             Only respected when adjusted=False
-        neqs: int
+        neqs : int
             Number of equations
             Only respected when adjusted=True
+        mats : list of int
+            Maturities in periods of yields included in yc_data
         latent: int
             Number of latent variables to estimate
 
@@ -115,7 +117,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
                    len(var_data.dropna(axis=0)), \
                 "Number of non-null values unequal in VAR and yield curve data"
             var_data_vert = self.var_data_vert = var_data[ \
-                                                 var_data.columns[neqs:]]
+                                                 var_data.columns[:-neqs]]
             var_data_vertm1 = self.var_data_vertm1 = var_data[ \
                                                      var_data.columns[neqs:]]
 
@@ -155,8 +157,11 @@ class Affine(LikelihoodModel, StateSpaceModel):
               xi10=[0], ntrain=1, penalty=False, upperbounds=None,
               lowerbounds=None, full_output=False):
         """
-        Attempt to solve affine model
+        Returns tuple of arrays
+        Attempt to solve affine model based on instantiated object.
 
+        Parameters
+        ----------
         guess_params : list
             List of starting values for parameters to be estimated
             In row-order and ordered as masked arrays
@@ -196,6 +201,31 @@ class Affine(LikelihoodModel, StateSpaceModel):
             relative error desired in the approximate solution
         full_output : bool
             non_zero to return all optional outputs
+
+        Returns
+        -------
+        Returns tuple contains each of the parameter arrays with the optimized
+        values filled in:
+        lam_0 : numpy array
+        lam_1 : numpy array
+        delta_0 : numpy array
+        delta_1 : numpy array
+        mu : numpy array
+        phi : numpy array
+        sigma : numpy array
+
+        The final A, B, and parameter set arrays used to construct the yields
+        a_solve : numpy array
+        b_solve : numpy array
+        solve_params : list
+
+        Other results are also attached, depending on the solution method
+        if 'nls':
+            solv_cov : numpy array
+                Contains the implied covariance matrix of solve_params
+        if 'ml' and 'latent' > 0:
+            var_data_wunob : numpy
+                The modified factor array with the unobserved factors attached
         """
         k_ar = self.k_ar
         neqs = self.neqs
@@ -269,24 +299,26 @@ class Affine(LikelihoodModel, StateSpaceModel):
                                                            b_in=b_solve)
             var_data_wunob = var_data_vert.join(lat_ser)
 
-        #This will need to be refactored
-        #if full_output:
-            #return lam_0, lam_1, delta_0, delta_1, phi, sigma, a_solve,
-            #b_solve, output
-        if method == "nls":
+        #attach solved parameter arrays as attributes of object
+        self.lam_0_solve = lam_0
+        self.lam_1_solve = lam_1
+        self.delta_0_solve = delta_0
+        self.delta_1_solve = delta_1
+        self.mu_solve = mu
+        self.phi_solve = phi
+        self.sigma_solve = sigma
+
+        if latent:
+            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+                   b_solve, solve_params, var_data_wunob
+
+        elif method == "nls":
             return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
                    b_solve, solv_cov
+
         elif method == "ml":
-            if latent:
-                return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
-                       a_solve, b_solve, solve_params, var_data_wunob
-            else:
                 return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
                        a_solve, b_solve, solve_params
-        elif method == "kalman":
-            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
-                    a_solve, b_solve, solve_params
-
 
     def score(self, params):
         """
@@ -314,7 +346,17 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
     def loglike(self, params):
         """
+        Returns float
         Loglikelihood used in latent factor models
+
+        Parameters
+        ----------
+        params : list
+            Values of parameters to pass into masked elements of array
+
+        Returns
+        -------
+        loglikelihood : float
         """
 
         lat = self.lat
@@ -331,8 +373,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         if fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
-            if solve_b[-1][-1] == 0:
-                ipdb.set_trace()
 
         else:
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
@@ -351,7 +391,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         errors = var_data_use.values.T - mu - np.dot(phi,
                                                      var_data_usem1.values.T)
-
         sign, j_logdt = nla.slogdet(jacob)
         j_slogdt = sign * j_logdt
 
@@ -370,6 +409,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
     def nloglike(self, params):
         """
+        Return negative loglikelihood
         Negative Loglikelihood used in latent factor models
         """
         like = self.loglike(params)
@@ -377,26 +417,36 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
     def gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi, sigma):
         """
+        Returns tuple of arrays
         Generates prediction coefficient vectors A and B
-        lam_0 : array
-        lam_1 : array
-        delta_0 : array
-        delta_1 : array
-        mu : array
-        phi : array
-        sigma : array
+
+        Parameters
+        ----------
+        lam_0 : numpy array
+        lam_1 : numpy array
+        delta_0 : numpy array
+        delta_1 : numpy array
+        mu : numpy array
+        phi : numpy array
+        sigma : numpy array
+
+        Returns
+        -------
+        a_solve : numpy array
+            Array of constants relating factors to yields
+        b_solve : numpy array
+            Array of coeffiencts relating factors to yields
         """
         max_mat = self.max_mat
         b_width = self.k_ar * self.neqs + self.lat
-        half = np.float64(1)/2
+        half = float(1)/2
         #generate predictions
         a_pre = np.zeros((max_mat, 1))
         a_pre[0] = -delta_0
         b_pre = np.zeros((max_mat, b_width))
         b_pre[0] = -delta_1[:,0]
 
-        n_inv = np.float64(1.0) / \
-                np.add(range(max_mat), 1).reshape((max_mat, 1))
+        n_inv = float(1) / np.add(range(max_mat), 1).reshape((max_mat, 1))
         a_solve = -a_pre.copy()
         b_solve = -b_pre.copy()
 
@@ -415,18 +465,127 @@ class Affine(LikelihoodModel, StateSpaceModel):
     def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
                           sigma):
         """
-        Generation prediction coefficient vectors A and B in fast C function
-        lam_0 : array
-        lam_1 : array
-        delta_0 : array
-        delta_1 : array
-        phi : array
-        sigma : array
+        Returns tuple of arrays
+        Generates prediction coefficient vectors A and B in fast C function
+
+        Parameters
+        ----------
+        lam_0 : numpy array
+        lam_1 : numpy array
+        delta_0 : numpy array
+        delta_1 : numpy array
+        mu : numpy array
+        phi : numpy array
+        sigma : numpy array
+
+        Returns
+        -------
+        a_solve : numpy array
+            Array of constants relating factors to yields
+        b_solve : numpy array
+            Array of coeffiencts relating factors to yields
         """
         max_mat = self.max_mat
 
         return _C_extensions.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
                                            phi, sigma, max_mat)
+
+    def params_to_array(self, params, return_mask=False):
+        """
+        Returns tuple of arrays
+        Process params input into appropriate arrays
+
+        Parameters
+        ----------
+        params : list
+            list of values to fill in masked values
+
+        Returns
+        -------
+        lam_0 : numpy array
+        lam_1 : numpy array
+        delta_0 : numpy array
+        delta_1 : numpy array
+        mu : numpy array
+        phi : numpy array
+        sigma : numpy array
+        """
+        lam_0_e = self.lam_0_e.copy()
+        lam_1_e = self.lam_1_e.copy()
+        delta_0_e = self.delta_0_e.copy()
+        delta_1_e = self.delta_1_e.copy()
+        mu_e = self.mu_e.copy()
+        phi_e = self.phi_e.copy()
+        sigma_e = self.sigma_e.copy()
+
+        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e,
+                      sigma_e]
+
+        arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
+                                     all_arrays])
+
+        for pos, struct in enumerate(all_arrays):
+            struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
+            if not return_mask:
+                all_arrays[pos] = np.ascontiguousarray(struct,
+                                                       dtype=np.float64)
+
+        return tuple(all_arrays)
+
+    def params_to_array_zeromask(self, params):
+        """
+        Returns tuple of arrays + list
+        Process params input into appropriate arrays by setting them to zero if
+        param in params in zero and removing them from params, otherwise they
+        stay in params and value remains masked
+
+        Parameters
+        ----------
+        params : list
+            list of values to fill in masked values
+
+        Returns
+        -------
+        lam_0 : numpy array
+        lam_1 : numpy array
+        delta_0 : numpy array
+        delta_1 : numpy array
+        mu : numpy array
+        phi : numpy array
+        sigma : numpy array
+        guesses : list
+            List of remaining params after filtering and filling those that
+            were zero
+        """
+        paramcopy = params[:]
+        lam_0_e = self.lam_0_e.copy()
+        lam_1_e = self.lam_1_e.copy()
+        delta_0_e = self.delta_0_e.copy()
+        delta_1_e = self.delta_1_e.copy()
+        mu_e = self.mu_e.copy()
+        phi_e = self.phi_e.copy()
+        sigma_e = self.sigma_e.copy()
+
+        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e,
+                      sigma_e]
+
+        arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
+                                     all_arrays])
+
+        guesses = []
+        #check if each element is masked or not
+        for pos, struct in enumerate(all_arrays):
+            it = np.nditer(struct.mask, flags=['multi_index'])
+            while not it.finished:
+                if it[0] == True:
+                    val = paramcopy.pop(0)
+                    if val == 0:
+                        struct[it.multi_index] = 0
+                    else:
+                        guesses.append(val)
+                it.iternext()
+
+        return tuple(all_arrays + [guesses])
 
     def _updateloglike(self, params, xi10, ntrain, penalty, upperbounds,
                        lowerbounds, F, A, H, Q, R, history):
@@ -581,76 +740,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         for column in columns:
             mats.append(int(re.match(matcher, column).group(2)))
         return mats
-
-    def params_to_array(self, params, return_mask=False):
-        """
-        Process params input into appropriate arrays
-
-        Parameters
-        ----------
-        params : list
-            guess parameters
-        """
-        lam_0_e = self.lam_0_e.copy()
-        lam_1_e = self.lam_1_e.copy()
-        delta_0_e = self.delta_0_e.copy()
-        delta_1_e = self.delta_1_e.copy()
-        mu_e = self.mu_e.copy()
-        phi_e = self.phi_e.copy()
-        sigma_e = self.sigma_e.copy()
-
-        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e,
-                      sigma_e]
-
-        arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
-                                     all_arrays])
-
-        for pos, struct in enumerate(all_arrays):
-            struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
-            if not return_mask:
-                all_arrays[pos] = np.ascontiguousarray(struct,
-                                                       dtype=np.float64)
-
-        return tuple(all_arrays)
-
-    def params_to_array_zeromask(self, params):
-        """
-        Process params input into appropriate arrays
-
-        Parameters
-        ----------
-        params : list
-            guess parameters
-        """
-        paramcopy = params[:]
-        lam_0_e = self.lam_0_e.copy()
-        lam_1_e = self.lam_1_e.copy()
-        delta_0_e = self.delta_0_e.copy()
-        delta_1_e = self.delta_1_e.copy()
-        mu_e = self.mu_e.copy()
-        phi_e = self.phi_e.copy()
-        sigma_e = self.sigma_e.copy()
-
-        all_arrays = [lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e,
-                      sigma_e]
-
-        arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
-                                     all_arrays])
-
-        guesses = []
-        #check if each element is masked or not
-        for pos, struct in enumerate(all_arrays):
-            it = np.nditer(struct.mask, flags=['multi_index'])
-            while not it.finished:
-                if it[0] == True:
-                    val = paramcopy.pop(0)
-                    if val == 0:
-                        struct[it.multi_index] = 0
-                    else:
-                        guesses.append(val)
-                it.iternext()
-
-        return tuple(all_arrays + [guesses])
 
     def _affine_pred(self, data, *params):
         """
