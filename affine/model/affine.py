@@ -29,8 +29,6 @@ try:
 except:
     fast_gen_pred = False
 
-import ipdb
-
 #############################################
 # Create affine class system                #
 #############################################

@@ -14,8 +14,6 @@ from statsmodels.tsa.api import VAR
 from statsmodels.regression.linear_model import OLS
 from affine.model.affine import Affine
 
-import ipdb
-
 def ap_constructor(neqs, k_ar, lat):
     """
     Contructor for ang and piazzesi model
