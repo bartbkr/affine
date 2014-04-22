@@ -152,10 +152,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         super(Affine, self).__init__(var_data_vert)
 
-    def solve(self, guess_params, method="nls", alg="newton", no_err=None,
+    def solve(self, guess_params, method, alg="newton", no_err=None,
               attempts=5, maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8,
               xi10=[0], ntrain=1, penalty=False, upperbounds=None,
-              lowerbounds=None, full_output=False):
+              lowerbounds=None, full_output=False, **kwargs):
         """
         Returns tuple of arrays
         Attempt to solve affine model based on instantiated object.
@@ -246,7 +246,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solver = retry(optimize.curve_fit, attempts)
             reslt = solver(func, var_data_vert, yield_stack, p0=guess_params,
                            maxfev=maxfev, xtol=xtol, ftol=ftol,
-                           full_output=True)
+                           full_output=True, **kwargs)
             solve_params = reslt[0]
             solv_cov = reslt[1]
 
@@ -267,23 +267,23 @@ class Affine(LikelihoodModel, StateSpaceModel):
             if method == "bfgs-b":
                 func = self.nloglike
                 bounds = self._gen_bounds(lowerbounds, upperbounds)
-                reslt = fmin_l_bfgs_b(x0=guess_params, approx_grad=True,
-                                      bounds=bounds, m=1e7, maxfun=maxfev,
-                                      maxiter=maxiter)
+                reslt = fmin_l_bfgs_b(kwargs, x0=guess_params,
+                                      approx_grad=True, bounds=bounds, m=1e7,
+                                      maxfun=maxfev, maxiter=maxiter)
                 solve_params = reslt[0]
                 score = self.score(solve_params)
 
             else:
 
-                reslt = self.fit(start_params=guess_params, method=alg,
+                reslt = self.fit(kwargs, start_params=guess_params, method=alg,
                                  maxiter=maxiter, maxfun=maxfev, xtol=xtol,
                                  ftol=ftol)
                 solve_params = reslt.params
                 score = self.score(solve_params)
 
         elif method == "kalman":
-            self.fit_kalman(start_params=guess_params, method=alg, xi10=xi10,
-                            ntrain=ntrain, penalty=penalty,
+            self.fit_kalman(kwargs, start_params=guess_params, method=alg,
+                            xi10=xi10, ntrain=ntrain, penalty=penalty,
                             upperbounds=upperbounds, lowerbounds=lowerbounds)
             solve_params = self.params
             score = self.score(solve_params)
