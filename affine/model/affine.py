@@ -40,7 +40,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
     Provides affine model of the term structure
     """
     def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
-                 delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=False,
+                 delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
                  adjusted=False):
         """
         Attempts to instantiate an  affine model object
