@@ -22,14 +22,11 @@ from operator import itemgetter
 from scipy import optimize
 from util import retry
 
-#C extension
 try:
     import _C_extensions
-    fast_gen_pred = True
+    avail_fast_gen_pred = True
 except:
-    fast_gen_pred = False
-
-import ipdb
+    avail_fast_gen_pred = False
 
 #############################################
 # Create affine class system                #
@@ -41,7 +38,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
     """
     def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
                  delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
-                 adjusted=False):
+                 adjusted=False, use_C_extension=True):
         """
         Attempts to instantiate an  affine model object
         yc_data : DataFrame
@@ -111,6 +108,12 @@ class Affine(LikelihoodModel, StateSpaceModel):
             self.lat = latent
         else:
             self.lat = 0
+
+        #whether to use C extension
+        if avail_fast_gen_pred and use_C_extension:
+            self.fast_gen_pred = True
+        else:
+            self.fast_gen_pred = False
 
         if adjusted:
             assert len(yc_data.dropna(axis=0)) == \
@@ -370,7 +373,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         lam_0, lam_1, delta_0, delta_1, mu, phi, \
             sigma = self.params_to_array(params)
 
-        if fast_gen_pred:
+        if self.fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
 
@@ -754,7 +757,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma \
                 = self.params_to_array(params)
 
-        if fast_gen_pred:
+        if self.fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
 
