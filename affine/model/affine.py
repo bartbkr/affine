@@ -1,7 +1,7 @@
 """
 The class provides Affine, intended to solve affine models of the
 term structure
-This class inherits from statsmodels LikelihoodModel class
+This class inherits from the statsmodels LikelihoodModel class
 """
 
 import numpy as np
@@ -79,6 +79,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.var_data = var_data
         self.yc_names = yc_data.columns
         self.num_yields = len(yc_data.columns)
+        self.yobs = len(yc_data)
         self.names = names = var_data.columns
         k_ar = self.k_ar = lags
         if neqs:
@@ -243,11 +244,12 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         elif method == "nls":
             func = self._affine_pred
+            var_data_vert_tpose = var_data_vert.T
             #need to stack
-            yield_stack = self._stack_yields(yc_data)
-            #run optmization
+            yield_stack = np.array(yc_data).reshape(-1, order='F').tolist()
+            #run optimization
             solver = retry(optimize.curve_fit, attempts)
-            reslt = solver(func, var_data_vert, yield_stack, p0=guess_params,
+            reslt = solver(func, var_data_vert_tpose, yield_stack, p0=guess_params,
                            maxfev=maxfev, xtol=xtol, ftol=ftol,
                            full_output=True, **kwargs)
             solve_params = reslt[0]
@@ -765,26 +767,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
 
-        pred = pa.DataFrame(index=yc_data.index)
-
+        pred = []
         for i in mats:
-            pred["l_tr_m" + str(i)] = solve_a[i-1] + np.dot(solve_b[i-1],
-                                                            data.T)
-
-        pred = self._stack_yields(pred)
-
+            pred.extend((solve_a[i-1] + np.dot(solve_b[i-1], data)).tolist())
         return pred
-
-    def _stack_yields(self, orig):
-        """
-        Stacks yields into single column ndarray
-        """
-        mats = self.mats
-        obs = len(orig)
-        new = np.zeros((len(mats) * obs))
-        for col, mat in enumerate(orig.columns):
-            new[col * obs:(col + 1) * obs] = orig[mat].values
-        return new
 
     def _gen_arg_sep(self, arg_lengths):
         """
