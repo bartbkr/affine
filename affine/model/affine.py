@@ -312,6 +312,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.mu_solve = mu
         self.phi_solve = phi
         self.sigma_solve = sigma
+        self.solve_params = solve_params
 
         if latent:
             return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
@@ -348,6 +349,14 @@ class Affine(LikelihoodModel, StateSpaceModel):
         #would be nice to have additional arguments here
         loglike = self.loglike
         return approx_hess(params, loglike)
+
+    def std_errs(self, params):
+        """
+        Return standard errors
+        """
+        hessian = self.hessian(solve_params)
+        std_err = np.sqrt(-np.diag(la.inv(hessian)))
+        return std_err
 
     def loglike(self, params):
         """
