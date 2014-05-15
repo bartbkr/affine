@@ -1,7 +1,7 @@
 """
 The class provides Affine, intended to solve affine models of the
 term structure
-This class inherits from statsmodels LikelihoodModel class
+This class inherits from the statsmodels LikelihoodModel class
 """
 
 import numpy as np
@@ -22,12 +22,11 @@ from operator import itemgetter
 from scipy import optimize
 from util import retry
 
-#C extension
 try:
     import _C_extensions
-    fast_gen_pred = True
+    avail_fast_gen_pred = True
 except:
-    fast_gen_pred = False
+    avail_fast_gen_pred = False
 
 #############################################
 # Create affine class system                #
@@ -38,8 +37,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
     Provides affine model of the term structure
     """
     def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
-                 delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=False,
-                 adjusted=False):
+                 delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
+                 adjusted=False, use_C_extension=True):
         """
         Attempts to instantiate an  affine model object
         yc_data : DataFrame
@@ -80,6 +79,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.var_data = var_data
         self.yc_names = yc_data.columns
         self.num_yields = len(yc_data.columns)
+        self.yobs = len(yc_data)
         self.names = names = var_data.columns
         k_ar = self.k_ar = lags
         if neqs:
@@ -109,6 +109,12 @@ class Affine(LikelihoodModel, StateSpaceModel):
             self.lat = latent
         else:
             self.lat = 0
+
+        #whether to use C extension
+        if avail_fast_gen_pred and use_C_extension:
+            self.fast_gen_pred = True
+        else:
+            self.fast_gen_pred = False
 
         if adjusted:
             assert len(yc_data.dropna(axis=0)) == \
@@ -150,10 +156,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         super(Affine, self).__init__(var_data_vert)
 
-    def solve(self, guess_params, method="nls", alg="newton", no_err=None,
+    def solve(self, guess_params, method, alg="newton", no_err=None,
               attempts=5, maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8,
               xi10=[0], ntrain=1, penalty=False, upperbounds=None,
-              lowerbounds=None, full_output=False):
+              lowerbounds=None, full_output=False, **kwargs):
         """
         Returns tuple of arrays
         Attempt to solve affine model based on instantiated object.
@@ -238,13 +244,14 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         elif method == "nls":
             func = self._affine_pred
+            var_data_vert_tpose = var_data_vert.T
             #need to stack
-            yield_stack = self._stack_yields(yc_data)
-            #run optmization
+            yield_stack = np.array(yc_data).reshape(-1, order='F').tolist()
+            #run optimization
             solver = retry(optimize.curve_fit, attempts)
-            reslt = solver(func, var_data_vert, yield_stack, p0=guess_params,
+            reslt = solver(func, var_data_vert_tpose, yield_stack, p0=guess_params,
                            maxfev=maxfev, xtol=xtol, ftol=ftol,
-                           full_output=True)
+                           full_output=True, **kwargs)
             solve_params = reslt[0]
             solv_cov = reslt[1]
 
@@ -265,23 +272,23 @@ class Affine(LikelihoodModel, StateSpaceModel):
             if method == "bfgs-b":
                 func = self.nloglike
                 bounds = self._gen_bounds(lowerbounds, upperbounds)
-                reslt = fmin_l_bfgs_b(x0=guess_params, approx_grad=True,
-                                      bounds=bounds, m=1e7, maxfun=maxfev,
-                                      maxiter=maxiter)
+                reslt = fmin_l_bfgs_b(kwargs, x0=guess_params,
+                                      approx_grad=True, bounds=bounds, m=1e7,
+                                      maxfun=maxfev, maxiter=maxiter)
                 solve_params = reslt[0]
                 score = self.score(solve_params)
 
             else:
 
-                reslt = self.fit(start_params=guess_params, method=alg,
+                reslt = self.fit(kwargs, start_params=guess_params, method=alg,
                                  maxiter=maxiter, maxfun=maxfev, xtol=xtol,
                                  ftol=ftol)
                 solve_params = reslt.params
                 score = self.score(solve_params)
 
         elif method == "kalman":
-            self.fit_kalman(start_params=guess_params, method=alg, xi10=xi10,
-                            ntrain=ntrain, penalty=penalty,
+            self.fit_kalman(kwargs, start_params=guess_params, method=alg,
+                            xi10=xi10, ntrain=ntrain, penalty=penalty,
                             upperbounds=upperbounds, lowerbounds=lowerbounds)
             solve_params = self.params
             score = self.score(solve_params)
@@ -305,6 +312,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.mu_solve = mu
         self.phi_solve = phi
         self.sigma_solve = sigma
+        self.solve_params = solve_params
 
         if latent:
             return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
@@ -342,6 +350,14 @@ class Affine(LikelihoodModel, StateSpaceModel):
         loglike = self.loglike
         return approx_hess(params, loglike)
 
+    def std_errs(self, params):
+        """
+        Return standard errors
+        """
+        hessian = self.hessian(solve_params)
+        std_err = np.sqrt(-np.diag(la.inv(hessian)))
+        return std_err
+
     def loglike(self, params):
         """
         Returns float
@@ -368,7 +384,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         lam_0, lam_1, delta_0, delta_1, mu, phi, \
             sigma = self.params_to_array(params)
 
-        if fast_gen_pred:
+        if self.fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
 
@@ -752,7 +768,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma \
                 = self.params_to_array(params)
 
-        if fast_gen_pred:
+        if self.fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                       delta_1, mu, phi, sigma)
 
@@ -760,26 +776,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
 
-        pred = pa.DataFrame(index=yc_data.index)
-
+        pred = []
         for i in mats:
-            pred["l_tr_m" + str(i)] = solve_a[i-1] + np.dot(solve_b[i-1],
-                                                            data.T)
-
-        pred = self._stack_yields(pred)
-
+            pred.extend((solve_a[i-1] + np.dot(solve_b[i-1], data)).tolist())
         return pred
-
-    def _stack_yields(self, orig):
-        """
-        Stacks yields into single column ndarray
-        """
-        mats = self.mats
-        obs = len(orig)
-        new = np.zeros((len(mats) * obs))
-        for col, mat in enumerate(orig.columns):
-            new[col * obs:(col + 1) * obs] = orig[mat].values
-        return new
 
     def _gen_arg_sep(self, arg_lengths):
         """
