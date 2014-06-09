@@ -5,7 +5,7 @@ from distutils.core import setup, Extension
 
 #Package requires numpy
 try:
-    import numpy as np
+    import numpy
 except ImportError:
     nonumpy_msg = ("# numpy needed to finish setup.  run:\n\n"
     "    $ pip install numpy  # or easy_install numpy\n")
@@ -17,6 +17,20 @@ except ImportError:
     noscipy_msg = ("# scipy needed to finish setup.  run:\n\n"
     "    $ pip install scipy  # or easy_install scipy\n")
     sys.exit(noscipy_msg)
+#Package requires pandas
+try:
+    import pandas
+except ImportError:
+    nopandas_msg = ("# pandas needed to finish setup.  run:\n\n"
+    "    $ pip install pandas  # or easy_install pandas\n")
+    sys.exit(nopandas_msg)
+#Package requires scipy
+try:
+    import statsmodels
+except ImportError:
+    nostatsmodels_msg = ("# statsmodels needed to finish setup.  run:\n\n"
+    "    $ pip install statsmodels  # or easy_install statsmodels\n")
+    sys.exit(nostatsmodels_msg)
 
 c_extension = Extension('affine.model._C_extensions',
                         depends=['affine/extensions/C_extensions.h'],
@@ -33,7 +47,7 @@ setup(
     description='This package offers a solver class for affine ' \
                   + 'term structure models.',
     author_email="bartbkr@gmail.com",
-    use_2to3=True, 
+    use_2to3=True,
     ext_modules=[c_extension],
     platforms='any'
 )
