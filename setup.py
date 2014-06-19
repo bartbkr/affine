@@ -1,7 +1,7 @@
 import os
 import sys
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 
 #Package requires numpy
 try:
@@ -35,10 +35,11 @@ except ImportError:
 c_extension = Extension('affine.model._C_extensions',
                         depends=['affine/extensions/C_extensions.h'],
                         sources=['affine/extensions/C_extensions.c'],
-                        include_dirs=[os.path.join(np.get_include(), 'numpy')])
+                        include_dirs=[os.path.join(numpy.get_include(),
+                                                   'numpy')])
 
 setup(
-    name='py_affine',
+    name='affine',
     author='Barton Baker',
     version='0.3',
     packages=['affine',

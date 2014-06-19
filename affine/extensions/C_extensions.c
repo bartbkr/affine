@@ -13,8 +13,9 @@ static PyMethodDef _C_extensionsMethods[] = {
     {NULL, NULL}
 };
 
-/* ==== Initialize the C_test functions ====================== */
-// Module name must be _C_arraytest in compile and linked 
+/* ==== Initialize the _C_extensions functions ====================== */
+// Module name must be _C_extensions in compile and linked
+//
 
 void init_C_extensions()  {
     (void) Py_InitModule("_C_extensions", _C_extensionsMethods);
@@ -23,7 +24,7 @@ void init_C_extensions()  {
 
 /*  Array helper functions */
 /*  ==== Matrix sum function ===== */
-void mat_sum(int rows, int cols, double *arr1, double *arr2, 
+void mat_sum(int rows, int cols, double *arr1, double *arr2,
              double *result) {
     int mat_size, inc;
     mat_size = rows * cols;
@@ -36,7 +37,7 @@ void mat_sum(int rows, int cols, double *arr1, double *arr2,
 }
 
 /*  ==== Matrix subtraction function ===== */
-void mat_subtract(int rows, int cols, double *arr1, double *arr2, 
+void mat_subtract(int rows, int cols, double *arr1, double *arr2,
                   double *result) {
     int mat_size, inc;
     mat_size = rows * cols;
@@ -49,8 +50,8 @@ void mat_subtract(int rows, int cols, double *arr1, double *arr2,
 }
 
 /*  ==== Matrix product functions ===== */
-void mat_prodct(int row1, int col1, double *arr1, 
-                int col2, double *arr2, 
+void mat_prodct(int row1, int col1, double *arr1,
+                int col2, double *arr2,
                 double *result) {
 
     /* What about case when results in single number */
@@ -79,8 +80,8 @@ void mat_prodct(int row1, int col1, double *arr1,
 }
 
 /*  ==== Matrix product functions tpose first argument ===== */
-void mat_prodct_tpose1(int row1, int col1, double *arr1, 
-                       int col2, double *arr2, 
+void mat_prodct_tpose1(int row1, int col1, double *arr1,
+                       int col2, double *arr2,
                        double *result) {
 
     int dim1_row, dim1_col, dim2_col, row1_mod, row2_mod;
@@ -174,9 +175,9 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     lam_0_c = pymatrix_to_Carrayptrs(lam_0);
     lam_1_c = pymatrix_to_Carrayptrs(lam_1);
     delta_0_c = pymatrix_to_Carrayptrs(delta_0);
-    delta_1_c = pymatrix_to_Carrayptrs(delta_1); 
-    mu_c = pymatrix_to_Carrayptrs(mu); 
-    phi_c = pymatrix_to_Carrayptrs(phi); 
+    delta_1_c = pymatrix_to_Carrayptrs(delta_1);
+    mu_c = pymatrix_to_Carrayptrs(mu);
+    phi_c = pymatrix_to_Carrayptrs(phi);
     sigma_c = pymatrix_to_Carrayptrs(sigma);
 
     /*  Initialize collector arrays */
@@ -187,7 +188,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     double a_pre[max_mat];
     double b_pre[max_mat * delta_1_rows];
     double *a_fin = (double*) malloc(max_mat*sizeof(double));
-    double *b_fin = (double*) malloc(max_mat * delta_1_rows * sizeof(double)); 
+    double *b_fin = (double*) malloc(max_mat * delta_1_rows * sizeof(double));
 
     if (a_fin==NULL) {
         printf("Failed to allocate memory for a_fin\n");
@@ -210,7 +211,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     double dot_sig_lam_1_c[sigma_rows * lam_1_cols];
     double diff_phi_sig_c[phi_rows * phi_cols];
     double dot_phisig_b_c[phi_cols];
-    
+
     /*  Perform operations */
     a_pre[0] = -delta_0_c[0];
     a_fin[0] = -a_pre[0];
@@ -223,7 +224,7 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
     /* Calculate unchanging elements*/
     /* Debugged this looks good */
-    mat_prodct(sigma_rows, sigma_cols, sigma_c, 
+    mat_prodct(sigma_rows, sigma_cols, sigma_c,
                 lam_0_cols, lam_0_c,
                 dot_sig_lam_0_c);
     /* Debugged this looks good */
@@ -243,13 +244,13 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
         }
 
         /* Debugged this call, seems to be fine */
-        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mat_c, 
-                          1, diff_mu_sigl_c, 
+        mat_prodct_tpose1(b_pre_rows, 1, b_pre_mat_c,
+                          1, diff_mu_sigl_c,
                           dot_bpre_mu_sig1_c);
 
         /* debugged this, it looks good */
         mat_prodct_tpose1(b_pre_rows, 1, b_pre_mat_c,
-                          sigma_cols, sigma_c, 
+                          sigma_cols, sigma_c,
                           dot_b_pre_sig_c);
         /* debugged this call, looks good */
         mat_prodct_tpose2(1, sigma_cols, dot_b_pre_sig_c,
@@ -268,15 +269,15 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 
         /* Calculate next b elements */
         mat_prodct(sigma_rows, sigma_cols, sigma_c,
-                   lam_1_cols, lam_1_c, 
+                   lam_1_cols, lam_1_c,
                    dot_sig_lam_1_c);
-        mat_subtract(phi_rows, phi_cols, phi_c, dot_sig_lam_1_c, 
+        mat_subtract(phi_rows, phi_cols, phi_c, dot_sig_lam_1_c,
                      diff_phi_sig_c);
         mat_prodct_tpose1(phi_rows, phi_cols, diff_phi_sig_c,
                           1, b_pre_mat_c,
                           dot_phisig_b_c);
 
-        
+
         //Issue seems to be that b_fin is not able to dynaically allocate these
         //doubles using both
         for (i = 0; i < delta_1_rows; i++) {
@@ -294,11 +295,11 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     free(phi_c);
     free(sigma_c);
 
-    a_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, a_dims, 
-                                                              NPY_DOUBLE, 
+    a_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, a_dims,
+                                                              NPY_DOUBLE,
                                                               a_fin);
     PyArray_UpdateFlags(a_fin_array, NPY_OWNDATA);
-    b_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, b_dims, 
+    b_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, b_dims,
                                                               NPY_DOUBLE,
                                                               b_fin);
     PyArray_UpdateFlags(b_fin_array, NPY_OWNDATA);
@@ -314,22 +315,22 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
 double *pymatrix_to_Carrayptrs(PyArrayObject *arrayin) {
     double *c, *a, *inc;
     int i, mat_size, n, m;
-    
+
     n = arrayin->dimensions[0];
     m = arrayin->dimensions[1];
     mat_size = n * m;
     c = malloc(n * m * sizeof(*c));
-    a = (double *) arrayin->data;  
+    a = (double *) arrayin->data;
     inc = c;
     for (i=0;i < mat_size;i++) {
-        *c = *a;     
+        *c = *a;
         c++;
         a++;
     }
     return inc;
 }
 
-/* ==== Free a double *vector (vec of pointers) ========================== */ 
+/* ==== Free a double *vector (vec of pointers) ========================== */
 void free_Carrayptrs(double **v, int rows)  {
     int i;
     for (i = 0; i < rows; i++) {
