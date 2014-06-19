@@ -28,6 +28,8 @@ try:
 except:
     avail_fast_gen_pred = False
 
+import ipdb
+
 #############################################
 # Create affine class system                #
 #############################################
@@ -135,8 +137,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
             x_t_na = var_data.copy()
             for lag in range(1, k_ar + 1):
                 for var in var_data.columns:
-                    x_t_na[var + '_m' + str(lag)] = pa.Series(var_data[var].
-                            values[:-(lag)], index=var_data.index[lag:])
+                    x_t_na[str(var) + '_m' + str(lag)] = \
+                        pa.Series(var_data[var].values[:-(lag)],
+                                  index=var_data.index[lag:])
 
             var_data_vert = self.var_data_vert = x_t_na.dropna( \
                 axis=0)[x_t_na.columns[:-neqs]]
@@ -875,14 +878,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
         assert np.shape(self.lam_1_e) == (dim, dim), \
                 "Shape of lam_1_e incorrect"
 
-        if self.latent:
-            assert np.shape(self.delta_1_e) == (dim, 1), "Shape of delta_1_e" \
-                "incorrect"
-            assert np.shape(self.mu_e) == (dim, 1), "Shape of mu incorrect"
-            assert np.shape(self.phi_e) == (dim, dim), \
-                    "Shape of phi_e incorrect"
-            assert np.shape(self.sigma_e) == (dim, dim), \
-                    "Shape of sig_e incorrect"
+        assert np.shape(self.delta_1_e) == (dim, 1), "Shape of delta_1_e" \
+            "incorrect"
+        assert np.shape(self.mu_e) == (dim, 1), "Shape of mu incorrect"
+        assert np.shape(self.phi_e) == (dim, dim), \
+                "Shape of phi_e incorrect"
+        assert np.shape(self.sigma_e) == (dim, dim), \
+                "Shape of sig_e incorrect"
 
     def _gen_bounds(self, lowerbounds, upperbounds):
         if lowerbounds or upperbounds:
