@@ -14,6 +14,12 @@ from statsmodels.tsa.api import VAR
 from statsmodels.regression.linear_model import OLS
 from affine.model.affine import Affine
 
+def make_nomask(dim):
+    marray = ma.zeros(dim)
+    marray[:, :] = ma.masked
+    marray[:, :] = ma.nomask
+    return marray
+
 def ap_constructor(neqs, k_ar, lat):
     """
     Contructor for ang and piazzesi model
