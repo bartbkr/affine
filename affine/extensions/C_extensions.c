@@ -4,22 +4,78 @@
 #include <math.h>
 #include <stdio.h>
 
+struct module_state {
+    PyObject *error;
+};
+
 /* === Constants used in rest of program === */
 const double half = (double)1 / (double)2;
 
+
 /* ==== Set up the methods table ====================== */
-static PyMethodDef _C_extensionsMethods[] = {
-    {"gen_pred_coef", gen_pred_coef, METH_VARARGS},
+static PyMethodDef _C_extensions_methods[] = {
+    {"gen_pred_coef", gen_pred_coef, METH_VARARGS, NULL},
     {NULL, NULL}
+};
+
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
+
+// All of this is specific code for Python 3
+#if PY_MAJOR_VERSION >= 3
+
+static int _C_extensions_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int _C_extensions_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "_C_extensions",
+        NULL,
+        sizeof(struct module_state),
+        _C_extensions_methods,
+        NULL,
+        _C_extensions_traverse,
+        _C_extensions_clear,
+        NULL
 };
 
 /* ==== Initialize the _C_extensions functions ====================== */
 // Module name must be _C_extensions in compile and linked
 //
 
-void init_C_extensions()  {
-    (void) Py_InitModule("_C_extensions", _C_extensionsMethods);
+#define INITERROR return NULL
+
+PyObject *
+PyInit__C_extensions(void)
+
+#else
+#define INITERROR return
+
+void
+init_C_extensions(void)
+#endif
+{
+#if PY_MAJOR_VERSION >= 3
+    PyObject *module = PyModule_Create(&moduledef);
+#else
+    PyObject *module = Py_InitModule("_C_extensions", _C_extensions_methods);
+#endif
     import_array();
+#if PY_MAJOR_VERSION >= 3
+    return module;
+#endif
 }
 
 /*  Array helper functions */

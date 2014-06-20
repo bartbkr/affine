@@ -23,12 +23,10 @@ from scipy import optimize
 from util import retry
 
 try:
-    import _C_extensions
+    from . import _C_extensions
     avail_fast_gen_pred = True
 except:
     avail_fast_gen_pred = False
-
-#import ipdb
 
 #############################################
 # Create affine class system                #
@@ -358,7 +356,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         """
         Return standard errors
         """
-        hessian = self.hessian(solve_params)
+        hessian = self.hessian(params)
         std_err = np.sqrt(-np.diag(la.inv(hessian)))
         return std_err
 
@@ -517,6 +515,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         ----------
         params : list
             list of values to fill in masked values
+
 
         Returns
         -------

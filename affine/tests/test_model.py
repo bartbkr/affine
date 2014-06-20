@@ -23,6 +23,8 @@ class TestInitiatilize(TestCase):
     """
     def setUp(self):
 
+        np.random.seed(100)
+
         # initialize yield curve and VAR observed factors
         yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
                                                       nyields)))
@@ -161,6 +163,8 @@ class TestSolveMethods(TestCase):
     """
     def setUp(self):
 
+        np.random.seed(100)
+
         # initialize yield curve and VAR observed factors
         yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
                                                       nyields)))
@@ -211,18 +215,67 @@ class TestSolveMethods(TestCase):
                                             ).tolist()
         self.affine_object = Affine(**self.mod_kwargs)
 
+    @unittest.skip("Skipping")
     def test_score(self):
         """
         Tests if score is calculated
         """
         self.affine_object.score(self.guess_params)
 
+    @unittest.skip("Skipping")
     def test_hessian(self):
         """
         Tests if hessian is calculated
         """
         self.affine_object.hessian(self.guess_params)
 
+    @unittest.skip("Skipping")
+    def test_std_errs(self):
+        """
+        Tests if standard errors are calcualted
+        """
+        self.affine_object.std_errs(self.guess_params)
+
+    def test_params_to_array(self):
+        """
+        Tests if params_to_array function works correctly, with and without
+        returning mask
+        """
+        arrays_no_mask = self.affine_object.params_to_array(self.guess_params)
+        for
+
+
+
+    def test_loglike(self):
+        """
+        Tests of loglikelihood is calculated
+        """
+        self.affine_object.loglike(self.guess_params)
+
+    def test_gen_pred_coef(self):
+        """
+        Tests if Python-driven gen_pred_coef function works
+        """
+        params = self.affine_object.params_to_array(self.guess_params)
+        self.affine_object.gen_pred_coef(*params)
+
+    def test_opt_gen_pred_coef(self):
+        """
+        Tests if C-driven gen_pred_coef function works
+        """
+        params = self.affine_object.params_to_array(self.guess_params)
+        self.affine_object.opt_gen_pred_coef(*params)
+
+    def test_py_C_gen_pred_coef_equal(self):
+        """
+        Tests if the Python-driven and C-driven gen_pred_coef functions produce
+        the same result
+        """
+        params = self.affine_object.params_to_array(self.guess_params)
+        py_gpc = self.affine_object.gen_pred_coef(*params)
+        c_gpc = self.affine_object.opt_gen_pred_coef(*params)
+        for aix, array in enumerate(py_gpc):
+            np.testing.assert_allclose(array, c_gpc[aix], rtol=1e-14)
 
 
 if __name__ == '__main__':
