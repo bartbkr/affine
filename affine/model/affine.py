@@ -28,7 +28,7 @@ try:
 except:
     avail_fast_gen_pred = False
 
-import ipdb
+#import ipdb
 
 #############################################
 # Create affine class system                #
@@ -40,7 +40,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
     """
     def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
                  delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
-                 adjusted=False, use_C_extension=True):
+                 no_err=None, adjusted=False, use_C_extension=True):
         """
         Attempts to instantiate an  affine model object
         yc_data : DataFrame
@@ -88,6 +88,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
             self.neqs = neqs
         else:
             neqs = self.neqs = len(names)
+
         self.latent = latent
 
         self.lam_0_e = lam_0_e
@@ -109,8 +110,19 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         if latent:
             self.lat = latent
+            assert len(no_err) == self.lat, \
+                "Number of columns estimated without error must match " + \
+                "number of latent variables"
         else:
             self.lat = 0
+
+        self.no_err = no_err
+        if no_err:
+            #parameters for identification of yields measured without error
+            self.err = list(set(range(len(mats))).difference(no_err))
+            self.no_err_mat, self.err_mat = self._gen_mat_list()
+            #gen position list for processing list input to solver
+            self.noerr_cols, self.err_cols = self._gen_col_names()
 
         #whether to use C extension
         if avail_fast_gen_pred and use_C_extension:
@@ -159,10 +171,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         super(Affine, self).__init__(var_data_vert)
 
-    def solve(self, guess_params, method, alg="newton", no_err=None,
-              attempts=5, maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8,
-              xi10=[0], ntrain=1, penalty=False, upperbounds=None,
-              lowerbounds=None, full_output=False, **kwargs):
+    def solve(self, guess_params, method, alg="newton", attempts=5,
+              maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8, xi10=[0],
+              ntrain=1, penalty=False, upperbounds=None, lowerbounds=None,
+              full_output=False, **kwargs):
         """
         Returns tuple of arrays
         Attempt to solve affine model based on instantiated object.
@@ -259,17 +271,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solv_cov = reslt[1]
 
         elif method == "ml":
-            if no_err == None:
-                no_err = []
-            assert len(no_err) == self.lat, \
-                "Number of columns estimated without error must match " + \
-                "number of latent variables"
-            self.no_err = no_err
-            #parameters for identification of yields measured without error
-            self.err = list(set(range(len(mats))).difference(no_err))
-            self.no_err_mat, self.err_mat = self._gen_mat_list()
-            #gen position list for processing list input to solver
-            self.noerr_cols, self.err_cols = self._gen_col_names()
             #set to unconditional mean of short_rate
 
             if method == "bfgs-b":

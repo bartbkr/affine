@@ -38,3 +38,6 @@
 #Output Files
 My*
 *.lsf
+
+tags
+tags_file
