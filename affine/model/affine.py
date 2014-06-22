@@ -55,6 +55,11 @@ class Affine(LikelihoodModel, StateSpaceModel):
             Maturities in periods of yields included in yc_data
         latent: int
             Number of latent variables to estimate
+        no_err : list of ints
+            list of the column indexes of yields to be measured without error
+            ex: [0, 3, 4]
+            (1st, 4th, and 5th columns in yc_data to be estimated without
+            error)
 
         For all estimate parameter arrays:
             elements marked with 'E' or 'e' are estimated
@@ -101,8 +106,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         #generates mats: list of mats in yield curve data
         #only works for data labels matching regular expression
         #should probably be phased out
-        if mats is None:
-            mats = self._mats_list()
         self.mats = mats
         self.max_mat = max(mats)
 
@@ -182,11 +185,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         guess_params : list
             List of starting values for parameters to be estimated
             In row-order and ordered as masked arrays
-        no_err : list of ints
-            list of the column indexes of yields to be measured without error
-            ex: [0, 3, 4]
-            (1st, 4th, and 5th columns in yc_data to be estimated without
-            error)
 
         method : string
             solution method
@@ -274,24 +272,25 @@ class Affine(LikelihoodModel, StateSpaceModel):
             if method == "bfgs-b":
                 func = self.nloglike
                 bounds = self._gen_bounds(lowerbounds, upperbounds)
-                reslt = fmin_l_bfgs_b(kwargs, x0=guess_params,
-                                      approx_grad=True, bounds=bounds, m=1e7,
-                                      maxfun=maxfev, maxiter=maxiter)
+                reslt = fmin_l_bfgs_b(x0=guess_params, approx_grad=True,
+                                      bounds=bounds, m=1e7, maxfun=maxfev,
+                                      maxiter=maxiter, **kwargs)
                 solve_params = reslt[0]
                 score = self.score(solve_params)
 
             else:
-
-                reslt = self.fit(kwargs, start_params=guess_params, method=alg,
+                reslt = self.fit(start_params=guess_params, method=alg,
                                  maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                                 ftol=ftol)
+                                 ftol=ftol, **kwargs)
                 solve_params = reslt.params
                 score = self.score(solve_params)
+                self.estimation_mlresult = reslt
 
         elif method == "kalman":
-            self.fit_kalman(kwargs, start_params=guess_params, method=alg,
-                            xi10=xi10, ntrain=ntrain, penalty=penalty,
-                            upperbounds=upperbounds, lowerbounds=lowerbounds)
+            self.fit_kalman(start_params=guess_params, method=alg, xi10=xi10,
+                            ntrain=ntrain, penalty=penalty,
+                            upperbounds=upperbounds, lowerbounds=lowerbounds,
+                            **kwargs)
             solve_params = self.params
             score = self.score(solve_params)
 
@@ -515,6 +514,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         ----------
         params : list
             list of values to fill in masked values
+        return_mask : boolean
 
 
         Returns
@@ -591,10 +591,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         guesses = []
         #check if each element is masked or not
-        for pos, struct in enumerate(all_arrays):
+        for struct in all_arrays:
             it = np.nditer(struct.mask, flags=['multi_index'])
             while not it.finished:
-                if it[0] == True:
+                if it[0]:
                     val = paramcopy.pop(0)
                     if val == 0:
                         struct[it.multi_index] = 0
@@ -745,18 +745,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
 
         return lat_ser, jacob, yield_errs
-
-    def _mats_list(self):
-        """
-        This function just grabs the mats of yield curve points and return
-        a list of them
-        """
-        mats = []
-        columns = self.yc_names
-        matcher = re.compile(r"(.*?)([0-9]+)$")
-        for column in columns:
-            mats.append(int(re.match(matcher, column).group(2)))
-        return mats
 
     def _affine_pred(self, data, *params):
         """
