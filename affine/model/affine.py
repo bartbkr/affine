@@ -111,9 +111,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         if latent:
             self.lat = latent
-            assert len(no_err) == self.lat, \
-                "Number of columns estimated without error must match " + \
-                "number of latent variables"
         else:
             self.lat = 0
 
@@ -268,6 +265,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         elif method == "ml":
             #set to unconditional mean of short_rate
+            assert len(self.no_err) == self.lat, \
+                "Number of columns estimated without error must match " + \
+                "number of latent variables"
 
             if method == "bfgs-b":
                 func = self.nloglike
