@@ -1,3 +1,12 @@
+"""
+Affine unit tests
+
+For the following in the docs:
+  L = number of lags in VAR process governing pricing kernel
+  O = number of observed factors in VAR process governing pricing kernel
+  U = number of unobserved, latent factors in VAR process governing
+  pricing kernel
+"""
 from unittest import TestCase
 
 import unittest
@@ -67,14 +76,20 @@ class TestInitiatilize(TestCase):
 
     def test_create_correct(self):
         """
-        Tests whether __init__ successfully initializes model object.
+        Tests whether __init__ successfully initializes an Affine model object.
+        If the Affine object does not successfully instantiate, then this test
+        fails, otherwise it passes.
         """
         model = Affine(**self.mod_kwargs)
         self.assertIsInstance(model, Affine)
 
     def test_wrong_lam0_size(self):
         """
-        Tests whether size check asserts for lam_0_e is implemented correctly.
+        Tests whether size check asserts for lam_0_e is implemented
+        correctly. If the lam_0_e parameter is not of the correct size,
+        which is (L * O + U) by 1, then an assertion error should be raised,
+        resulting in a passed test. If lam_0_e is of the incorrect size and
+        no assertion error is raised, this test fails.
         """
         mod_kwargs = self.mod_kwargs
         # lam_0_e of incorrect size
@@ -84,6 +99,10 @@ class TestInitiatilize(TestCase):
     def test_wrong_lam1_size(self):
         """
         Tests whether size check asserts for lam_1_e is implemented correctly.
+        If the lam_1_e parameter is not of the correct size, which is (L
+        * O + U) by (L * O + U), then an assertion error should be raised,
+        resulting in a passed test.  If lam_1_e is of the incorrect size and no
+        assertion error is raised, this test fails.
         """
         mod_kwargs = self.mod_kwargs
         # lam_1_e of incorrect size
@@ -93,7 +112,10 @@ class TestInitiatilize(TestCase):
     def test_wrong_delta_1_size(self):
         """
         Tests whether size check asserts for delta_1_e is implemented
-        correctly.
+        correctly. If the delta_1_e parameter is not of the correct size, which
+        is (L * O + U) by 1, then an assertion error should be raised,
+        resulting in a passed test. If delta_1_e is of the incorrect size and
+        no assertion error is raised, this test fails.
         """
         mod_kwargs = self.mod_kwargs
         # delta_1_e of incorrect size
@@ -102,7 +124,11 @@ class TestInitiatilize(TestCase):
 
     def test_wrong_mu_e_size(self):
         """
-        Tests whether size check asserts for mu_e is implemented correctly.
+        Tests whether size check asserts for mu_e is implemented correctly.  If
+        the mu_e parameter is not of the correct size, which is (L * O + U) by
+        1, then an assertion error should be raised, resulting in a passed
+        test. If mu_e is of the incorrect size and no assertion error is
+        raised, this test fails.
         """
         mod_kwargs = self.mod_kwargs
         # mu_e of incorrect size
@@ -112,6 +138,10 @@ class TestInitiatilize(TestCase):
     def test_wrong_phi_e_size(self):
         """
         Tests whether size check asserts for phi_e is implemented correctly.
+        If the phi_e parameter is not of the correct size, which is (L * O + U)
+        by (L * O + U), then an assertion error should be raised, resulting in
+        a passed test. If phi_e is of the incorrect size and no assertion error
+        is raised, this test fails.
         """
         mod_kwargs = self.mod_kwargs
         # phi_e of incorrect size
@@ -121,6 +151,10 @@ class TestInitiatilize(TestCase):
     def test_wrong_sigma_e_size(self):
         """
         Tests whether size check asserts for sigma_e is implemented correctly.
+        If the sigma_e parameter is not of the correct size, which is (L
+        * O + U) by (L * O + U), then an assertion error should be raised,
+        resulting in a passed test. If sigma_e is of the incorrect size and no
+        assertion error is raised, this test fails.
         """
         mod_kwargs = self.mod_kwargs
         # sigma_e of incorrect size
@@ -129,7 +163,10 @@ class TestInitiatilize(TestCase):
 
     def test_var_data_nulls(self):
         """
-        Tests whether if nulls appear in var_data AssertionError is raised.
+        Tests if nulls appear in var_data whether an AssertionError is raised.
+        If any nulls appear in var_data and an AssertionError is raised, the
+        test passes. Otherwise if nulls are passed in and an AssertionError is
+        not raised, the tests fails.
         """
         mod_kwargs = self.mod_kwargs
         # replace a value in var_data with null
@@ -138,7 +175,10 @@ class TestInitiatilize(TestCase):
 
     def test_yc_data_nulls(self):
         """
-        Tests whether if nulls appear in yc_data AssertionError is raised.
+        Tests whether if nulls appear in yc_data AssertionError is raised.  If
+        any nulls appear in yc_data and an AssertionError is raised, the test
+        passes. Otherwise if nulls are passed in and an AssertionError is not
+        raised, the tests fails.
         """
         mod_kwargs = self.mod_kwargs
         # replace a value in var_data with null
@@ -147,8 +187,11 @@ class TestInitiatilize(TestCase):
 
     def test_no_estimated_values(self):
         """
-        Tests if AssertionError is raised if there are no masked values in the
-        estimation arrays, implying no parameters to be estimated.
+        Tests if AssertionError is raised if there are no masked values in
+        the estimation arrays, implying no parameters to be estimated. If
+        the object passed in has no estimated values and an AssertionError
+        is raised, the test passes. Otherwise if no estimated values are
+        passed in and an AssertionError is not raised, the tests fails.
         """
         mod_kwargs = self.mod_kwargs
         # replace a value in var_data with null
@@ -214,31 +257,38 @@ class TestEstimationSupportMethods(TestCase):
                                             ).tolist()
         self.affine_obj = Affine(**self.mod_kwargs)
 
-    #@unittest.skip("Skipping")
     def test_score(self):
         """
-        Tests if score is calculated.
+        Tests if score of the likelihood is calculated. If the score
+        calculation succeeds without error, then the test passes. Otherwise,
+        the test fails.
         """
         self.affine_obj.score(self.guess_params)
 
-    #@unittest.skip("Skipping")
     def test_hessian(self):
         """
-        Tests if hessian is calculated.
+        Tests if hessian of the likelihood is calculated. If the hessian
+        calculation succeeds without error, then the test passes. Otherwise,
+        the test fails.
         """
         self.affine_obj.hessian(self.guess_params)
 
-    #@unittest.skip("Skipping")
     def test_std_errs(self):
         """
-        Tests if standard errors are calculated.
+        Tests if standard errors are calculated. If the standard error
+        calculation succeeds, then the test passes. Otherwise, the test
+        fails.
         """
         self.affine_obj.std_errs(self.guess_params)
 
     def test_params_to_array(self):
         """
-        Tests if params_to_array function works correctly, with and without
-        returning masked arrays.
+        Tests if the params_to_array function works correctly, with and without
+        returning masked arrays. In order to pass, the params_to_array function
+        must return masked arrays with the masked elements filled in when the
+        return_mask argument is set to True and contiguous standard numpy
+        arrays when the return_mask argument is False. Otherwise, the test
+        fails.
         """
         arrays_no_mask = self.affine_obj.params_to_array(self.guess_params)
         for arr in arrays_no_mask:
@@ -251,7 +301,12 @@ class TestEstimationSupportMethods(TestCase):
 
     def test_params_to_array_zeromask(self):
         """
-        Tests if params_to_array_zeromask function works correctly.
+        Tests if params_to_array_zeromask function works correctly. In order to
+        pass, params_to_array_zeromask must return masked arrays with the
+        guess_params elements that are zero unmasked and set to zero in the
+        appropriate arrays. The new guess_params array is also returned with
+        those that were 0 removed. If both of these are not returned correctly,
+        the test fails.
         """
         guess_params_arr = np.array(self.guess_params)
         neqs = self.affine_obj.neqs
@@ -269,20 +324,27 @@ class TestEstimationSupportMethods(TestCase):
 
     def test_loglike(self):
         """
-        Tests of loglikelihood is calculated.
+        Tests if loglikelihood is calculated. If the loglikelihood is
+        calculated given a set of parameters, then this tests passes.
+        Otherwise, it fails.
         """
         self.affine_obj.loglike(self.guess_params)
 
     def test_gen_pred_coef(self):
         """
-        Tests if Python-driven gen_pred_coef function runs.
+        Tests if Python-driven gen_pred_coef function runs. If a set of
+        parameter arrays are passed into the gen_pred_coef function and the
+        A and B arrays are return, then the test passes. Otherwise, the test
+        fails.
         """
         params = self.affine_obj.params_to_array(self.guess_params)
         self.affine_obj.gen_pred_coef(*params)
 
     def test_opt_gen_pred_coef(self):
         """
-        Tests if C-driven gen_pred_coef function runs.
+        Tests if C-driven gen_pred_coef function runs. If a set of parameter
+        arrays are passed into the opt_gen_pred_coef function and the A and
+        B arrays are return, then the test passes. Otherwise, the test fails.
         """
         params = self.affine_obj.params_to_array(self.guess_params)
         self.affine_obj.opt_gen_pred_coef(*params)
@@ -290,7 +352,9 @@ class TestEstimationSupportMethods(TestCase):
     def test_py_C_gen_pred_coef_equal(self):
         """
         Tests if the Python-driven and C-driven gen_pred_coef functions produce
-        the same result, up to 1e-14.
+        the same result, up to 1e-14. If the gen_pred_coef and
+        opt_gen_pred_coef functions produce the same result, then the test
+        passes. Otherwise, the test fails.
         """
         params = self.affine_obj.params_to_array(self.guess_params)
         py_gpc = self.affine_obj.gen_pred_coef(*params)
@@ -300,7 +364,9 @@ class TestEstimationSupportMethods(TestCase):
 
     def test__solve_unobs(self):
         """
-        Tests if the _solve_unobs function runs.
+        Tests if the _solve_unobs function runs. If the _solve_unobs function
+        runs and the latent series, likelihood jacobian, and yield errors are
+        returned, then the test passes. Otherwise the test fails.
         """
         guess_params = self.guess_params
         param_arrays = self.affine_obj.params_to_array(guess_params)
@@ -309,7 +375,9 @@ class TestEstimationSupportMethods(TestCase):
 
     def test__affine_pred(self):
         """
-        Tests if the _affine_pred function runs.
+        Tests if the _affine_pred function runs. If the affine_pred function
+        produces a list of the yields stacked in order of increasing maturity,
+        the test passes. Otherwise, the test fails.
         """
         lat = self.affine_obj.lat
         yobs = self.affine_obj.yobs
@@ -326,7 +394,9 @@ class TestEstimationSupportMethods(TestCase):
         """
         Tests if _gen_mat_list generates a length 2 tuple with a list of the
         maturities estimated without error followed by those estimated with
-        error.
+        error. If _gen_mat_list produces a tuple of lists of those yields
+        estimates without error and then those with error, this test passes.
+        Otherwise, the test fails.
         """
         no_err_mat, err_mat = self.affine_obj._gen_mat_list()
         self.assertEqual(no_err_mat, [2])
@@ -436,7 +506,8 @@ class TestEstimationMethods(TestCase):
     def test_solve_nls(self):
         """
         Tests whether or not basic estimation is performed for non-linear least
-        squares case without any latent factors.
+        squares case without any latent factors. If the numerical approximation
+        method converges, this test passes. Otherwise, the test fails.
         """
         guess_params = self.guess_params_nolat
         method = 'nls'
@@ -446,7 +517,8 @@ class TestEstimationMethods(TestCase):
     def test_solve_ml(self):
         """
         Tests whether or not basic solve is performed for direct maximum
-        likelihood with a single latent factor.
+        likelihood with a single latent factor. If the numerical approximation
+        method converges, this test passes. Otherwise, the test fails.
         """
         guess_params = self.guess_params_lat
         method = 'ml'
