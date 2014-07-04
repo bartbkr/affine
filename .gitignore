@@ -1,43 +1,17 @@
-*.aux
-*.glo
-*.idx
-*.log
-*.toc
-*.ist
-*.acn
-*.acr
-*.alg
-*.bbl
-*.blg
-*.dvi
-*.glg
-*.gls
-*.ilg
-*.ind
-*.lof
-*.lot
-*.maf
-*.mtc
-*.mtc1
-*.out
-*.synctex.gz
-*.pdf
-
-#ignore
-*.cfg
-
-/code/*.pkl
-/code/store_pass.py
-/temp_res/*
 *.pyc
 
-#temp files
-*.swp
-*.un~
-
 #Output Files
-My*
 *.lsf
 
 tags
 tags_file
+
+#Ropeproject
+.ropeproject
+
+#build and dist dirs
+/build/
+/dist/
+
+#EGG files
+*.egg-info/
