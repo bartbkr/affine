@@ -1,3 +1,6 @@
+"""
+Setup for affine package
+"""
 import os
 import sys
 
@@ -36,7 +39,11 @@ c_extension = Extension('affine.model._C_extensions',
                         depends=['affine/extensions/C_extensions.h'],
                         sources=['affine/extensions/C_extensions.c'],
                         include_dirs=[os.path.join(numpy.get_include(),
-                                                   'numpy')])
+                                                   'numpy')],
+                        #this flag needed to be added for current Python 3.4
+                        #compilation
+                        extra_compile_args =
+                            ["-Wno-error=declaration-after-statement"])
 
 setup(
     name='affine',
