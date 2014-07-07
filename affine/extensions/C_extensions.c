@@ -354,13 +354,15 @@ static PyObject *gen_pred_coef(PyObject *self, PyObject *args)  {
     a_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, a_dims,
                                                               NPY_DOUBLE,
                                                               a_fin);
-    PyArray_UpdateFlags(a_fin_array, NPY_OWNDATA);
+    PyArray_FLAGS(a_fin_array) |= NPY_OWNDATA;
     b_fin_array = (PyArrayObject *) PyArray_SimpleNewFromData(2, b_dims,
                                                               NPY_DOUBLE,
                                                               b_fin);
-    PyArray_UpdateFlags(b_fin_array, NPY_OWNDATA);
+    PyArray_FLAGS(b_fin_array) |= NPY_OWNDATA;
 
     PyObject *Result = Py_BuildValue("OO", a_fin_array, b_fin_array);
+    Py_DECREF(a_fin_array);
+    Py_DECREF(b_fin_array);
 
     return Result;
 }
