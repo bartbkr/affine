@@ -257,6 +257,14 @@ class TestEstimationSupportMethods(TestCase):
                                             ).tolist()
         self.affine_obj = Affine(**self.mod_kwargs)
 
+    def test_loglike(self):
+        """
+        Tests if loglikelihood is calculated. If the loglikelihood is
+        calculated given a set of parameters, then this tests passes.
+        Otherwise, it fails.
+        """
+        self.affine_obj.loglike(self.guess_params)
+
     def test_score(self):
         """
         Tests if score of the likelihood is calculated. If the score
@@ -321,14 +329,6 @@ class TestEstimationSupportMethods(TestCase):
         count_masked_new = ma.count_masked(params_guesses[0])
         count_masked_orig = ma.count_masked(self.affine_obj.lam_0_e)
         self.assertEqual(count_masked_new, count_masked_orig - neqs)
-
-    def test_loglike(self):
-        """
-        Tests if loglikelihood is calculated. If the loglikelihood is
-        calculated given a set of parameters, then this tests passes.
-        Otherwise, it fails.
-        """
-        self.affine_obj.loglike(self.guess_params)
 
     def test_gen_pred_coef(self):
         """

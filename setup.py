@@ -57,5 +57,6 @@ setup(
     author_email="bartbkr@gmail.com",
     use_2to3=True,
     ext_modules=[c_extension],
-    platforms='any'
+    platforms='any',
+    zip_safe=False
 )
