@@ -166,7 +166,7 @@ class TestInitiatilize(TestCase):
         Tests if nulls appear in var_data whether an AssertionError is raised.
         If any nulls appear in var_data and an AssertionError is raised, the
         test passes. Otherwise if nulls are passed in and an AssertionError is
-        not raised, the tests fails.
+        not raised, the test fails.
         """
         mod_kwargs = self.mod_kwargs
         # replace a value in var_data with null
@@ -175,10 +175,10 @@ class TestInitiatilize(TestCase):
 
     def test_yc_data_nulls(self):
         """
-        Tests whether if nulls appear in yc_data AssertionError is raised.  If
+        Tests if nulls appear in yc_data whether AssertionError is raised.  If
         any nulls appear in yc_data and an AssertionError is raised, the test
         passes. Otherwise if nulls are passed in and an AssertionError is not
-        raised, the tests fails.
+        raised, the test fails.
         """
         mod_kwargs = self.mod_kwargs
         # replace a value in var_data with null
@@ -191,7 +191,7 @@ class TestInitiatilize(TestCase):
         the estimation arrays, implying no parameters to be estimated. If
         the object passed in has no estimated values and an AssertionError
         is raised, the test passes. Otherwise if no estimated values are
-        passed in and an AssertionError is not raised, the tests fails.
+        passed in and an AssertionError is not raised, the test fails.
         """
         mod_kwargs = self.mod_kwargs
         # replace a value in var_data with null
@@ -260,7 +260,7 @@ class TestEstimationSupportMethods(TestCase):
     def test_loglike(self):
         """
         Tests if loglikelihood is calculated. If the loglikelihood is
-        calculated given a set of parameters, then this tests passes.
+        calculated given a set of parameters, then this test passes.
         Otherwise, it fails.
         """
         self.affine_obj.loglike(self.guess_params)
@@ -334,7 +334,7 @@ class TestEstimationSupportMethods(TestCase):
         """
         Tests if Python-driven gen_pred_coef function runs. If a set of
         parameter arrays are passed into the gen_pred_coef function and the
-        A and B arrays are return, then the test passes. Otherwise, the test
+        A and B arrays are returned, then the test passes. Otherwise, the test
         fails.
         """
         params = self.affine_obj.params_to_array(self.guess_params)
@@ -352,7 +352,7 @@ class TestEstimationSupportMethods(TestCase):
     def test_py_C_gen_pred_coef_equal(self):
         """
         Tests if the Python-driven and C-driven gen_pred_coef functions produce
-        the same result, up to 1e-14. If the gen_pred_coef and
+        the same result, up to a precision of 1e-14. If the gen_pred_coef and
         opt_gen_pred_coef functions produce the same result, then the test
         passes. Otherwise, the test fails.
         """
@@ -376,8 +376,9 @@ class TestEstimationSupportMethods(TestCase):
     def test__affine_pred(self):
         """
         Tests if the _affine_pred function runs. If the affine_pred function
-        produces a list of the yields stacked in order of increasing maturity,
-        the test passes. Otherwise, the test fails.
+        produces a list of the yields stacked in order of increasing maturity
+        and is of the expected shape, the test passes. Otherwise, the test
+        fails.
         """
         lat = self.affine_obj.lat
         yobs = self.affine_obj.yobs
@@ -516,9 +517,10 @@ class TestEstimationMethods(TestCase):
 
     def test_solve_ml(self):
         """
-        Tests whether or not basic solve is performed for direct maximum
-        likelihood with a single latent factor. If the numerical approximation
-        method converges, this test passes. Otherwise, the test fails.
+        Tests whether or not model estimation converges is performed for direct
+        maximum likelihood with a single latent factor. If the numerical
+        approximation method converges, this test passes. Otherwise, the test
+        fails.
         """
         guess_params = self.guess_params_lat
         method = 'ml'
