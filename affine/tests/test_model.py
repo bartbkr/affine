@@ -325,7 +325,7 @@ class TestEstimationSupportMethods(TestCase):
         updated_guesses = params_guesses[-1]
         self.assertEqual(len(updated_guesses), len(guess_params) - neqs)
 
-        #ensure that number of masked in first
+        # ensure that number of masked has correctly been set
         count_masked_new = ma.count_masked(params_guesses[0])
         count_masked_orig = ma.count_masked(self.affine_obj.lam_0_e)
         self.assertEqual(count_masked_new, count_masked_orig - neqs)

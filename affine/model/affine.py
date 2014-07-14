@@ -103,9 +103,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.phi_e = phi_e
         self.sigma_e = sigma_e
 
-        #generates mats: list of mats in yield curve data
-        #only works for data labels matching regular expression
-        #should probably be phased out
+        # generates mats: list of mats in yield curve data
         self.mats = mats
         self.max_mat = max(mats)
 
@@ -116,13 +114,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         self.no_err = no_err
         if no_err:
-            #parameters for identification of yields measured without error
+            # parameters for identification of yields measured without error
             self.err = list(set(range(len(mats))).difference(no_err))
             self.no_err_mat, self.err_mat = self._gen_mat_list()
-            #gen position list for processing list input to solver
+            # gen position list for processing list input to solver
             self.noerr_cols, self.err_cols = self._gen_col_names()
 
-        #whether to use C extension
+        # whether to use C extension
         if avail_fast_gen_pred and use_C_extension:
             self.fast_gen_pred = True
         else:
@@ -142,8 +140,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
                                                     - k_ar, \
                 "Number of non-null values unequal in VAR and yield curve data"
 
-            #maybe this should be done in setup script...
-            #get VAR input data ready
+            # Get VAR input data ready
             x_t_na = var_data.copy()
             for lag in range(1, k_ar + 1):
                 for var in var_data.columns:
@@ -164,7 +161,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.guess_length = self._gen_guess_length()
         assert self.guess_length > 0, "guess_length must be at least 1"
 
-        #final size checks
+        # final size checks
         self._size_checks()
 
         super(Affine, self).__init__(var_data_vert)
@@ -253,9 +250,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
         elif method == "nls":
             func = self._affine_pred
             var_data_vert_tpose = var_data_vert.T
-            #need to stack
+            # need to stack for scipy nls
             yield_stack = np.array(yc_data).reshape(-1, order='F').tolist()
-            #run optimization
+            # run optimization
             solver = retry(optimize.curve_fit, attempts)
             reslt = solver(func, var_data_vert_tpose, yield_stack, p0=guess_params,
                            maxfev=maxfev, xtol=xtol, ftol=ftol,
@@ -264,7 +261,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solv_cov = reslt[1]
 
         elif method == "ml":
-            #set to unconditional mean of short_rate
             assert len(self.no_err) == self.lat, \
                 "Number of columns estimated without error must match " + \
                 "number of latent variables"
@@ -305,7 +301,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
                                                            b_in=b_solve)
             var_data_wunob = var_data_vert.join(lat_ser)
 
-        #attach solved parameter arrays as attributes of object
+        # attach solved parameter arrays as attributes of object
         self.lam_0_solve = lam_0
         self.lam_1_solve = lam_1
         self.delta_0_solve = delta_0
@@ -339,7 +335,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         -----
         Return numerical gradient
         """
-        #would be nice to have additional arguments here
         loglike = self.loglike
         return approx_fprime(params, loglike, epsilon=1e-8)
 
@@ -347,7 +342,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         """
         Returns numerical hessian.
         """
-        #would be nice to have additional arguments here
         loglike = self.loglike
         return approx_hess(params, loglike)
 
@@ -379,9 +373,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         var_data_vert = self.var_data_vert
         var_data_vertm1 = self.var_data_vertm1
 
-        #all of the params don't seem to be moving
-        #only seems to be for certain solution methods
-
         lam_0, lam_1, delta_0, delta_1, mu, phi, \
             sigma = self.params_to_array(params)
 
@@ -393,14 +384,12 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
 
-        #first solve for unknown part of information vector
+        # first solve for unknown part of information vector
         lat_ser, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
                                                            b_in=solve_b)
 
         # here is the likelihood that needs to be used
-        # sigma is implied VAR sigma
         # use two matrices to take the difference
-        #!!!! We are shedding one observation here
         var_data_use = var_data_vert.join(lat_ser)[1:]
         var_data_usem1 = var_data_vertm1.join(lat_ser.shift())[1:]
 
@@ -455,7 +444,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         max_mat = self.max_mat
         b_width = self.k_ar * self.neqs + self.lat
         half = float(1)/2
-        #generate predictions
+        # generate predictions
         a_pre = np.zeros((max_mat, 1))
         a_pre[0] = -delta_0
         b_pre = np.zeros((max_mat, b_width))
@@ -590,7 +579,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
                                      all_arrays])
 
         guesses = []
-        #check if each element is masked or not
+        # check if each element is masked or not
         for struct in all_arrays:
             it = np.nditer(struct.mask, flags=['multi_index'])
             while not it.finished:
@@ -635,14 +624,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
         Q = sigma[-lat:, -lat:]
         R = np.zeros((1, 1))
 
-        #initialize kalman to zero
+        # initialize kalman to zero
         loglike = 0
 
-        #calculate likelihood for each maturity estimated
+        # calculate likelihood for each maturity estimated
         for mix, mat in enumerate(self.mats):
             obsparams = np.concatenate((solve_a[mat-1],
                                        solve_b[mat-1][:-lat]))
-            #need to fix these not use obs
             A = obsparams
             H = solve_b[mat-1][-lat:]
             y = yc_data.values[:, mix]
@@ -693,8 +681,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
         no_err_num = len(noerr_cols)
         err_num = len(err_cols)
 
-        #need to combine the two matrices
-        #these matrices will collect the final values
+        # need to combine the two matrices
+        # these matrices will collect the final values
         a_all = np.zeros([num_yields, 1])
         b_all_obs = np.zeros([num_yields, neqs * k_ar])
         b_all_unobs = np.zeros([num_yields, lat])
@@ -711,12 +699,12 @@ class Affine(LikelihoodModel, StateSpaceModel):
             b_all_obs[y_pos, :] = b_in[no_err_mat[ix] - 1][:neqs * k_ar]
             b_all_unobs[y_pos, :] = b_in[no_err_mat[ix] - 1][neqs * k_ar:]
 
-        #now solve for unknown factors using long arrays
+        # now solve for unknown factors using long arrays
         unobs = np.dot(la.inv(b_sel_unobs),
                     yc_data.filter(items=noerr_cols).values.T - a_sel - \
                     np.dot(b_sel_obs, var_data_vert.T))
 
-        #re-initialize a_sel, b_sel_obs, and b_sel_obs
+        # re-initialize a_sel, b_sel_obs, and b_sel_obs
         a_sel = np.zeros([err_num, 1])
         b_sel_obs = np.zeros([err_num, neqs * k_ar])
         b_sel_unobs = np.zeros([err_num, lat])
@@ -828,7 +816,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
         num_yields = self.num_yields
         num_obsrv = neqs * k_ar
 
-        #now construct Jacobian
         msize = neqs * k_ar + num_yields
         jacob = np.zeros([msize, msize])
         jacob[:num_obsrv, :num_obsrv] = np.identity(neqs*k_ar)
