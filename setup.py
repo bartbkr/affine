@@ -4,7 +4,7 @@ Setup for affine package
 import os
 import sys
 
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 
 #Package requires numpy
 try:
@@ -36,6 +36,7 @@ except ImportError:
     sys.exit(nostatsmodels_msg)
 
 c_extension = Extension('affine.model._C_extensions',
+                        names = 'affine.model._C_extensions',
                         depends=['affine/extensions/C_extensions.h'],
                         sources=['affine/extensions/C_extensions.c'],
                         include_dirs=[os.path.join(numpy.get_include(),
@@ -49,9 +50,7 @@ setup(
     name='affine',
     author='Barton Baker',
     version='0.3',
-    packages=['affine',
-              'affine.model',
-              'affine.constructors'],
+    packages=find_packages(),
     description='This package offers a solver class for affine ' \
                   + 'term structure models.',
     author_email="bartbkr@gmail.com",

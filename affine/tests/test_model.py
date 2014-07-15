@@ -24,7 +24,7 @@ neqs = 5
 nyields = 5
 latent = 1
 
-class TestInitiatilize(TestCase):
+class TestInitialize(TestCase):
     """
     Tests for methods related to instantiation of a new Affine object
     """
