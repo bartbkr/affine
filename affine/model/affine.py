@@ -3,22 +3,16 @@ The class provides Affine, intended to solve affine models of the
 term structure
 This class inherits from the statsmodels LikelihoodModel class
 """
-
 import numpy as np
-import statsmodels.api as sm
 import pandas as pa
 import scipy.linalg as la
-import re
 
 from numpy import linalg as nla
 from numpy import ma
 from scipy.optimize import fmin_l_bfgs_b
-from statsmodels.tsa.api import VAR
 from statsmodels.base.model import LikelihoodModel
-from statsmodels.regression.linear_model import OLS
 from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from statsmodels.tsa.kalmanf.kalmanfilter import StateSpaceModel, kalmanfilter
-from operator import itemgetter
 from scipy import optimize
 from util import retry
 
