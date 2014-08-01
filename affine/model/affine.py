@@ -34,7 +34,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
                  delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
                  no_err=None, adjusted=False, use_C_extension=True):
         """
-        Attempts to instantiate an  affine model object
+        Attempts to instantiate an affine model object
         yc_data : DataFrame
             yield curve data
         var_data : DataFrame
@@ -316,6 +316,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
         elif method == "ml":
                 return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
                        a_solve, b_solve, solve_params
+
+        fitted = AffineResult(self, solve_params)
+        return AffineResult(
 
     def score(self, params):
         """
@@ -872,3 +875,21 @@ class Affine(LikelihoodModel, StateSpaceModel):
         else:
             return None
 
+class AffineResult(LikelihoodModelResults):
+    """
+    Returned class for estimated model
+    """
+    def __init__(self, model, params):
+        """
+        """
+        super(AffineResult, self).__init__(model, params)
+        lam_0_solve, lam_1_solve, delta_0_solve, delta_1_solve, mu_solve, \
+            phi_solve, sigma_solve = self.params_to_array(params)
+
+        self.lam_0_solve = lam_0_solve
+        self.lam_1_solve = lam_1_solve
+        self.delta_0_solve = delta_0_solve
+        self.delta_1_solve = delta_1_solve
+        self.mu_solve = mu_solve
+        self.phi_solve = phi_solve
+        self.sigma_solve = sigma_solve
