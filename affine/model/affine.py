@@ -10,7 +10,7 @@ import scipy.linalg as la
 from numpy import linalg as nla
 from numpy import ma
 from scipy.optimize import fmin_l_bfgs_b
-from statsmodels.base.model import LikelihoodModel
+from statsmodels.base.model import LikelihoodModel, LikelihoodModelResults
 from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from statsmodels.tsa.kalmanf.kalmanfilter import StateSpaceModel, kalmanfilter
 from scipy import optimize
@@ -296,29 +296,28 @@ class Affine(LikelihoodModel, StateSpaceModel):
             var_data_wunob = var_data_vert.join(lat_ser)
 
         # attach solved parameter arrays as attributes of object
-        self.lam_0_solve = lam_0
-        self.lam_1_solve = lam_1
-        self.delta_0_solve = delta_0
-        self.delta_1_solve = delta_1
-        self.mu_solve = mu
-        self.phi_solve = phi
-        self.sigma_solve = sigma
-        self.solve_params = solve_params
+        # self.lam_0_solve = lam_0
+        # self.lam_1_solve = lam_1
+        # self.delta_0_solve = delta_0
+        # self.delta_1_solve = delta_1
+        # self.mu_solve = mu
+        # self.phi_solve = phi
+        # self.sigma_solve = sigma
+        # self.solve_params = solve_params
 
-        if latent:
-            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-                   b_solve, solve_params, var_data_wunob
+        # if latent:
+        #     return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+        #            b_solve, solve_params, var_data_wunob
 
-        elif method == "nls":
-            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-                   b_solve, solv_cov
+        # elif method == "nls":
+        #     return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+        #            b_solve, solv_cov
 
-        elif method == "ml":
-                return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
-                       a_solve, b_solve, solve_params
+        # elif method == "ml":
+        #         return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
+        #                a_solve, b_solve, solve_params
 
-        fitted = AffineResult(self, solve_params)
-        return AffineResult(
+        return AffineResult(self, solve_params)
 
     def score(self, params):
         """
@@ -875,7 +874,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         else:
             return None
 
-class AffineResult(LikelihoodModelResults):
+class AffineResult(LikelihoodModelResults, Affine):
     """
     Returned class for estimated model
     """
@@ -883,13 +882,23 @@ class AffineResult(LikelihoodModelResults):
         """
         """
         super(AffineResult, self).__init__(model, params)
-        lam_0_solve, lam_1_solve, delta_0_solve, delta_1_solve, mu_solve, \
-            phi_solve, sigma_solve = self.params_to_array(params)
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+            self.model.params_to_array(params)
 
-        self.lam_0_solve = lam_0_solve
-        self.lam_1_solve = lam_1_solve
-        self.delta_0_solve = delta_0_solve
-        self.delta_1_solve = delta_1_solve
-        self.mu_solve = mu_solve
-        self.phi_solve = phi_solve
-        self.sigma_solve = sigma_solve
+        self.lam_0 = lam_0
+        self.lam_1 = lam_1
+        self.delta_0 = delta_0
+        self.delta_1 = delta_1
+        self.mu = mu
+        self.phi = phi
+        self.sigma = sigma
+
+    # def __str__(self):
+    #     self.summary()
+
+    # def summary(self):
+
+    #     summary_string = \
+    #     """
+
+    #     """
