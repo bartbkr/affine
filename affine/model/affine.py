@@ -50,10 +50,11 @@ class Affine(LikelihoodModel, StateSpaceModel):
         latent: int
             Number of latent variables to estimate
         no_err : list of ints
-            list of the column indexes of yields to be measured without error
+            list of the column indexes of yields to be measured without
+            error
             ex: [0, 3, 4]
-            (1st, 4th, and 5th columns in yc_data to be estimated without
-            error)
+            (1st, 4th, and 5th columns in yc_data to be estimated
+            without error)
 
         For all estimate parameter arrays:
             elements marked with 'E' or 'e' are estimated
@@ -181,17 +182,18 @@ class Affine(LikelihoodModel, StateSpaceModel):
             kalman = kalman filter derived maximum likelihood
         alg : str {'newton','nm','bfgs','powell','cg', or 'ncg'}
             algorithm used for numerical approximation
-            Method can be 'newton' for Newton-Raphson, 'nm' for Nelder-Mead,
-            'bfgs' for Broyden-Fletcher-Goldfarb-Shanno, 'powell' for modified
-            Powell's method, 'cg' for conjugate gradient, or 'ncg' for Newton-
-            conjugate gradient. `method` determines which solver from
-            scipy.optimize is used.  The explicit arguments in `fit` are passed
-            to the solver.  Each solver has several optional arguments that are
-            not the same across solvers.  See the notes section below (or
+            Method can be 'newton' for Newton-Raphson, 'nm' for
+            Nelder-Mead, 'bfgs' for Broyden-Fletcher-Goldfarb-Shanno,
+            'powell' for modified Powell's method, 'cg' for conjugate
+            gradient, or 'ncg' for Newton- conjugate gradient. `method`
+            determines which solver from scipy.optimize is used.  The
+            explicit arguments in `fit` are passed to the solver.  Each
+            solver has several optional arguments that are not the same
+            across solvers.  See the notes section below (or
             scipy.optimize) for the available arguments.
         attempts : int
-            Number of attempts to retry solving if singular matrix Exception
-            raised by Numpy
+            Number of attempts to retry solving if singular matrix
+            Exception raised by Numpy
 
         scipy.optimize params
         maxfev : int
@@ -207,8 +209,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         Returns
         -------
-        Returns tuple contains each of the parameter arrays with the optimized
-        values filled in:
+        Returns tuple contains each of the parameter arrays with the
+        optimized values filled in:
         lam_0 : numpy array
         lam_1 : numpy array
         delta_0 : numpy array
@@ -217,18 +219,21 @@ class Affine(LikelihoodModel, StateSpaceModel):
         phi : numpy array
         sigma : numpy array
 
-        The final A, B, and parameter set arrays used to construct the yields
+        The final A, B, and parameter set arrays used to construct the
+        yields
         a_solve : numpy array
         b_solve : numpy array
         solve_params : list
 
-        Other results are also attached, depending on the solution method
+        Other results are also attached, depending on the solution
+        method
         if 'nls':
             solv_cov : numpy array
                 Contains the implied covariance matrix of solve_params
         if 'ml' and 'latent' > 0:
             var_data_wunob : numpy
-                The modified factor array with the unobserved factors attached
+                The modified factor array with the unobserved factors
+                attached
         """
         k_ar = self.k_ar
         neqs = self.neqs
@@ -466,7 +471,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
                           sigma):
         """
         Returns tuple of arrays
-        Generates prediction coefficient vectors A and B in fast C function
+        Generates prediction coefficient vectors A and B in fast
+        C function
 
         Parameters
         ----------
@@ -537,9 +543,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
     def params_to_array_zeromask(self, params):
         """
         Returns tuple of arrays + list
-        Process params input into appropriate arrays by setting them to zero if
-        param in params in zero and removing them from params, otherwise they
-        stay in params and value remains masked
+        Process params input into appropriate arrays by setting them to
+        zero if param in params in zero and removing them from params,
+        otherwise they stay in params and value remains masked
 
         Parameters
         ----------
@@ -556,8 +562,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
         phi : numpy array
         sigma : numpy array
         guesses : list
-            List of remaining params after filtering and filling those that
-            were zero
+            List of remaining params after filtering and filling those
+            that were zero
         """
         paramcopy = params[:]
         lam_0_e = self.lam_0_e.copy()
@@ -644,7 +650,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
         Parameters
         ----------
         a_in : list of floats (periods)
-            List of elements for A constant in factors -> yields relationship
+            List of elements for A constant in factors -> yields
+            relationship
         b_in : array (periods, neqs * k_ar + lat)
             Array of elements for B coefficients in factors -> yields
             relationship
@@ -732,7 +739,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
     def _affine_pred(self, data, *params):
         """
-        Function based on lambda and data that generates predicted yields
+        Function based on lambda and data that generates predicted
+        yields
         data : DataFrame
         params : tuple of floats
             parameter guess
