@@ -512,8 +512,8 @@ class TestEstimationMethods(TestCase):
         """
         guess_params = self.guess_params_nolat
         method = 'nls'
-        solved = self.affine_obj_nolat.solve(guess_params, method=method,
-                                             alg='newton')
+        self.affine_obj_nolat.solve(guess_params, method=method, alg='newton',
+                                    xtol=0.1, ftol=0.1)
 
     def test_solve_ml(self):
         """
@@ -528,6 +528,94 @@ class TestEstimationMethods(TestCase):
                                   xtol=0.1, ftol=0.1)
 
     ##Need test related to Kalman filter method
+
+class TestResultsClass(TestCase):
+    @classmethod
+    def setUpClass(self):
+
+        ## Non-linear least squares
+        np.random.seed(100)
+
+        # initialize yield curve and VAR observed factors
+        yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
+                                                      nyields)))
+        var_data_test = pa.DataFrame(np.random.random((test_size, neqs)))
+        self.mats = mats = list(range(1, nyields + 1))
+
+        # initialize masked arrays
+        self.dim_nolat = dim = lags * neqs
+        lam_0 = make_nomask([dim, 1])
+        lam_1 = make_nomask([dim, dim])
+        delta_0 = make_nomask([1, 1])
+        delta_1 = make_nomask([dim, 1])
+        mu = make_nomask([dim, 1])
+        phi = make_nomask([dim, dim])
+        sigma = make_nomask([dim, dim])
+
+        # Setup some of the elements as non-zero
+        # This sets up a fake model where only lambda_0 and lambda_1 are
+        # estimated
+        lam_0[:neqs] = ma.masked
+        lam_1[:neqs, :neqs] = ma.masked
+        delta_0[:, :] = np.random.random(1)
+        delta_1[:neqs] = np.random.random((neqs, 1))
+        mu[:neqs] = np.random.random((neqs, 1))
+        phi[:neqs, :] = np.random.random((neqs, dim))
+        sigma[:, :] = np.identity(dim)
+
+        self.mod_kwargs_nolat = {
+            'yc_data': yc_data_test,
+            'var_data': var_data_test,
+            'lags': lags,
+            'neqs': neqs,
+            'mats': mats,
+            'lam_0_e': lam_0,
+            'lam_1_e': lam_1,
+            'delta_0_e': delta_0,
+            'delta_1_e': delta_1,
+            'mu_e': mu,
+            'phi_e': phi,
+            'sigma_e': sigma
+        }
+
+        guess_params_nolat = np.random.random((neqs**2 + neqs)).tolist()
+        affine_obj_nolat = Affine(**self.mod_kwargs_nolat)
+
+        self.results = affine_obj_nolat.solve(guess_params_nolat, method='nls',
+                                              xtol=0.1, ftol=0.1)
+
+    def test_predicted_yields(self):
+        """
+        Tests whether the predicted yields are generated and are of the
+        expected shape.
+        """
+        results = self.results
+        pred = results.predicted_yields
+        self.assertEqual(pred.shape, (test_size - lags, nyields))
+        mats_check = [str(mat) + '_pred' for mat in self.mats]
+        self.assertEqual(mats_check, pred.columns.tolist())
+
+    def test_risk_neutral_yields(self):
+        """
+        Tests whether the predicted yields are generated and are of the
+        expected shape.
+        """
+        results = self.results
+        rn = results.risk_neutral_yields
+        self.assertEqual(rn.shape, (test_size - lags, nyields))
+        mats_check = [str(mat) + '_risk_neutral' for mat in self.mats]
+        self.assertEqual(mats_check, rn.columns.tolist())
+
+    def test_term_premia(self):
+        """
+        Tests whether the predicted yields are generated and are of the
+        expected shape.
+        """
+        results = self.results
+        tp = results.term_premia
+        self.assertEqual(tp.shape, (test_size - lags, nyields))
+        mats_check = [str(mat) + '_tp' for mat in self.mats]
+        self.assertEqual(mats_check, tp.columns.tolist())
 
 if __name__ == '__main__':
     unittest.main()

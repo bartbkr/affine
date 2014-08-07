@@ -11,6 +11,7 @@ from numpy import linalg as nla
 from numpy import ma
 from scipy.optimize import fmin_l_bfgs_b
 from statsmodels.base.model import LikelihoodModel, LikelihoodModelResults
+from statsmodels.tools.decorators import cache_readonly
 from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from statsmodels.tsa.kalmanf.kalmanfilter import StateSpaceModel, kalmanfilter
 from scipy import optimize
@@ -900,6 +901,75 @@ class AffineResult(LikelihoodModelResults, Affine):
         self.mu = mu
         self.phi = phi
         self.sigma = sigma
+
+    @cache_readonly
+    def predicted_yields(self):
+        """
+        Returns DataFrame of predicted yields for each observed maturity
+        """
+        mats = self.model.mats
+        yc_data = self.model.yc_data
+        var_data_vert = self.model.var_data_vert
+
+        a_rsk, b_rsk = self.model.gen_pred_coef(lam_0=self.lam_0,
+                                                lam_1=self.lam_1,
+                                                delta_0=self.delta_0,
+                                                delta_1=self.delta_1,
+                                                mu=self.mu, phi=self.phi,
+                                                sigma=self.sigma)
+
+        yc_pred = pa.DataFrame(index=yc_data.index)
+        for mat in mats:
+            yc_pred[str(mat) + '_pred'] = a_rsk[mat - 1] + \
+                    np.dot(b_rsk[mat - 1], var_data_vert.values.T)
+
+        return yc_pred
+
+    @cache_readonly
+    def risk_neutral_yields(self):
+        """
+        Return DataFrame of risk neutral predicted yields for each
+        observed maturity
+        """
+        mats = self.model.mats
+        yc_data = self.model.yc_data
+        var_data_vert = self.model.var_data_vert
+
+        lam_0_nr = np.zeros_like(self.lam_0)
+        lam_1_nr = np.zeros_like(self.lam_1)
+
+        yc_rn_pred = pa.DataFrame(index=yc_data.index)
+
+        a_rn, b_rn = self.model.gen_pred_coef(lam_0=lam_0_nr, lam_1=lam_1_nr,
+                                        delta_0=self.delta_0,
+                                        delta_1=self.delta_1, mu=self.mu,
+                                        phi=self.phi, sigma=self.sigma)
+
+        for mat in mats:
+            yc_rn_pred[str(mat) + '_risk_neutral'] = a_rn[mat - 1] + \
+                    np.dot(b_rn[mat - 1], var_data_vert.values.T)
+
+        return yc_rn_pred
+
+    @cache_readonly
+    def term_premia(self):
+        """
+        Return DataFrame of implied term premia for each observed
+        maturity. Calculated by taking the difference between predicted yield
+        and risk neutral yield.
+        """
+        mats = self.model.mats
+
+        pred = self.predicted_yields
+        risk_neutral = self.risk_neutral_yields
+
+        tp = pa.DataFrame(index=pred.index)
+
+        for mat in mats:
+            tp[str(mat) + '_tp'] = pred[str(mat) + '_pred'] - \
+                    risk_neutral[str(mat) + '_risk_neutral']
+
+        return tp
 
     # def __str__(self):
     #     self.summary()
