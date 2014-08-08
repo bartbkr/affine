@@ -244,7 +244,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         var_data_vert = self.var_data_vert
 
         if method == "kalman" and not self.latent:
-           raise NotImplementedError( \
+            raise NotImplementedError( \
             "Kalman filter not supported with no latent factors")
 
         elif method == "nls":
