@@ -1,6 +1,7 @@
 """
-The class provides Affine, intended to solve affine models of the
-term structure
+The class provides Affine, intended to solve affine models of the term
+structure and AffineResult, which contains the results of an estimated
+model.
 This class inherits from the statsmodels LikelihoodModel class
 """
 import numpy as np
@@ -970,13 +971,3 @@ class AffineResult(LikelihoodModelResults, Affine):
                     risk_neutral[str(mat) + '_risk_neutral']
 
         return tp
-
-    # def __str__(self):
-    #     self.summary()
-
-    # def summary(self):
-
-    #     summary_string = \
-    #     """
-
-    #     """
