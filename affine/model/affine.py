@@ -16,7 +16,7 @@ from statsmodels.tools.decorators import cache_readonly
 from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from statsmodels.tsa.kalmanf.kalmanfilter import StateSpaceModel, kalmanfilter
 from scipy import optimize
-from util import retry
+from util import retry, transform_var1
 
 try:
     from . import _C_extensions
@@ -30,7 +30,7 @@ except:
 
 class Affine(LikelihoodModel, StateSpaceModel):
     """
-    Provides affine model of the term structure
+    Class for construction of affine model of the term structure
     """
     def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
                  delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
@@ -57,6 +57,11 @@ class Affine(LikelihoodModel, StateSpaceModel):
             ex: [0, 3, 4]
             (1st, 4th, and 5th columns in yc_data to be estimated
             without error)
+        adjusted : boolean
+            Indicates whether data for VAR has already been transformed into
+            VAR(1)
+        use_C_extension : boolean
+            Indicates whether to use C extension
 
         For all estimate parameter arrays:
             elements marked with 'E' or 'e' are estimated
@@ -137,18 +142,11 @@ class Affine(LikelihoodModel, StateSpaceModel):
                                                     - k_ar, \
                 "Number of non-null values unequal in VAR and yield curve data"
 
-            # Get VAR input data ready
-            x_t_na = var_data.copy()
-            for lag in range(1, k_ar + 1):
-                for var in var_data.columns:
-                    x_t_na[str(var) + '_m' + str(lag)] = \
-                        pa.Series(var_data[var].values[:-(lag)],
-                                  index=var_data.index[lag:])
+            x_t_na = transform_var1(var_data, lags)
 
-            var_data_vert = self.var_data_vert = x_t_na.dropna( \
-                axis=0)[x_t_na.columns[:-neqs]]
-            var_data_vertm1 = self.var_data_vertm1 = x_t_na.dropna( \
-                axis=0)[x_t_na.columns[neqs:]]
+            var_data_vert = self.var_data_vert = x_t_na[x_t_na.columns[:-neqs]]
+            var_data_vertm1 = self.var_data_vertm1 = \
+                x_t_na[x_t_na.columns[neqs:]]
 
         self.var_data_vertc = self.var_data_vert.copy()
         self.var_data_vertc.insert(0, "constant",
@@ -886,7 +884,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
 class AffineResult(LikelihoodModelResults, Affine):
     """
-    Returned class for estimated model
+    Results class for estimated affine model
     """
     def __init__(self, model, params):
         """
@@ -971,3 +969,39 @@ class AffineResult(LikelihoodModelResults, Affine):
                     risk_neutral[str(mat) + '_risk_neutral']
 
         return tp
+
+    def generate_yields(self, var_data, adjusted=False):
+        """
+        Returns DataFrame of yields given var_data.
+
+        Assumes that var_data begins with last lag elemnt of VAR
+
+        Parameters
+        ----------
+        var_data : DataFrame
+            data for var model
+        adjusted : boolean
+            Indicates whether data for VAR has already been transformed into
+            VAR(1)
+        """
+        assert len(var_data) == len(var_data.dropna()), \
+            "Null values in var_data"
+
+        neqs = self.model.neqs
+        lags = self.model.k_ar
+        mats = self.model.mats
+        # generate affine prediction coefficients
+        a_rsk, b_rsk = self.model.gen_pred_coef(lam_0=self.lam_0,
+                                                lam_1=self.lam_1,
+                                                delta_0=self.delta_0,
+                                                delta_1=self.delta_1,
+                                                mu=self.mu, phi=self.phi,
+                                                sigma=self.sigma)
+        if not adjusted:
+            var_data = transform_var1(var_data, lags)
+        var_data_vert = var_data[var_data.columns[:-neqs]]
+        yields = pa.DataFrame(index=var_data_vert.index)
+        for mat in mats:
+            yields[str(mat) + '_pred'] = a_rsk[mat - 1] + \
+                    np.dot(b_rsk[mat - 1], var_data_vert.values.T)
+        return yields

@@ -16,6 +16,7 @@ import pandas as pa
 
 from affine.constructors.helper import make_nomask
 from affine.model.affine import Affine
+from affine.model.util import transform_var1
 
 # parameters for running tests
 test_size = 100
@@ -539,7 +540,8 @@ class TestResultsClass(TestCase):
         # initialize yield curve and VAR observed factors
         yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
                                                       nyields)))
-        var_data_test = pa.DataFrame(np.random.random((test_size, neqs)))
+        var_data_test = self.var_data_test = \
+            pa.DataFrame(np.random.random((test_size, neqs)))
         self.mats = mats = list(range(1, nyields + 1))
 
         # initialize masked arrays
@@ -597,8 +599,8 @@ class TestResultsClass(TestCase):
 
     def test_risk_neutral_yields(self):
         """
-        Tests whether the predicted yields are generated and are of the
-        expected shape.
+        Tests whether the risk-neurtral predicted yields are generated and are
+        of the expected shape.
         """
         results = self.results
         rn = results.risk_neutral_yields
@@ -608,14 +610,38 @@ class TestResultsClass(TestCase):
 
     def test_term_premia(self):
         """
-        Tests whether the predicted yields are generated and are of the
-        expected shape.
+        Tests whether the term premia are generated and are of the expected
+        shape.
         """
         results = self.results
         tp = results.term_premia
         self.assertEqual(tp.shape, (test_size - lags, nyields))
         mats_check = [str(mat) + '_tp' for mat in self.mats]
         self.assertEqual(mats_check, tp.columns.tolist())
+
+    def test_generate_yields(self):
+        """
+        Tests whether the generated yields are generated given
+        """
+        results = self.results
+
+        #standard case
+        var_data_test = self.var_data_test[-15:]
+        generate_yields = results.generate_yields(var_data_test,
+                                                  adjusted=False)
+        predicted_sset = results.predicted_yields[-15 + lags:]
+        self.assertTrue(np.all(generate_yields.values == predicted_sset.values))
+        cols_check = [str(mat) + '_pred' for mat in self.mats]
+        self.assertEqual(cols_check, generate_yields.columns.tolist())
+
+        # #adjusted case
+        # var_data_test =
+        var_data_trans = transform_var1(self.var_data_test[-15:], lags)
+        generate_yields = results.generate_yields(var_data_trans,
+                                                  adjusted=True)
+        self.assertTrue(np.all(generate_yields.values == predicted_sset.values))
+        cols_check = [str(mat) + '_pred' for mat in self.mats]
+        self.assertEqual(cols_check, generate_yields.columns.tolist())
 
 if __name__ == '__main__':
     unittest.main()
