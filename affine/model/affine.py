@@ -1,6 +1,7 @@
 """
-The class provides Affine, intended to solve affine models of the
-term structure
+The class provides Affine, intended to solve affine models of the term
+structure and AffineResult, which contains the results of an estimated
+model.
 This class inherits from the statsmodels LikelihoodModel class
 """
 import numpy as np
@@ -10,11 +11,12 @@ import scipy.linalg as la
 from numpy import linalg as nla
 from numpy import ma
 from scipy.optimize import fmin_l_bfgs_b
-from statsmodels.base.model import LikelihoodModel
+from statsmodels.base.model import LikelihoodModel, LikelihoodModelResults
+from statsmodels.tools.decorators import cache_readonly
 from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from statsmodels.tsa.kalmanf.kalmanfilter import StateSpaceModel, kalmanfilter
 from scipy import optimize
-from util import retry
+from util import retry, transform_var1
 
 try:
     from . import _C_extensions
@@ -28,13 +30,13 @@ except:
 
 class Affine(LikelihoodModel, StateSpaceModel):
     """
-    Provides affine model of the term structure
+    Class for construction of affine model of the term structure
     """
     def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
                  delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
                  no_err=None, adjusted=False, use_C_extension=True):
         """
-        Attempts to instantiate an  affine model object
+        Attempts to instantiate an affine model object
         yc_data : DataFrame
             yield curve data
         var_data : DataFrame
@@ -50,10 +52,16 @@ class Affine(LikelihoodModel, StateSpaceModel):
         latent: int
             Number of latent variables to estimate
         no_err : list of ints
-            list of the column indexes of yields to be measured without error
+            list of the column indexes of yields to be measured without
+            error
             ex: [0, 3, 4]
-            (1st, 4th, and 5th columns in yc_data to be estimated without
-            error)
+            (1st, 4th, and 5th columns in yc_data to be estimated
+            without error)
+        adjusted : boolean
+            Indicates whether data for VAR has already been transformed into
+            VAR(1)
+        use_C_extension : boolean
+            Indicates whether to use C extension
 
         For all estimate parameter arrays:
             elements marked with 'E' or 'e' are estimated
@@ -134,18 +142,11 @@ class Affine(LikelihoodModel, StateSpaceModel):
                                                     - k_ar, \
                 "Number of non-null values unequal in VAR and yield curve data"
 
-            # Get VAR input data ready
-            x_t_na = var_data.copy()
-            for lag in range(1, k_ar + 1):
-                for var in var_data.columns:
-                    x_t_na[str(var) + '_m' + str(lag)] = \
-                        pa.Series(var_data[var].values[:-(lag)],
-                                  index=var_data.index[lag:])
+            x_t_na = transform_var1(var_data, lags)
 
-            var_data_vert = self.var_data_vert = x_t_na.dropna( \
-                axis=0)[x_t_na.columns[:-neqs]]
-            var_data_vertm1 = self.var_data_vertm1 = x_t_na.dropna( \
-                axis=0)[x_t_na.columns[neqs:]]
+            var_data_vert = self.var_data_vert = x_t_na[x_t_na.columns[:-neqs]]
+            var_data_vertm1 = self.var_data_vertm1 = \
+                x_t_na[x_t_na.columns[neqs:]]
 
         self.var_data_vertc = self.var_data_vert.copy()
         self.var_data_vertc.insert(0, "constant",
@@ -181,17 +182,18 @@ class Affine(LikelihoodModel, StateSpaceModel):
             kalman = kalman filter derived maximum likelihood
         alg : str {'newton','nm','bfgs','powell','cg', or 'ncg'}
             algorithm used for numerical approximation
-            Method can be 'newton' for Newton-Raphson, 'nm' for Nelder-Mead,
-            'bfgs' for Broyden-Fletcher-Goldfarb-Shanno, 'powell' for modified
-            Powell's method, 'cg' for conjugate gradient, or 'ncg' for Newton-
-            conjugate gradient. `method` determines which solver from
-            scipy.optimize is used.  The explicit arguments in `fit` are passed
-            to the solver.  Each solver has several optional arguments that are
-            not the same across solvers.  See the notes section below (or
+            Method can be 'newton' for Newton-Raphson, 'nm' for
+            Nelder-Mead, 'bfgs' for Broyden-Fletcher-Goldfarb-Shanno,
+            'powell' for modified Powell's method, 'cg' for conjugate
+            gradient, or 'ncg' for Newton- conjugate gradient. `method`
+            determines which solver from scipy.optimize is used.  The
+            explicit arguments in `fit` are passed to the solver.  Each
+            solver has several optional arguments that are not the same
+            across solvers.  See the notes section below (or
             scipy.optimize) for the available arguments.
         attempts : int
-            Number of attempts to retry solving if singular matrix Exception
-            raised by Numpy
+            Number of attempts to retry solving if singular matrix
+            Exception raised by Numpy
 
         scipy.optimize params
         maxfev : int
@@ -207,8 +209,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         Returns
         -------
-        Returns tuple contains each of the parameter arrays with the optimized
-        values filled in:
+        Returns tuple contains each of the parameter arrays with the
+        optimized values filled in:
         lam_0 : numpy array
         lam_1 : numpy array
         delta_0 : numpy array
@@ -217,18 +219,21 @@ class Affine(LikelihoodModel, StateSpaceModel):
         phi : numpy array
         sigma : numpy array
 
-        The final A, B, and parameter set arrays used to construct the yields
+        The final A, B, and parameter set arrays used to construct the
+        yields
         a_solve : numpy array
         b_solve : numpy array
         solve_params : list
 
-        Other results are also attached, depending on the solution method
+        Other results are also attached, depending on the solution
+        method
         if 'nls':
             solv_cov : numpy array
                 Contains the implied covariance matrix of solve_params
         if 'ml' and 'latent' > 0:
             var_data_wunob : numpy
-                The modified factor array with the unobserved factors attached
+                The modified factor array with the unobserved factors
+                attached
         """
         k_ar = self.k_ar
         neqs = self.neqs
@@ -238,7 +243,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         var_data_vert = self.var_data_vert
 
         if method == "kalman" and not self.latent:
-           raise NotImplementedError( \
+            raise NotImplementedError( \
             "Kalman filter not supported with no latent factors")
 
         elif method == "nls":
@@ -296,26 +301,28 @@ class Affine(LikelihoodModel, StateSpaceModel):
             var_data_wunob = var_data_vert.join(lat_ser)
 
         # attach solved parameter arrays as attributes of object
-        self.lam_0_solve = lam_0
-        self.lam_1_solve = lam_1
-        self.delta_0_solve = delta_0
-        self.delta_1_solve = delta_1
-        self.mu_solve = mu
-        self.phi_solve = phi
-        self.sigma_solve = sigma
-        self.solve_params = solve_params
+        # self.lam_0_solve = lam_0
+        # self.lam_1_solve = lam_1
+        # self.delta_0_solve = delta_0
+        # self.delta_1_solve = delta_1
+        # self.mu_solve = mu
+        # self.phi_solve = phi
+        # self.sigma_solve = sigma
+        # self.solve_params = solve_params
 
-        if latent:
-            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-                   b_solve, solve_params, var_data_wunob
+        # if latent:
+        #     return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+        #            b_solve, solve_params, var_data_wunob
 
-        elif method == "nls":
-            return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-                   b_solve, solv_cov
+        # elif method == "nls":
+        #     return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
+        #            b_solve, solv_cov
 
-        elif method == "ml":
-                return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
-                       a_solve, b_solve, solve_params
+        # elif method == "ml":
+        #         return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
+        #                a_solve, b_solve, solve_params
+
+        return AffineResult(self, solve_params)
 
     def score(self, params):
         """
@@ -464,7 +471,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
                           sigma):
         """
         Returns tuple of arrays
-        Generates prediction coefficient vectors A and B in fast C function
+        Generates prediction coefficient vectors A and B in fast
+        C function
 
         Parameters
         ----------
@@ -535,9 +543,9 @@ class Affine(LikelihoodModel, StateSpaceModel):
     def params_to_array_zeromask(self, params):
         """
         Returns tuple of arrays + list
-        Process params input into appropriate arrays by setting them to zero if
-        param in params in zero and removing them from params, otherwise they
-        stay in params and value remains masked
+        Process params input into appropriate arrays by setting them to
+        zero if param in params in zero and removing them from params,
+        otherwise they stay in params and value remains masked
 
         Parameters
         ----------
@@ -554,8 +562,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
         phi : numpy array
         sigma : numpy array
         guesses : list
-            List of remaining params after filtering and filling those that
-            were zero
+            List of remaining params after filtering and filling those
+            that were zero
         """
         paramcopy = params[:]
         lam_0_e = self.lam_0_e.copy()
@@ -642,7 +650,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
         Parameters
         ----------
         a_in : list of floats (periods)
-            List of elements for A constant in factors -> yields relationship
+            List of elements for A constant in factors -> yields
+            relationship
         b_in : array (periods, neqs * k_ar + lat)
             Array of elements for B coefficients in factors -> yields
             relationship
@@ -730,7 +739,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
     def _affine_pred(self, data, *params):
         """
-        Function based on lambda and data that generates predicted yields
+        Function based on lambda and data that generates predicted
+        yields
         data : DataFrame
         params : tuple of floats
             parameter guess
@@ -872,3 +882,126 @@ class Affine(LikelihoodModel, StateSpaceModel):
         else:
             return None
 
+class AffineResult(LikelihoodModelResults, Affine):
+    """
+    Results class for estimated affine model
+    """
+    def __init__(self, model, params):
+        """
+        """
+        super(AffineResult, self).__init__(model, params)
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+            self.model.params_to_array(params)
+
+        self.lam_0 = lam_0
+        self.lam_1 = lam_1
+        self.delta_0 = delta_0
+        self.delta_1 = delta_1
+        self.mu = mu
+        self.phi = phi
+        self.sigma = sigma
+
+    @cache_readonly
+    def predicted_yields(self):
+        """
+        Returns DataFrame of predicted yields for each observed maturity
+        """
+        mats = self.model.mats
+        yc_data = self.model.yc_data
+        var_data_vert = self.model.var_data_vert
+
+        a_rsk, b_rsk = self.model.gen_pred_coef(lam_0=self.lam_0,
+                                                lam_1=self.lam_1,
+                                                delta_0=self.delta_0,
+                                                delta_1=self.delta_1,
+                                                mu=self.mu, phi=self.phi,
+                                                sigma=self.sigma)
+
+        yc_pred = pa.DataFrame(index=yc_data.index)
+        for mat in mats:
+            yc_pred[str(mat) + '_pred'] = a_rsk[mat - 1] + \
+                    np.dot(b_rsk[mat - 1], var_data_vert.values.T)
+
+        return yc_pred
+
+    @cache_readonly
+    def risk_neutral_yields(self):
+        """
+        Return DataFrame of risk neutral predicted yields for each
+        observed maturity
+        """
+        mats = self.model.mats
+        yc_data = self.model.yc_data
+        var_data_vert = self.model.var_data_vert
+
+        lam_0_nr = np.zeros_like(self.lam_0)
+        lam_1_nr = np.zeros_like(self.lam_1)
+
+        yc_rn_pred = pa.DataFrame(index=yc_data.index)
+
+        a_rn, b_rn = self.model.gen_pred_coef(lam_0=lam_0_nr, lam_1=lam_1_nr,
+                                        delta_0=self.delta_0,
+                                        delta_1=self.delta_1, mu=self.mu,
+                                        phi=self.phi, sigma=self.sigma)
+
+        for mat in mats:
+            yc_rn_pred[str(mat) + '_risk_neutral'] = a_rn[mat - 1] + \
+                    np.dot(b_rn[mat - 1], var_data_vert.values.T)
+
+        return yc_rn_pred
+
+    @cache_readonly
+    def term_premia(self):
+        """
+        Return DataFrame of implied term premia for each observed
+        maturity. Calculated by taking the difference between predicted yield
+        and risk neutral yield.
+        """
+        mats = self.model.mats
+
+        pred = self.predicted_yields
+        risk_neutral = self.risk_neutral_yields
+
+        tp = pa.DataFrame(index=pred.index)
+
+        for mat in mats:
+            tp[str(mat) + '_tp'] = pred[str(mat) + '_pred'] - \
+                    risk_neutral[str(mat) + '_risk_neutral']
+
+        return tp
+
+    def generate_yields(self, var_data, adjusted=False):
+        """
+        Returns DataFrame of yields given var_data.
+
+        Assumes that var_data begins with last lag elemnt of VAR
+
+        Parameters
+        ----------
+        var_data : DataFrame
+            data for var model
+        adjusted : boolean
+            Indicates whether data for VAR has already been transformed into
+            VAR(1)
+        """
+        assert len(var_data) == len(var_data.dropna()), \
+            "Null values in var_data"
+
+        neqs = self.model.neqs
+        lags = self.model.k_ar
+        mats = self.model.mats
+        # generate affine prediction coefficients
+        a_rsk, b_rsk = self.model.gen_pred_coef(lam_0=self.lam_0,
+                                                lam_1=self.lam_1,
+                                                delta_0=self.delta_0,
+                                                delta_1=self.delta_1,
+                                                mu=self.mu, phi=self.phi,
+                                                sigma=self.sigma)
+        if not adjusted:
+            var_data = transform_var1(var_data, lags)
+        var_data_vert = var_data[var_data.columns[:-neqs]]
+        yields = pa.DataFrame(index=var_data_vert.index)
+        for mat in mats:
+            yields[str(mat) + '_pred'] = a_rsk[mat - 1] + \
+                    np.dot(b_rsk[mat - 1], var_data_vert.values.T)
+        return yields
