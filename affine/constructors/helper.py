@@ -139,7 +139,7 @@ def pass_ols(var_data, freq, lat, k_ar, neqs, delta_0, delta_1, mu, phi, sigma,
         sigma_ols = np.tril(sigma_ols)
 
     if lat:
-        macro = var_data.copy()[k_ar - 1:]
+        macro = var_data.copy()
         macro["constant"] = 1
         #we will want to change this next one once we make delta_1 uncontrained
         #(see top of ang and piazzesi page 759)

@@ -15,6 +15,7 @@ from statsmodels.base.model import LikelihoodModel, LikelihoodModelResults
 from statsmodels.tools.decorators import cache_readonly
 from statsmodels.tools.numdiff import approx_hess, approx_fprime
 from statsmodels.tsa.kalmanf.kalmanfilter import StateSpaceModel, kalmanfilter
+from statsmodels.tsa.statespace.representation import Representation
 from scipy import optimize
 from util import retry, transform_var1
 
@@ -24,11 +25,34 @@ try:
 except:
     avail_fast_gen_pred = False
 
+# method to determine best BLAS method for use with statespace
+try:
+    from scipy.linalg.blas import find_best_blas_type
+except ImportError:
+    # Shim for SciPy 0.11, derived from tag=0.11 scipy.linalg.blas
+    _type_conv = {'f': 's', 'd': 'd', 'F': 'c', 'D': 'z', 'G': 'z'}
+
+    def find_best_blas_type(arrays):
+        dtype, index = max(
+            [(ar.dtype, i) for i, ar in enumerate(arrays)])
+        prefix = _type_conv.get(dtype.char, 'd')
+        return prefix
+
+prefix_statespace_map = {
+    's': ss.sStatespace, 'd': ss.dStatespace,
+    'c': ss.cStatespace, 'z': ss.zStatespace
+}
+prefix_kalman_filter_map = {
+    's': ss.sKalmanFilter, 'd': ss.dKalmanFilter,
+    'c': ss.cKalmanFilter, 'z': ss.zKalmanFilter
+}
+
+
 #############################################
 # Create affine class system                #
 #############################################
 
-class Affine(LikelihoodModel, StateSpaceModel):
+class Affine(LikelihoodModel, Representation):
     """
     Class for construction of affine model of the term structure
     """
@@ -282,6 +306,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
                 self.estimation_mlresult = reslt
 
         elif method == "kalman":
+            k_endog = len(mats)
+            k_states = latent
+
+
             self.fit_kalman(start_params=guess_params, method=alg, xi10=xi10,
                             ntrain=ntrain, penalty=penalty,
                             upperbounds=upperbounds, lowerbounds=lowerbounds,
@@ -594,6 +622,39 @@ class Affine(LikelihoodModel, StateSpaceModel):
                 it.iternext()
 
         return tuple(all_arrays + [guesses])
+
+    def initialize_kalman_model(self, start_params=guess_params, method=alg,
+                                xi10=xi10, ntrain=ntrain, penalty=penalty,
+                                upperbounds=upperbounds,
+                                lowerbounds=lowerbounds, **kwargs):
+        """
+        DOCS
+        """
+        yc_data = self.yc_data
+        latent = self.latent
+
+        # calcualte appropriate arrays, along with affine relationships
+        # A and B
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+            self.params_to_array(params=params)
+        solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                  delta_1, mu, phi, sigma)
+
+
+        endog = yc_data
+        k_states = latent
+        design = solve_b[-latent:]
+
+        ss_repr = Representation(endog=yc_data, k_states=latent, design=)
+
+
+        prefix = find_best_blas_type((yc_data))
+        ss_cls = prefix_statespace_map[prefix[0]]
+        self.ss_model = ss_cls(
+            yc_data,
+
+
+
 
     def _updateloglike(self, params, xi10, ntrain, penalty, upperbounds,
                        lowerbounds, F, A, H, Q, R, history):

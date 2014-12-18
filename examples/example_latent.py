@@ -4,17 +4,15 @@ import datetime as dt
 
 import socket
 import atexit
-import keyring
 
 from statsmodels.tsa.api import VAR
-from statsmodels.tsa.filters import hpfilter
+from statsmodels.tsa.filters.hp_filter import hpfilter
 from statsmodels.sandbox.pca import Pca
 from scipy import stats
 from affine.model.affine import Affine
 from affine.constructors.helper import (pickle_file, success_mail, to_mth,
                                         gen_guesses, ap_constructor, pass_ols)
 
-import ipdb
 ########################################
 # Get macro data                       #
 ########################################
@@ -74,17 +72,7 @@ macro_data = macro_data.join(mthdata['fed_funds'], how='left')
 # Set up affine affine model            #
 #########################################
 k_ar = 4
-lat = 3
-latent = True
-
-#create BSR x_t
-x_t_na = macro_data.copy()
-for t in range(k_ar-1):
-    for var in macro_data.columns:
-        x_t_na[var + '_m' + str(t+1)] = px.Series(macro_data[var].values[:-(t+1)],
-                                            index=macro_data.index[t+1:])
-#remove missing values
-x_t = x_t_na.dropna(axis=0)
+latent = 3
 
 #############################################
 # Grab yield curve data                     #
@@ -95,32 +83,31 @@ ycdata = px.read_csv("./data/yield_curve.csv", na_values = "M", sep=";",
 
 ycdata["trb_m1"] = mthdata["fed_funds"]
 
-ycdata = px.read_csv("./data/fama-bliss_formatted.csv", na_values = "M",
-                     index_col=0, parse_dates=True, sep=",")
-
-yc_cols = ['TMYTM_1','TMYTM_2','TMYTM_3','TMYTM_4','TMYTM_5']
+yc_cols = ['trcr_y1', 'trcr_y2', 'trcr_y3', 'trcr_y5', 'trcr_y7', 'trcr_y10']
 mod_yc_data_nodp = ycdata[yc_cols]
-mod_yc_data_nodp['year'] = mod_yc_data_nodp.index.year
-mod_yc_data_nodp['month'] = mod_yc_data_nodp.index.month
-mod_yc_data_nodp['day'] = 1
-mod_yc_data_nodp['new_dt'] = mod_yc_data_nodp.apply(
-    lambda row: dt.datetime(int(row['year']),
-                            int(row['month']),
-                            int(row['day'])), axis=1)
-mod_yc_data_nodp.set_index('new_dt', inplace=True)
-
-mod_yc_data = mod_yc_data_nodp.dropna(axis=0)[yc_cols]
-mod_yc_data = mod_yc_data.join(x_t['fed_funds'], how='right')
+mod_yc_data_nodp.rename(columns={'trcr_y1': 'trcr_q4', 'trcr_y2':
+                                 'trcr_q8', 'trcr_y3': 'trcr_q12',
+                                 'trcr_y5': 'trcr_q20', 'trcr_y7':
+                                 'trcr_q28', 'trcr_y10': 'trcr_q40'},
+                        inplace=True)
+mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
+mod_yc_data = mod_yc_data.join(macro_data['fed_funds'], how='right')
 mod_yc_data.insert(0, 'trcr_m1', mod_yc_data['fed_funds'])
 rf_rate = mod_yc_data['fed_funds']
 mod_yc_data = mod_yc_data.drop(['fed_funds'], axis=1)
+mod_yc_data.dropna(inplace=True)
 
-mths = [12, 24, 36, 48, 60]
+#mod_yc_data = to_mth(mod_yc_data)
+
+mats = [4, 8, 12, 20, 28, 40]
 del mod_yc_data['trcr_m1']
 
 macro_data_use = macro_data.dropna().reindex(columns=['price_pca1',
                                                       'output_pca1'])
-yc_data_use = mod_yc_data
+macro_data_use = macro_data.ix[mod_yc_data.index]
+
+yc_data_use = mod_yc_data.ix[macro_data_use.index[k_ar:]]
+rf_rate = rf_rate.ix[macro_data_use.index]
 
 #align number of obs between yields and grab rf rate
 #mth_only = to_mth(mod_yc_data)
@@ -130,10 +117,10 @@ neqs = len(macro_data_use.columns)
 #This is a constructor function for easiloy setting up the system ala Ang and
 #Piazzessi 2003
 lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, sigma_e \
-    = ap_constructor(k_ar=k_ar, neqs=neqs, lat=lat)
+    = ap_constructor(k_ar=k_ar, neqs=neqs, lat=latent)
 
 delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
-                                                      freq="M", lat=lat,
+                                                      freq="Q", lat=latent,
                                                       k_ar=k_ar, neqs=neqs,
                                                       delta_0=delta_0_e,
                                                       delta_1=delta_1_e,
@@ -141,11 +128,11 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
                                                       sigma=sigma_e,
                                                       rf_rate=rf_rate)
 
-mod_init = Affine(yc_data=yc_data_use, var_data=macro_data_use,
-                   latent=latent, no_err=[2],
-                   lam_0_e=lam_0_e, lam_1_e=lam_1_e, delta_0_e=delta_0_e,
-                   delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e,
-                   sigma_e=sigma_e, mths=mths)
+mod_init = Affine(yc_data=yc_data_use, var_data=macro_data_use, latent=latent,
+                  no_err=[0, 2, 4], lam_0_e=lam_0_e, lam_1_e=lam_1_e,
+                  delta_0_e=delta_0_e, delta_1_e=delta_1_e, mu_e=mu_e,
+                  phi_e=phi_e, sigma_e=sigma_e, mats=mats, lags=k_ar,
+                  neqs=neqs)
 
 guess_length = mod_init.guess_length
 
@@ -159,8 +146,8 @@ for numb, element in enumerate(guess_params[:30]):
 
 # #This is for nls method, only need guesses for lam_0, lam_1
 # #bsr_solve = mod_init.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
-bsr_solve = mod_init.solve(guess_params=guess_params, method="ml",
-                            alg="newton", maxfev=10000000, maxiter=10000000)
+#bsr_solve = mod_init.solve(guess_params=guess_params, method="ml",
+#                            alg="newton", maxfev=10000000, maxiter=10000000)
 #
 # lam_0 = bsr_solve[0]
 # lam_1 = bsr_solve[1]
