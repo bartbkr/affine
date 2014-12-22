@@ -33,7 +33,7 @@ class Affine(object):
     """
     Class for construction of affine model of the term structure
     """
-    def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
+    def __init__(self, yc_data, var_data, k_ar, neqs, mats, lam_0_e, lam_1_e,
                  delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
                  no_err=None, adjusted=False, use_C_extension=True):
         """
@@ -42,7 +42,7 @@ class Affine(object):
             yield curve data
         var_data : DataFrame
             data for var model
-        lags : int
+        k_ar : int
             number of lags for VAR system
             Only respected when adjusted=False
         neqs : int
@@ -89,7 +89,7 @@ class Affine(object):
         self.num_yields = len(yc_data.columns)
         self.yobs = len(yc_data)
         self.names = names = var_data.columns
-        k_ar = self.k_ar = lags
+        self.k_ar = k_ar
         if neqs:
             self.neqs = neqs
         else:
@@ -146,7 +146,7 @@ class Affine(object):
                                                     - k_ar, \
                 "Number of non-null values unequal in VAR and yield curve data"
 
-            x_t_na = transform_var1(var_data, lags)
+            x_t_na = transform_var1(var_data, k_ar)
 
             var_data_vert = self.var_data_vert = x_t_na[x_t_na.columns[:-neqs]]
             var_data_vertm1 = self.var_data_vertm1 = \
@@ -167,9 +167,9 @@ class Affine(object):
         self._init_extend()
 
     def solve(self, guess_params, method, alg="newton", attempts=5,
-              maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8, xi10=[0],
-              ntrain=1, penalty=False, upperbounds=None, lowerbounds=None,
-              full_output=False, **kwargs):
+              maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8,
+              unobs_known=None, burn=5, penalty=False, upperbounds=None,
+              lowerbounds=None, full_output=False, disp=True, **kwargs):
         """
         Returns tuple of arrays
         Attempt to solve affine model based on instantiated object.
@@ -187,14 +187,17 @@ class Affine(object):
             kalman = kalman filter derived maximum likelihood
         alg : str {'newton','nm','bfgs','powell','cg', or 'ncg'}
             algorithm used for numerical approximation
-            Method can be 'newton' for Newton-Raphson, 'nm' for
-            Nelder-Mead, 'bfgs' for Broyden-Fletcher-Goldfarb-Shanno,
-            'powell' for modified Powell's method, 'cg' for conjugate
-            gradient, or 'ncg' for Newton- conjugate gradient. `method`
-            determines which solver from scipy.optimize is used.  The
-            explicit arguments in `fit` are passed to the solver.  Each
-            solver has several optional arguments that are not the same
-            across solvers.  See the notes section below (or
+            Method can be:
+                'newton' for Newton-Raphson,
+                'nm' for Nelder-Mead,
+                'bfgs' for Broyden-Fletcher-Goldfarb-Shanno,
+                'powell' for modified Powell's method,
+                'cg' for conjugate gradient, or
+                'ncg' for Newton- conjugate gradient. `method`
+            determines which solver from scipy.optimize is used.
+
+            Each solver has several optional arguments that are not the
+            same across solvers. See the notes section below (or
             scipy.optimize) for the available arguments.
 
         scipy.optimize params
@@ -208,6 +211,14 @@ class Affine(object):
             relative error desired in the approximate solution
         full_output : bool
             non_zero to return all optional outputs
+        disp : boolean, optional
+            Set to True to print convergence messages.
+
+        Kalman filter params
+        unobs_known: list
+            Initial values of unobserved factors for state space iteration
+        burn: int
+            Number of periods to burn in evaluation of log-likelihood
 
         Returns
         -------
@@ -259,7 +270,7 @@ class Affine(object):
             reslt = optimize.curve_fit(func, var_data_vert_tpose, yield_stack,
                                        p0=guess_params, maxfev=maxfev,
                                        xtol=xtol, ftol=ftol, full_output=True,
-                                       **kwargs)
+                                       disp=disp, **kwargs)
             solve_params = reslt[0]
             solv_cov = reslt[1]
 
@@ -280,7 +291,7 @@ class Affine(object):
             else:
                 # create object specifically for estimating through direct ML
                 affineml = AffineML(yc_data=self.yc_data,
-                                    var_data=self.var_data, lags=self.lags,
+                                    var_data=self.var_data, k_ar=self.k_ar,
                                     neqs=self.neqs, mats=self.mats,
                                     lam_0_e=self.lam_0_e, lam_1_e=self.lam_1_e,
                                     delta_0_e=self.delta_0_e,
@@ -292,14 +303,14 @@ class Affine(object):
 
                 reslt = affineml.fit(start_params=guess_params, method=alg,
                                      maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                                     ftol=ftol, **kwargs)
+                                     ftol=ftol, disp=disp, **kwargs)
                 solve_params = reslt.params
-                score = self.score(solve_params)
+                score = affineml.score(solve_params)
                 self.estimation_mlresult = reslt
 
         elif method == "kalman":
             affinekalman = AffineKalman(yc_data=self.yc_data,
-                                        var_data=self.var_data, lags=self.lags,
+                                        var_data=self.var_data, k_ar=self.k_ar,
                                         neqs=self.neqs, mats=self.mats,
                                         lam_0_e=self.lam_0_e,
                                         lam_1_e=self.lam_1_e,
@@ -311,17 +322,12 @@ class Affine(object):
                                         adjusted=self.adjusted,
                                         use_C_extension=self.use_C_extension)
 
-            #HERE
-            reslt = affinekalman.fit(**kwargs)
-
-            reslt = self.fit(start_params=guess_params, method=alg,
-                             maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                             ftol=ftol, **kwargs)
-
-            reslt = self.k
+            reslt = affinekalman.fit(start_params=guess_params, method=alg,
+                                     maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                                     ftol=ftol, disp=disp, **kwargs)
 
             solve_params = reslt.params
-            score = self.score(solve_params)
+            score = affinekalman.score(solve_params)
             self.estimation_kalmanresult = reslt
 
         # once more to get final filled in values
@@ -878,22 +884,50 @@ class AffineKalman(Affine):
                                                   delta_1, mu, phi, sigma)
 
 
-        k_states = latent
-        design = solve_b[mats_ix, -latent:]
+        self.k_states = latent
+        self.design = solve_b[mats_ix, -latent:]
         # NOTE: because the observed factors are known, can we just work them
         # into the intercept term in the observation equation
-        obs_intercept = solve_a[mats_ix] + np.dot(solve_b[mats_ix, :-latent],
+        self.obs_intercept = solve_a[mats_ix] + np.dot(solve_b[mats_ix, :-latent],
                                                   var_data_vert)
-        obs_cov = np.identity(len(mats_ix))
-        transition = phi[-latent:, -latent:]
-        state_intercept = mu[-latent:, 0]
-        selection = np.identity(latent)
-        state_cov = sigma[-latent:, -latent:]
+        self.obs_cov = np.identity(len(mats_ix))
+        self.transition = phi[-latent:, -latent:]
+        self.state_intercept = mu[-latent:, 0]
+        self.selection = np.identity(latent)
+        self.state_cov = sigma[-latent:, -latent:]
 
+        self.initialize_stationary()
+
+        # initialization of State Space Model object
         Model.__init__(self, endog=yc_data, k_states=latent, design=design,
                        obs_intercept=obs_intercept, obs_cov=obs_cov,
                        transition=transition, state_intercept=state_intercept,
-                       selection=selection, state_cov=state_cov
+                       selection=selection, state_cov=state_cov)
+
+    def update(self, params, *args, **kwargs):
+        """
+        Update variance and covariance
+        """
+        # calcualte appropriate arrays, along with affine relationships
+        # A and B
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+            self.params_to_array(params=params)
+        solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                  delta_1, mu, phi, sigma)
+
+        self.k_states = latent
+        self.design = solve_b[mats_ix, -latent:]
+        # NOTE: because the observed factors are known, can we just work them
+        # into the intercept term in the observation equation
+        self.obs_intercept = solve_a[mats_ix] + np.dot(solve_b[mats_ix, :-latent],
+                                                  var_data_vert)
+        self.obs_cov = np.identity(len(mats_ix))
+        self.transition = phi[-latent:, -latent:]
+        self.state_intercept = mu[-latent:, 0]
+        self.selection = np.identity(latent)
+        self.state_cov = sigma[-latent:, -latent:]
+
+
 
 class AffineResult(LikelihoodModelResults, Affine):
     """
@@ -1001,7 +1035,7 @@ class AffineResult(LikelihoodModelResults, Affine):
             "Null values in var_data"
 
         neqs = self.model.neqs
-        lags = self.model.k_ar
+        k_ar = self.model.k_ar
         mats = self.model.mats
         # generate affine prediction coefficients
         a_rsk, b_rsk = self.model.gen_pred_coef(lam_0=self.lam_0,
@@ -1011,7 +1045,7 @@ class AffineResult(LikelihoodModelResults, Affine):
                                                 mu=self.mu, phi=self.phi,
                                                 sigma=self.sigma)
         if not adjusted:
-            var_data = transform_var1(var_data, lags)
+            var_data = transform_var1(var_data, k_ar)
         var_data_vert = var_data[var_data.columns[:-neqs]]
         yields = pa.DataFrame(index=var_data_vert.index)
         for mat in mats:

@@ -26,13 +26,13 @@ def retry(func, attempts):
                 raise
     return inner_wrapper
 
-def transform_var1(var_data, lags):
+def transform_var1(var_data, k_ar):
     """
     Returns Dataframe of time series into one column per variable per lag minus
     1
     """
     var_data_trans = var_data.copy()
-    for lag in range(1, lags + 1):
+    for lag in range(1, k_ar + 1):
         for var in var_data.columns:
             var_data_trans[str(var) + '_m' + str(lag)] = \
                 pa.Series(var_data[var].values[:-(lag)],

@@ -20,7 +20,7 @@ from affine.model.util import transform_var1
 
 # parameters for running tests
 test_size = 100
-lags = 4
+k_ar = 4
 neqs = 5
 nyields = 5
 latent = 1
@@ -34,13 +34,13 @@ class TestInitialize(TestCase):
         np.random.seed(100)
 
         # initialize yield curve and VAR observed factors
-        yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
+        yc_data_test = pa.DataFrame(np.random.random((test_size - k_ar,
                                                       nyields)))
         var_data_test = pa.DataFrame(np.random.random((test_size, neqs)))
         mats = list(range(1, nyields + 1))
 
         # initialize masked arrays
-        self.dim = dim = lags * neqs
+        self.dim = dim = k_ar * neqs
         lam_0 = make_nomask([dim, 1])
         lam_1 = make_nomask([dim, dim])
         delta_0 = make_nomask([1, 1])
@@ -63,7 +63,7 @@ class TestInitialize(TestCase):
         self.mod_kwargs = {
             'yc_data': yc_data_test,
             'var_data': var_data_test,
-            'lags': lags,
+            'k_ar': k_ar,
             'neqs': neqs,
             'mats': mats,
             'lam_0_e': lam_0,
@@ -209,13 +209,13 @@ class TestEstimationSupportMethods(TestCase):
         np.random.seed(100)
 
         # initialize yield curve and VAR observed factors
-        yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
+        yc_data_test = pa.DataFrame(np.random.random((test_size - k_ar,
                                                       nyields)))
         var_data_test = pa.DataFrame(np.random.random((test_size, neqs)))
         mats = list(range(1, nyields + 1))
 
         # initialize masked arrays
-        self.dim = dim = lags * neqs + latent
+        self.dim = dim = k_ar * neqs + latent
         lam_0 = make_nomask([dim, 1])
         lam_1 = make_nomask([dim, dim])
         delta_0 = make_nomask([1, 1])
@@ -240,7 +240,7 @@ class TestEstimationSupportMethods(TestCase):
         self.mod_kwargs = {
             'yc_data': yc_data_test,
             'var_data': var_data_test,
-            'lags': lags,
+            'k_ar': k_ar,
             'neqs': neqs,
             'mats': mats,
             'lam_0_e': lam_0,
@@ -414,13 +414,13 @@ class TestEstimationMethods(TestCase):
         np.random.seed(100)
 
         # initialize yield curve and VAR observed factors
-        yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
+        yc_data_test = pa.DataFrame(np.random.random((test_size - k_ar,
                                                       nyields)))
         var_data_test = pa.DataFrame(np.random.random((test_size, neqs)))
         mats = list(range(1, nyields + 1))
 
         # initialize masked arrays
-        self.dim_nolat = dim = lags * neqs
+        self.dim_nolat = dim = k_ar * neqs
         lam_0 = make_nomask([dim, 1])
         lam_1 = make_nomask([dim, dim])
         delta_0 = make_nomask([1, 1])
@@ -443,7 +443,7 @@ class TestEstimationMethods(TestCase):
         self.mod_kwargs_nolat = {
             'yc_data': yc_data_test,
             'var_data': var_data_test,
-            'lags': lags,
+            'k_ar': k_ar,
             'neqs': neqs,
             'mats': mats,
             'lam_0_e': lam_0,
@@ -461,7 +461,7 @@ class TestEstimationMethods(TestCase):
         ## Maximum likelihood build
 
         # initialize masked arrays
-        self.dim_lat = dim = lags * neqs + latent
+        self.dim_lat = dim = k_ar * neqs + latent
         lam_0 = make_nomask([dim, 1])
         lam_1 = make_nomask([dim, dim])
         delta_0 = make_nomask([1, 1])
@@ -486,7 +486,7 @@ class TestEstimationMethods(TestCase):
         self.mod_kwargs = {
             'yc_data': yc_data_test,
             'var_data': var_data_test,
-            'lags': lags,
+            'k_ar': k_ar,
             'neqs': neqs,
             'mats': mats,
             'lam_0_e': lam_0,
@@ -538,14 +538,14 @@ class TestResultsClass(TestCase):
         np.random.seed(100)
 
         # initialize yield curve and VAR observed factors
-        yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
+        yc_data_test = pa.DataFrame(np.random.random((test_size - k_ar,
                                                       nyields)))
         var_data_test = self.var_data_test = \
             pa.DataFrame(np.random.random((test_size, neqs)))
         self.mats = mats = list(range(1, nyields + 1))
 
         # initialize masked arrays
-        self.dim_nolat = dim = lags * neqs
+        self.dim_nolat = dim = k_ar * neqs
         lam_0 = make_nomask([dim, 1])
         lam_1 = make_nomask([dim, dim])
         delta_0 = make_nomask([1, 1])
@@ -568,7 +568,7 @@ class TestResultsClass(TestCase):
         self.mod_kwargs_nolat = {
             'yc_data': yc_data_test,
             'var_data': var_data_test,
-            'lags': lags,
+            'k_ar': k_ar,
             'neqs': neqs,
             'mats': mats,
             'lam_0_e': lam_0,
@@ -593,7 +593,7 @@ class TestResultsClass(TestCase):
         """
         results = self.results
         pred = results.predicted_yields
-        self.assertEqual(pred.shape, (test_size - lags, nyields))
+        self.assertEqual(pred.shape, (test_size - k_ar, nyields))
         mats_check = [str(mat) + '_pred' for mat in self.mats]
         self.assertEqual(mats_check, pred.columns.tolist())
 
@@ -604,7 +604,7 @@ class TestResultsClass(TestCase):
         """
         results = self.results
         rn = results.risk_neutral_yields
-        self.assertEqual(rn.shape, (test_size - lags, nyields))
+        self.assertEqual(rn.shape, (test_size - k_ar, nyields))
         mats_check = [str(mat) + '_risk_neutral' for mat in self.mats]
         self.assertEqual(mats_check, rn.columns.tolist())
 
@@ -615,7 +615,7 @@ class TestResultsClass(TestCase):
         """
         results = self.results
         tp = results.term_premia
-        self.assertEqual(tp.shape, (test_size - lags, nyields))
+        self.assertEqual(tp.shape, (test_size - k_ar, nyields))
         mats_check = [str(mat) + '_tp' for mat in self.mats]
         self.assertEqual(mats_check, tp.columns.tolist())
 
@@ -629,14 +629,14 @@ class TestResultsClass(TestCase):
         var_data_test = self.var_data_test[-15:]
         generate_yields = results.generate_yields(var_data_test,
                                                   adjusted=False)
-        predicted_sset = results.predicted_yields[-15 + lags:]
+        predicted_sset = results.predicted_yields[-15 + k_ar:]
         self.assertTrue(np.all(generate_yields.values == predicted_sset.values))
         cols_check = [str(mat) + '_pred' for mat in self.mats]
         self.assertEqual(cols_check, generate_yields.columns.tolist())
 
         # #adjusted case
         # var_data_test =
-        var_data_trans = transform_var1(self.var_data_test[-15:], lags)
+        var_data_trans = transform_var1(self.var_data_test[-15:], k_ar)
         generate_yields = results.generate_yields(var_data_trans,
                                                   adjusted=True)
         self.assertTrue(np.all(generate_yields.values == predicted_sset.values))

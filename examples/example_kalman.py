@@ -159,7 +159,7 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
 mod_init = Affine(yc_data=yc_data_use, var_data=macro_data_use, latent=latent,
                   no_err=[0, 2, 4], lam_0_e=lam_0_e, lam_1_e=lam_1_e,
                   delta_0_e=delta_0_e, delta_1_e=delta_1_e, mu_e=mu_e,
-                  phi_e=phi_e, sigma_e=sigma_e, mats=mats, lags=k_ar,
+                  phi_e=phi_e, sigma_e=sigma_e, mats=mats, k_ar=k_ar,
                   neqs=neqs)
 
 guess_length = mod_init.guess_length
@@ -175,7 +175,7 @@ for numb, element in enumerate(guess_params[:30]):
 # #This is for nls method, only need guesses for lam_0, lam_1
 # #bsr_solve = mod_init.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
 bsr_solve = mod_init.solve(guess_params=guess_params, method="kalman",
-                           alg="newton", maxfev=10000000, maxiter=10000000)
+                           alg="bfgs", maxfev=10000000, maxiter=10000000)
 #
 # lam_0 = bsr_solve[0]
 # lam_1 = bsr_solve[1]

@@ -131,7 +131,7 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
 mod_init = Affine(yc_data=yc_data_use, var_data=macro_data_use, latent=latent,
                   no_err=[0, 2, 4], lam_0_e=lam_0_e, lam_1_e=lam_1_e,
                   delta_0_e=delta_0_e, delta_1_e=delta_1_e, mu_e=mu_e,
-                  phi_e=phi_e, sigma_e=sigma_e, mats=mats, lags=k_ar,
+                  phi_e=phi_e, sigma_e=sigma_e, mats=mats, k_ar=k_ar,
                   neqs=neqs)
 
 guess_length = mod_init.guess_length
