@@ -153,6 +153,7 @@ class Affine(object):
                 x_t_na[x_t_na.columns[neqs:]]
 
         self.var_data_vertc = self.var_data_vert.copy()
+        self.var_data_vert_T = self.var_data_vert.T
         self.var_data_vertc.insert(0, "constant",
                                    np.ones((len(var_data_vert), 1)))
 
@@ -343,7 +344,6 @@ class Affine(object):
             var_data_wunob = var_data_vert.join(lat_ser)
 
         return AffineResult(self, solve_params)
-
 
     def gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi, sigma):
         """
@@ -862,7 +862,7 @@ class AffineML(Affine, LikelihoodModel):
 
         return lat_ser, jacob, yield_errs
 
-class AffineKalman(Affine):
+class AffineKalman(Affine, Model):
     """
     Estimation class in the case of Kalman Filter Maximimum Likelihood
     """
@@ -876,38 +876,24 @@ class AffineKalman(Affine):
         latent = self.latent
         mats_ix = self.mats_ix
 
-        # calcualte appropriate arrays, along with affine relationships
-        # A and B
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
-            self.params_to_array(params=params)
-        solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
-                                                  delta_1, mu, phi, sigma)
-
-
-        self.k_states = latent
-        self.design = solve_b[mats_ix, -latent:]
-        # NOTE: because the observed factors are known, can we just work them
-        # into the intercept term in the observation equation
-        self.obs_intercept = solve_a[mats_ix] + np.dot(solve_b[mats_ix, :-latent],
-                                                  var_data_vert)
-        self.obs_cov = np.identity(len(mats_ix))
-        self.transition = phi[-latent:, -latent:]
-        self.state_intercept = mu[-latent:, 0]
-        self.selection = np.identity(latent)
-        self.state_cov = sigma[-latent:, -latent:]
-
-        self.initialize_stationary()
+        k_states = latent
+        obs_cov = np.identity(len(mats_ix))
+        selection = np.identity(latent)
 
         # initialization of State Space Model object
-        Model.__init__(self, endog=yc_data, k_states=latent, design=design,
-                       obs_intercept=obs_intercept, obs_cov=obs_cov,
-                       transition=transition, state_intercept=state_intercept,
-                       selection=selection, state_cov=state_cov)
+        Model.__init__(self, endog=yc_data, k_states=latent,
+                       obs_cov=obs_cov, selection=selection)
+
+        self.initialize_approximate_diffuse()
 
     def update(self, params, *args, **kwargs):
         """
         Update variance and covariance
         """
+        mats_ix = self.mats_ix
+        latent = self.latent
+        var_data_vert_T = self.var_data_vert_T
+
         # calcualte appropriate arrays, along with affine relationships
         # A and B
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
@@ -915,19 +901,36 @@ class AffineKalman(Affine):
         solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
 
-        self.k_states = latent
         self.design = solve_b[mats_ix, -latent:]
         # NOTE: because the observed factors are known, can we just work them
         # into the intercept term in the observation equation
         self.obs_intercept = solve_a[mats_ix] + np.dot(solve_b[mats_ix, :-latent],
-                                                  var_data_vert)
-        self.obs_cov = np.identity(len(mats_ix))
+                                                  var_data_vert_T)
         self.transition = phi[-latent:, -latent:]
         self.state_intercept = mu[-latent:, 0]
-        self.selection = np.identity(latent)
         self.state_cov = sigma[-latent:, -latent:]
 
+    def transform_params(self, unconstrained):
+        # Parameters must all be positive for likelihood evaluation.
+        # This transforms parameters from unconstrained parameters
+        # returned by the optimizer to ones that can be used in the model.
+        return unconstrained**2
 
+    def untransform_params(self, constrained):
+        # This transforms parameters from constrained parameters used
+        # in the model to those used by the optimizer
+        return constrained**0.5
+
+    _names = ['unobs1', 'unobs2', 'unobs3']
+    def _get_model_names(self, latex=False):
+        return self._latex_names if latex else self._names
+    _latex_names = ['$\\sigma_\\varepsilon^2$', '$\\sigma_\\xi^2$', '$\\sigma_\\zeta^2$']
+
+    def transform_params(self, unconstrained):
+        # Parameters must all be positive for likelihood evaluation.
+        # This transforms parameters from unconstrained parameters
+        # returned by the optimizer to ones that can be used in the model.
+        return unconstrained**2
 
 class AffineResult(LikelihoodModelResults, Affine):
     """
