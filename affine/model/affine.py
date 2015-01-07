@@ -7,6 +7,7 @@ This class inherits from the statsmodels LikelihoodModel class
 import numpy as np
 import pandas as pa
 import scipy.linalg as la
+import warnings
 
 from numpy import linalg as nla
 from numpy import ma
@@ -25,6 +26,14 @@ try:
 except:
     avail_fast_gen_pred = False
 
+###################
+# Warning classes #
+###################
+
+#class ParameterIgnoreWarning(Warning):
+
+
+
 #############################################
 # Create affine class system                #
 #############################################
@@ -33,21 +42,15 @@ class Affine(object):
     """
     Class for construction of affine model of the term structure
     """
-    def __init__(self, yc_data, var_data, k_ar, neqs, mats, lam_0_e, lam_1_e,
-                 delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
-                 no_err=None, adjusted=False, use_C_extension=True):
+    def __init__(self, yc_data, var_data, mats, lam_0_e, lam_1_e, delta_0_e,
+                 delta_1_e, mu_e, phi_e, sigma_e, latent=0, k_ar=None,
+                 neqs=None, no_err=None, adjusted=False, use_C_extension=True):
         """
         Attempts to instantiate an affine model object
         yc_data : DataFrame
             yield curve data
         var_data : DataFrame
-            data for var model
-        k_ar : int
-            number of lags for VAR system
-            Only respected when adjusted=False
-        neqs : int
-            Number of equations
-            Only respected when adjusted=True
+            data for var model (pass None if no observed factors)
         mats : list of int
             Maturities in periods of yields included in yc_data
         latent: int
@@ -63,6 +66,12 @@ class Affine(object):
             VAR(1)
         use_C_extension : boolean
             Indicates whether to use C extension
+        k_ar : int
+            number of lags for VAR system
+            Only respected when adjusted=False and var_data not None
+        neqs : int
+            Number of observed factors included
+            Only respected when adjusted=True
 
         For all estimate parameter arrays:
             elements marked with 'E' or 'e' are estimated
@@ -88,15 +97,20 @@ class Affine(object):
         self.yc_names = yc_data.columns
         self.num_yields = len(yc_data.columns)
         self.yobs = len(yc_data)
-        self.names = names = var_data.columns
-        self.k_ar = k_ar
-        if neqs:
-            self.neqs = neqs
-        else:
-            neqs = self.neqs = len(names)
+        self.obs_factors = bool(var_data)
 
+        if not self.obs_factors:
+            warnings.warn("k_ar and neqs ignored when obs_factors not used")
+
+        if not k_ar:
+            self.k_ar = 0
+        if not neqs:
+            self.neqs = 0
+
+        # Number of latent factors
         self.latent = latent
 
+        # Arrays for setting up affine system
         self.lam_0_e = lam_0_e
         self.lam_1_e = lam_1_e
         self.delta_0_e = delta_0_e
@@ -110,11 +124,6 @@ class Affine(object):
         self.mats = mats
         self.max_mat = max(mats)
         self.mats_ix = [mat - 1 for mat in mats]
-
-        if latent:
-            self.lat = latent
-        else:
-            self.lat = 0
 
         self.no_err = no_err
         if no_err:
@@ -132,32 +141,38 @@ class Affine(object):
             self.fast_gen_pred = False
 
         self.adjusted = adjusted
-        if adjusted:
-            assert len(yc_data.dropna(axis=0)) == \
-                   len(var_data.dropna(axis=0)), \
-                "Number of non-null values unequal in VAR and yield curve data"
-            var_data_vert = self.var_data_vert = var_data[ \
-                                                 var_data.columns[:-neqs]]
-            var_data_vertm1 = self.var_data_vertm1 = var_data[ \
-                                                     var_data.columns[neqs:]]
+        if self.obs_factors:
+            if adjusted:
+                assert len(yc_data.dropna(axis=0)) == \
+                       len(var_data.dropna(axis=0)), \
+                    "Number of non-null values unequal in VAR and yield curve data"
+                var_data_vert = self.var_data_vert = var_data[ \
+                                                     var_data.columns[:-neqs]]
+                var_data_vertm1 = self.var_data_vertm1 = var_data[ \
+                                                         var_data.columns[neqs:]]
 
+            else:
+                assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
+                                                        - k_ar, \
+                    "Number of non-null values unequal in VAR and yield curve data"
+
+                x_t_na = transform_var1(var_data, k_ar)
+
+                var_data_vert = self.var_data_vert = x_t_na[x_t_na.columns[:-neqs]]
+                var_data_vertm1 = self.var_data_vertm1 = \
+                    x_t_na[x_t_na.columns[neqs:]]
+
+            self.var_data_vertc = self.var_data_vert.copy()
+            self.var_data_vert_T = np.array(self.var_data_vert.T,
+                                            dtype=np.complex_)
+            self.var_data_vertc.insert(0, "constant",
+                                       np.ones((len(var_data_vert), 1)))
         else:
-            assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
-                                                    - k_ar, \
-                "Number of non-null values unequal in VAR and yield curve data"
+            self.var_data_vert = None
+            self.var_data_vertc = None
+            self.var_data_vert_T = None
 
-            x_t_na = transform_var1(var_data, k_ar)
-
-            var_data_vert = self.var_data_vert = x_t_na[x_t_na.columns[:-neqs]]
-            var_data_vertm1 = self.var_data_vertm1 = \
-                x_t_na[x_t_na.columns[neqs:]]
-
-        self.var_data_vertc = self.var_data_vert.copy()
-        self.var_data_vert_T = self.var_data_vert.T
-        self.var_data_vertc.insert(0, "constant",
-                                   np.ones((len(var_data_vert), 1)))
-
-        self.periods = len(self.var_data_vert)
+        self.periods = len(self.yc_data)
         self.guess_length = self._gen_guess_length()
         assert self.guess_length > 0, "guess_length must be at least 1"
 
@@ -168,7 +183,7 @@ class Affine(object):
         self._init_extend()
 
     def solve(self, guess_params, method, alg="newton", attempts=5,
-              maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8,
+              maxfev=10000, maxiter=10000, ftol=1e-4, xtol=1e-4,
               unobs_known=None, burn=5, penalty=False, upperbounds=None,
               lowerbounds=None, full_output=False, disp=True, **kwargs):
         """
@@ -276,7 +291,7 @@ class Affine(object):
             solv_cov = reslt[1]
 
         elif method == "ml":
-            assert len(self.no_err) == self.lat, \
+            assert len(self.no_err) == self.latent, \
                 "Number of columns estimated without error must match " + \
                 "number of latent variables"
 
@@ -327,7 +342,7 @@ class Affine(object):
                                      maxiter=maxiter, maxfun=maxfev, xtol=xtol,
                                      ftol=ftol, disp=disp, **kwargs)
 
-            solve_params = reslt.params
+            solve_params = reslt.mlefit.params
             score = affinekalman.score(solve_params)
             self.estimation_kalmanresult = reslt
 
@@ -335,10 +350,12 @@ class Affine(object):
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
                 self.params_to_array(solve_params)
 
+        import ipdb;ipdb.set_trace()
+
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
                                               mu, phi, sigma)
 
-        if latent:
+        if latent and method == "ml":
             lat_ser, jacob, yield_errs = self._solve_unobs(a_in=a_solve,
                                                            b_in=b_solve)
             var_data_wunob = var_data_vert.join(lat_ser)
@@ -368,12 +385,12 @@ class Affine(object):
             Array of coeffiencts relating factors to yields
         """
         max_mat = self.max_mat
-        b_width = self.k_ar * self.neqs + self.lat
+        b_width = self.k_ar * self.neqs + self.latent
         half = float(1)/2
         # generate predictions
-        a_pre = np.zeros((max_mat, 1))
+        a_pre = np.zeros((max_mat, 1), dtype=np.complex_)
         a_pre[0] = -delta_0
-        b_pre = np.zeros((max_mat, b_width))
+        b_pre = np.zeros((max_mat, b_width), dtype=np.complex_)
         b_pre[0] = -delta_1[:,0]
 
         n_inv = float(1) / np.add(range(max_mat), 1).reshape((max_mat, 1))
@@ -385,12 +402,12 @@ class Affine(object):
                             (mu - np.dot(sigma, lam_0))) + \
                             (half)*np.dot(np.dot(np.dot(b_pre[mat].T, sigma),
                             sigma.T), b_pre[mat]) - delta_0)[0][0]
-            a_solve[mat + 1] = -a_pre[mat + 1] * n_inv[mat + 1]
             b_pre[mat + 1] = np.dot((phi - np.dot(sigma, lam_1)).T, \
                                      b_pre[mat]) - delta_1[:, 0]
-            b_solve[mat + 1] = -b_pre[mat + 1] * n_inv[mat + 1]
 
-        return a_solve, b_solve
+        #import ipdb;ipdb.set_trace()
+
+        return np.multiply(-a_pre, n_inv), np.multiply(-b_pre, n_inv)
 
     def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
                           sigma):
@@ -461,7 +478,7 @@ class Affine(object):
             struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
             if not return_mask:
                 all_arrays[pos] = np.ascontiguousarray(struct,
-                                                       dtype=np.float64)
+                                                       dtype=np.complex_)
 
         return tuple(all_arrays)
 
@@ -599,7 +616,7 @@ class Affine(object):
         """
         k_ar = self.k_ar
         neqs = self.neqs
-        lat = self.lat
+        latent = self.latent
         num_yields = self.num_yields
         num_obsrv = neqs * k_ar
 
@@ -608,8 +625,8 @@ class Affine(object):
         jacob[:num_obsrv, :num_obsrv] = np.identity(neqs*k_ar)
 
         jacob[num_obsrv:, :num_obsrv] = b_obs
-        jacob[num_obsrv:, num_obsrv:num_obsrv + lat] = b_unobs
-        jacob[num_obsrv:, num_obsrv + lat:] = meas_mat
+        jacob[num_obsrv:, num_obsrv:num_obsrv + latent] = b_unobs
+        jacob[num_obsrv:, num_obsrv + latent:] = meas_mat
 
         return jacob
 
@@ -635,7 +652,7 @@ class Affine(object):
         """
         Run size checks on parameter arrays
         """
-        dim = self.neqs * self.k_ar + self.lat
+        dim = self.neqs * self.k_ar + self.latent
         assert np.shape(self.lam_0_e) == (dim, 1), "Shape of lam_0_e incorrect"
         assert np.shape(self.lam_1_e) == (dim, dim), \
                 "Shape of lam_1_e incorrect"
@@ -687,7 +704,7 @@ class AffineML(Affine, LikelihoodModel):
         loglikelihood : float
         """
 
-        lat = self.lat
+        latent = self.latent
         per = self.periods
         var_data_vert = self.var_data_vert
         var_data_vertm1 = self.var_data_vertm1
@@ -777,7 +794,7 @@ class AffineML(Affine, LikelihoodModel):
         a_in : list of floats (periods)
             List of elements for A constant in factors -> yields
             relationship
-        b_in : array (periods, neqs * k_ar + lat)
+        b_in : array (periods, neqs * k_ar + latent)
             Array of elements for B coefficients in factors -> yields
             relationship
 
@@ -787,7 +804,7 @@ class AffineML(Affine, LikelihoodModel):
             VAR data including unobserved factors
         jacob : array (neqs * k_ar + num_yields)**2
             Jacobian used in likelihood
-        yield_errs : array (num_yields - lat, periods)
+        yield_errs : array (num_yields - latent, periods)
             The errors for the yields estimated with error
         """
         yc_data = self.yc_data
@@ -797,7 +814,7 @@ class AffineML(Affine, LikelihoodModel):
         names = self.names
         k_ar = self.k_ar
         neqs = self.neqs
-        lat = self.lat
+        latent = self.latent
         no_err = self.no_err
         err = self.err
         no_err_mat = self.no_err_mat
@@ -813,11 +830,11 @@ class AffineML(Affine, LikelihoodModel):
         # these matrices will collect the final values
         a_all = np.zeros([num_yields, 1])
         b_all_obs = np.zeros([num_yields, neqs * k_ar])
-        b_all_unobs = np.zeros([num_yields, lat])
+        b_all_unobs = np.zeros([num_yields, latent])
 
         a_sel = np.zeros([no_err_num, 1])
         b_sel_obs = np.zeros([no_err_num, neqs * k_ar])
-        b_sel_unobs = np.zeros([no_err_num, lat])
+        b_sel_unobs = np.zeros([no_err_num, latent])
         for ix, y_pos in enumerate(no_err):
             a_sel[ix, 0] = a_in[no_err_mat[ix] - 1]
             b_sel_obs[ix, :] = b_in[no_err_mat[ix] - 1, :neqs * k_ar]
@@ -835,7 +852,7 @@ class AffineML(Affine, LikelihoodModel):
         # re-initialize a_sel, b_sel_obs, and b_sel_obs
         a_sel = np.zeros([err_num, 1])
         b_sel_obs = np.zeros([err_num, neqs * k_ar])
-        b_sel_unobs = np.zeros([err_num, lat])
+        b_sel_unobs = np.zeros([err_num, latent])
         for ix, y_pos in enumerate(err):
             a_all[y_pos, 0] =  a_sel[ix, 0] = a_in[err_mat[ix] - 1]
             b_all_obs[y_pos, :] = b_sel_obs[ix, :] = \
@@ -848,7 +865,7 @@ class AffineML(Affine, LikelihoodModel):
                         np.dot(b_sel_unobs, unobs)
 
         lat_ser = pa.DataFrame(index=var_data_vert.index)
-        for factor in range(lat):
+        for factor in range(latent):
             lat_ser["latent_" + str(factor)] = unobs[factor, :]
         meas_mat = np.zeros((num_yields, err_num))
 
@@ -872,7 +889,6 @@ class AffineKalman(Affine, Model):
         State Space Model attributes and methods
         """
         yc_data = self.yc_data
-        var_data_vert = self.var_data_vert
         latent = self.latent
         mats_ix = self.mats_ix
 
@@ -886,10 +902,15 @@ class AffineKalman(Affine, Model):
 
         self.initialize_approximate_diffuse()
 
+        latent_iter = range(latent)
+        self._names = ['unobs' + str(ix + 1) for ix in latent_iter]
+        self._latex_names = ['$X_{u' + str(ix + 1) + '}$' for ix in latent_iter]
+
     def update(self, params, *args, **kwargs):
         """
         Update variance and covariance
         """
+
         mats_ix = self.mats_ix
         latent = self.latent
         var_data_vert_T = self.var_data_vert_T
@@ -898,39 +919,46 @@ class AffineKalman(Affine, Model):
         # A and B
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
             self.params_to_array(params=params)
-        solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+        if self.fast_gen_pred:
+            solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                      delta_1, mu, phi, sigma)
+        else:
+            solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
 
         self.design = solve_b[mats_ix, -latent:]
         # NOTE: because the observed factors are known, can we just work them
         # into the intercept term in the observation equation
-        self.obs_intercept = solve_a[mats_ix] + np.dot(solve_b[mats_ix, :-latent],
-                                                  var_data_vert_T)
+        # NOTE: working on trying to make this robust to only latent factors
+        # pricing the model
+        if var_data_vert_T:
+            self.obs_intercept = solve_a[mats_ix] + np.dot(solve_b[mats_ix,
+                                                                   :-latent],
+                                                           var_data_vert_T)
+        else:
+            self.obs_intercept = solve_a[mats_ix]
+        #print(self.obs_intercept)
+
+        # NOTE: in the case of only observed facotrs
         self.transition = phi[-latent:, -latent:]
         self.state_intercept = mu[-latent:, 0]
         self.state_cov = sigma[-latent:, -latent:]
 
-    def transform_params(self, unconstrained):
-        # Parameters must all be positive for likelihood evaluation.
-        # This transforms parameters from unconstrained parameters
-        # returned by the optimizer to ones that can be used in the model.
-        return unconstrained**2
+        #import ipdb;ipdb.set_trace()
 
-    def untransform_params(self, constrained):
-        # This transforms parameters from constrained parameters used
-        # in the model to those used by the optimizer
-        return constrained**0.5
+    # def transform_params(self, unconstrained):
+    #     # Parameters must all be positive for likelihood evaluation.
+    #     # This transforms parameters from unconstrained parameters
+    #     # returned by the optimizer to ones that can be used in the model.
+    #     return unconstrained**2
 
-    _names = ['unobs1', 'unobs2', 'unobs3']
+    # def untransform_params(self, constrained):
+    #     # This transforms parameters from constrained parameters used
+    #     # in the model to those used by the optimizer
+    #     return constrained**0.5
+
     def _get_model_names(self, latex=False):
         return self._latex_names if latex else self._names
-    _latex_names = ['$\\sigma_\\varepsilon^2$', '$\\sigma_\\xi^2$', '$\\sigma_\\zeta^2$']
-
-    def transform_params(self, unconstrained):
-        # Parameters must all be positive for likelihood evaluation.
-        # This transforms parameters from unconstrained parameters
-        # returned by the optimizer to ones that can be used in the model.
-        return unconstrained**2
 
 class AffineResult(LikelihoodModelResults, Affine):
     """
