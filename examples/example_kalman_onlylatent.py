@@ -68,7 +68,7 @@ mu_e[:, 0] = ma.nomask
 
 #assume phi lower triangular
 #phi_e[:, :] = ma.masked
-phi_e.mask = np.tri(phi.shape[0], M=phi.shape[1])
+phi_e.mask = np.tri(phi_e.shape[0], M=phi_e.shape[1])
 
 sigma_e[:, :] = ma.masked
 sigma_e[:, :] = ma.nomask
