@@ -67,12 +67,13 @@ mu_e[:, 0] = ma.masked
 mu_e[:, 0] = ma.nomask
 
 #assume phi lower triangular
-#phi_e[:, :] = ma.masked
-phi_e.mask = np.tri(phi_e.shape[0], M=phi_e.shape[1])
+phi_e[:, :] = ma.masked
+#phi_e.mask = np.tri(phi_e.shape[0], M=phi_e.shape[1])
 
 sigma_e[:, :] = ma.masked
 sigma_e[:, :] = ma.nomask
-sigma_e[:, :] = np.identity(latent)
+#sigma_e[:, :] = np.identity(latent)
+sigma_e.mask = np.identity(sigma_e.shape[0])
 #sigma_e[-latent:, -latent:] = ma.masked
 
 mod_init = Affine(yc_data=mod_yc_data, var_data=None, latent=latent,

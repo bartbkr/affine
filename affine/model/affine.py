@@ -15,8 +15,7 @@ from scipy.optimize import fmin_l_bfgs_b
 from statsmodels.base.model import LikelihoodModel, LikelihoodModelResults
 from statsmodels.tools.decorators import cache_readonly
 from statsmodels.tools.numdiff import approx_hess, approx_fprime
-from statsmodels.tsa.kalmanf.kalmanfilter import StateSpaceModel, kalmanfilter
-from statsmodels.tsa.statespace.model import Model
+from statsmodels.tsa.statespace.api import MLEModel
 from scipy import optimize
 from util import transform_var1
 
@@ -879,14 +878,14 @@ class AffineML(Affine, LikelihoodModel):
 
         return lat_ser, jacob, yield_errs
 
-class AffineKalman(Affine, Model):
+class AffineKalman(Affine, MLEModel):
     """
     Estimation class in the case of Kalman Filter Maximimum Likelihood
     """
     def _init_extend(self):
         """
         Extends default __init_ method with additional information needed for
-        State Space Model attributes and methods
+        State Space MLEModel attributes and methods
         """
         yc_data = self.yc_data
         latent = self.latent
@@ -896,8 +895,8 @@ class AffineKalman(Affine, Model):
         obs_cov = np.identity(len(mats_ix))
         selection = np.identity(latent)
 
-        # initialization of State Space Model object
-        Model.__init__(self, endog=yc_data, k_states=latent,
+        # initialization of State Space MLEModel object
+        MLEModel.__init__(self, endog=yc_data, k_states=latent,
                        obs_cov=obs_cov, selection=selection)
 
         self.initialize_approximate_diffuse()
