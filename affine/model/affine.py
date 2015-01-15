@@ -339,7 +339,9 @@ class Affine(object):
 
             reslt = affinekalman.fit(start_params=guess_params, method=alg,
                                      maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                                     ftol=ftol, disp=disp, **kwargs)
+                                     ftol=ftol, disp=disp,
+                                     average_loglike=True, bfgs_tune=True,
+                                     **kwargs)
 
             solve_params = reslt.mlefit.params
             score = affinekalman.score(solve_params)
