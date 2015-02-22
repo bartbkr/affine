@@ -3,9 +3,6 @@ import numpy.ma as ma
 import pandas as pa
 import datetime as dt
 
-import socket
-import atexit
-
 from statsmodels.tsa.api import VAR
 from statsmodels.tsa.filters.hp_filter import hpfilter
 from statsmodels.sandbox.pca import Pca
@@ -33,31 +30,27 @@ ycdata = pa.read_csv("./data/yield_curve.csv", na_values = "M", sep=";",
 
 yc_cols = ['trcr_y1', 'trcr_y2', 'trcr_y3', 'trcr_y5', 'trcr_y7', 'trcr_y10']
 mod_yc_data_nodp = ycdata[yc_cols]
-mod_yc_data_nodp.rename(columns={'trcr_y1': 'trcr_q4', 'trcr_y2':
-                                 'trcr_q8', 'trcr_y3': 'trcr_q12',
-                                 'trcr_y5': 'trcr_q20', 'trcr_y7':
-                                 'trcr_q28', 'trcr_y10': 'trcr_q40'},
-                        inplace=True)
 mod_yc_data = mod_yc_data_nodp.dropna(axis=0)
 
 #limit to 1983 and on to not include Volker period
-#dates = pa.date_range("1/1/1983", "10/1/2009", freq="MS").to_pydatetime()
-dates = pa.date_range("6/1/1979", "12/1/2012", freq="MS").to_pydatetime()
+dates = pa.date_range("1/1/1983", "10/1/2009", freq="MS").to_pydatetime()
+#dates = pa.date_range("6/1/1979", "12/1/2012", freq="MS").to_pydatetime()
 
 # limit dates of yields and take logs
 mod_yc_data = np.log(mod_yc_data.ix[dates])
 
 # Maturities
-mats = [4, 8, 12, 20, 28, 40]
+mats = [12, 24, 36, 60, 84, 120]
 
 # construct model matrices up
-lam_0_e = ma.zeros([latent, 1], dtype=np.complex_)
-lam_1_e = ma.zeros([latent, latent], dtype=np.complex_)
-delta_0_e = ma.zeros([1, 1], dtype=np.complex_)
-delta_1_e = ma.zeros([latent, 1], dtype=np.complex_)
-mu_e = ma.zeros([latent, 1], dtype=np.complex_)
-phi_e = ma.zeros([latent, latent], dtype=np.complex_)
-sigma_e = ma.zeros([latent, latent], dtype=np.complex_)
+datatype = np.complex_
+lam_0_e = ma.zeros([latent, 1], dtype=datatype)
+lam_1_e = ma.zeros([latent, latent], dtype=datatype)
+delta_0_e = ma.zeros([1, 1], dtype=datatype)
+delta_1_e = ma.zeros([latent, 1], dtype=datatype)
+mu_e = ma.zeros([latent, 1], dtype=datatype)
+phi_e = ma.zeros([latent, latent], dtype=datatype)
+sigma_e = ma.zeros([latent, latent], dtype=datatype)
 
 #mask values to be estimated
 lam_0_e[:, 0] = ma.masked
@@ -88,13 +81,14 @@ mod_init = Affine(yc_data=mod_yc_data, var_data=None, latent=latent,
 
 guess_length = mod_init.guess_length
 
-guess_params = [0.0000] * guess_length
+guess_params = [0] * guess_length
 
 np.random.seed(100)
 
 for numb, element in enumerate(guess_params):
-    element = 0.01
+    element = 0.001
     guess_params[numb] = np.abs(element * np.random.random())
 
 bsr_solve = mod_init.solve(guess_params=guess_params, method="kalman",
-                           alg="bfgs", maxfev=10000000, maxiter=10000000, )
+                           alg="bfgs", maxfev=10000000, maxiter=10000000,
+                           ftol=0.1, xtol=0.1)

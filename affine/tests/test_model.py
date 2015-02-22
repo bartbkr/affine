@@ -15,7 +15,7 @@ import numpy.ma as ma
 import pandas as pa
 
 from affine.constructors.helper import make_nomask
-from affine.model.affine import Affine
+from affine.model.affine import Affine, AffineML, AffineKalman
 from affine.model.util import transform_var1
 
 # parameters for running tests
@@ -257,6 +257,7 @@ class TestEstimationSupportMethods(TestCase):
         self.guess_params = np.random.random((neqs**2 + neqs + (2 * latent),)
                                             ).tolist()
         self.affine_obj = Affine(**self.mod_kwargs)
+        self.affineml_obj =  AffineML(**self.mod_kwargs)
 
     def test_loglike(self):
         """
@@ -264,7 +265,7 @@ class TestEstimationSupportMethods(TestCase):
         calculated given a set of parameters, then this test passes.
         Otherwise, it fails.
         """
-        self.affine_obj.loglike(self.guess_params)
+        self.affineml_obj.loglike(self.guess_params)
 
     def test_score(self):
         """

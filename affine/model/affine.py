@@ -25,14 +25,6 @@ try:
 except:
     avail_fast_gen_pred = False
 
-###################
-# Warning classes #
-###################
-
-#class ParameterIgnoreWarning(Warning):
-
-
-
 #############################################
 # Create affine class system                #
 #############################################
@@ -70,6 +62,7 @@ class Affine(object):
             Only respected when adjusted=False and var_data not None
         neqs : int
             Number of observed factors included
+            If no observed factors, then set to 0
             Only respected when adjusted=True
 
         For all estimate parameter arrays:
@@ -96,14 +89,22 @@ class Affine(object):
         self.yc_names = yc_data.columns
         self.num_yields = len(yc_data.columns)
         self.yobs = len(yc_data)
-        self.obs_factors = bool(var_data)
 
-        if not self.obs_factors:
-            warnings.warn("k_ar and neqs ignored when obs_factors not used")
+        # ensure that var_data is either None or a pandas DataFrame
+        self.obs_factors = type(var_data) == pa.core.frame.DataFrame
 
-        if not k_ar:
+        #NOTE: Not sure if this should be kept
+        # if not self.obs_factors:
+        #     warnings.warn("k_ar and neqs ignored when obs_factors not used")
+
+        if k_ar:
+            self.k_ar = k_ar
+        else:
             self.k_ar = 0
-        if not neqs:
+
+        if neqs:
+            self.neqs = neqs
+        else:
             self.neqs = 0
 
         # Number of latent factors
@@ -285,7 +286,7 @@ class Affine(object):
             reslt = optimize.curve_fit(func, var_data_vert_tpose, yield_stack,
                                        p0=guess_params, maxfev=maxfev,
                                        xtol=xtol, ftol=ftol, full_output=True,
-                                       disp=disp, **kwargs)
+                                       **kwargs)
             solve_params = reslt[0]
             solv_cov = reslt[1]
 
@@ -324,34 +325,31 @@ class Affine(object):
                 self.estimation_mlresult = reslt
 
         elif method == "kalman":
-            affinekalman = AffineKalman(yc_data=self.yc_data,
-                                        var_data=self.var_data, k_ar=self.k_ar,
-                                        neqs=self.neqs, mats=self.mats,
-                                        lam_0_e=self.lam_0_e,
-                                        lam_1_e=self.lam_1_e,
-                                        delta_0_e=self.delta_0_e,
-                                        delta_1_e=self.delta_1_e,
-                                        mu_e=self.mu_e, phi_e=self.phi_e,
-                                        sigma_e=self.sigma_e,
-                                        latent=self.latent, no_err=self.no_err,
-                                        adjusted=self.adjusted,
-                                        use_C_extension=self.use_C_extension)
+            affinek = AffineKalman(yc_data=self.yc_data,
+                                   var_data=self.var_data, k_ar=self.k_ar,
+                                   neqs=self.neqs, mats=self.mats,
+                                   lam_0_e=self.lam_0_e, lam_1_e=self.lam_1_e,
+                                   delta_0_e=self.delta_0_e,
+                                   delta_1_e=self.delta_1_e, mu_e=self.mu_e,
+                                   phi_e=self.phi_e, sigma_e=self.sigma_e,
+                                   latent=self.latent, no_err=self.no_err,
+                                   adjusted=self.adjusted,
+                                   use_C_extension=self.use_C_extension)
 
-            reslt = affinekalman.fit(start_params=guess_params, method=alg,
-                                     maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                                     ftol=ftol, disp=disp,
-                                     average_loglike=True, bfgs_tune=True,
-                                     **kwargs)
+            affinek.loglikelihood_burn = 1
+
+            reslt = affinek.fit(start_params=guess_params, method=alg,
+                                maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                                ftol=ftol, disp=disp, average_loglike=True,
+                                bfgs_tune=True, **kwargs)
 
             solve_params = reslt.mlefit.params
-            score = affinekalman.score(solve_params)
+            score = affinek.score(solve_params)
             self.estimation_kalmanresult = reslt
 
         # once more to get final filled in values
         lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
                 self.params_to_array(solve_params)
-
-        import ipdb;ipdb.set_trace()
 
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
                                               mu, phi, sigma)
@@ -475,9 +473,12 @@ class Affine(object):
         arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
                                      all_arrays])
 
+        thisguy = 0
         for pos, struct in enumerate(all_arrays):
             struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
             if not return_mask:
+                # if np.any(np.iscomplex(struct)):
+                #     #print "here1"
                 all_arrays[pos] = np.ascontiguousarray(struct,
                                                        dtype=np.complex_)
 
@@ -897,21 +898,21 @@ class AffineKalman(Affine, MLEModel):
         obs_cov = np.identity(len(mats_ix))
         selection = np.identity(latent)
 
-        # initialization of State Space MLEModel object
-        MLEModel.__init__(self, endog=yc_data, k_states=latent,
-                       obs_cov=obs_cov, selection=selection)
-
-        self.initialize_approximate_diffuse()
-
         latent_iter = range(latent)
         self._names = ['unobs' + str(ix + 1) for ix in latent_iter]
         self._latex_names = ['$X_{u' + str(ix + 1) + '}$' for ix in latent_iter]
 
+        # initialization of State Space MLEModel object
+        MLEModel.__init__(self, endog=yc_data, k_states=latent,
+                          obs_cov=obs_cov, selection=selection)
+
+        self.initialize_stationary()
+
+
     def update(self, params, *args, **kwargs):
         """
-        Update variance and covariance
+        Update unknown parameters in model
         """
-
         mats_ix = self.mats_ix
         latent = self.latent
         var_data_vert_T = self.var_data_vert_T
@@ -927,25 +928,23 @@ class AffineKalman(Affine, MLEModel):
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
                                                   delta_1, mu, phi, sigma)
 
-        self.design = solve_b[mats_ix, -latent:]
+        self['design'] = solve_b[mats_ix, -latent:]
+
         # NOTE: because the observed factors are known, can we just work them
         # into the intercept term in the observation equation
         # NOTE: working on trying to make this robust to only latent factors
         # pricing the model
         if var_data_vert_T:
-            self.obs_intercept = solve_a[mats_ix] + np.dot(solve_b[mats_ix,
-                                                                   :-latent],
-                                                           var_data_vert_T)
+            self['obs_intercept'] = solve_a[mats_ix] + np.dot(solve_b[mats_ix,
+                                                                     :-latent],
+                                                              var_data_vert_T)
         else:
-            self.obs_intercept = solve_a[mats_ix]
-        #print(self.obs_intercept)
+            self['obs_intercept'] = solve_a[mats_ix]
 
         # NOTE: in the case of only observed facotrs
-        self.transition = phi[-latent:, -latent:]
-        self.state_intercept = mu[-latent:, 0]
-        self.state_cov = sigma[-latent:, -latent:]
-
-        #import ipdb;ipdb.set_trace()
+        self['transition'] = phi[-latent:, -latent:]
+        self['state_intercept'] = mu[-latent:, 0]
+        self['state_cov'] = sigma[-latent:, -latent:]
 
     # def transform_params(self, unconstrained):
     #     # Parameters must all be positive for likelihood evaluation.
