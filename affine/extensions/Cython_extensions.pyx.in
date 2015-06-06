@@ -1,0 +1,200 @@
+#cython: boundscheck=False
+#cython: wraparound=False
+#cython: cdivision=False
+from __future__ import division
+
+#Cython specific imports
+cimport numpy as np
+cimport cython
+
+#import numpy as np
+import numpy as np
+
+np.import_array()
+
+# half to be used later
+ctypedef np.float64_t DTYPE_t
+
+cdef extern from "capsule.h":
+    void *Capsule_AsVoidPtr(object ptr)
+
+# DOC: Types in use
+# NOTE: This is taken from statsmodels statespace code
+{{py:
+TYPES = {
+    "s": ("np.float32_t", "np.float32", "np.NPY_FLOAT32"),
+    "d": ("np.float64_t", "float", "np.NPY_FLOAT64"),
+    "c": ("np.complex64_t", "np.complex64", "np.NPY_COMPLEX64"),
+    "z": ("np.complex128_t", "complex", "np.NPY_COMPLEX128"),
+}
+
+# DOC: BLAS functions in use
+BLAS_FUNCTIONS = ["gemm", "copy"]
+
+}}
+
+
+# `blas_lapack.pxd` contains typedef statements for BLAS and LAPACK functions
+# NOTE: Temporary fix
+#from statsmodels.src.blas_lapack cimport *
+from blas_lapack cimport *
+
+try:
+    # Scipy >= 0.12.0 exposes Fortran BLAS functions directly
+    from scipy.linalg.blas import cgerc
+except:
+    # Scipy < 0.12.0 exposes Fortran BLAS functions in the `fblas` submodule
+    from scipy.linalg.blas import fblas as blas
+else:
+    from scipy.linalg import blas
+
+
+
+{{for prefix, types in TYPES.items()}}
+{{for function in BLAS_FUNCTIONS}}
+{{py: name = prefix + function}}
+cdef {{name}}_t *{{name}} = <{{name}}_t*>Capsule_AsVoidPtr(blas.{{name}}._cpointer)
+{{endfor}}
+{{endfor}}
+
+# DOC: These are used for BLAS function calls
+cdef int dim_one = 1
+cdef int dim_zero = 0
+cdef int dim_mone = -1
+cdef DTYPE_t scalar_one = 1
+cdef DTYPE_t scalar_zero = 0
+cdef DTYPE_t scalar_mone = -1
+cdef DTYPE_t scalar_half = 1 / 2
+cdef int inc = 1
+cdef int FORTRAN = 1
+
+@cython.boundscheck(False) # turn of bounds-checking for entire function
+@cython.wraparound(False)
+@cython.cdivision(False)
+def cython_gen_pred_coef(unsigned int max_mat,
+                  np.ndarray[DTYPE_t, ndim=2, mode="fortran"] lam_0,
+                  np.ndarray[DTYPE_t, ndim=2, mode="fortran"] lam_1,
+                  np.ndarray[DTYPE_t, ndim=2, mode="fortran"] delta_0,
+                  np.ndarray[DTYPE_t, ndim=2, mode="fortran"] delta_1,
+                  np.ndarray[DTYPE_t, ndim=2, mode="fortran"] mu,
+                  np.ndarray[DTYPE_t, ndim=2, mode="fortran"] phi,
+                  np.ndarray[DTYPE_t, ndim=2, mode="fortran"] sigma):
+    """
+    Returns tuple of arrays
+    Generates prediction coefficient vectors A and B
+
+    Parameters
+    ----------
+    lam_0 : numpy array
+    lam_1 : numpy array
+    delta_0 : numpy array
+    delta_1 : numpy array
+    mu : numpy array
+    phi : numpy array
+    sigma : numpy array
+
+    Returns
+    -------
+    a_solve : numpy array
+        Array of constants relating factors to yields
+    b_solve : numpy array
+        Array of coeffiencts relating factors to yields
+    """
+    cdef unsigned int mat
+    cdef unsigned int max_mat_m1 = max_mat - 1
+
+    # dimension holders
+    cdef np.npy_intp dim2[2]
+
+    #sizes needed
+    cdef int factors = mu.shape[0]
+    cdef int mu_size = mu.size
+    cdef int factors_sqr = phi.size
+
+    # generate predictions arrays
+    dim2[:] = [max_mat, 1]
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] a_pre = np.PyArray_EMPTY(2, dim2,
+                                                              np.NPY_FLOAT64,
+                                                              FORTRAN)
+    dim2[:] = [max_mat, factors]
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] b_pre = np.PyArray_EMPTY(2, dim2,
+                                                              np.NPY_FLOAT64,
+                                                              FORTRAN)
+
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] n_inv = \
+        np.asfortranarray(1 / np.add(range(max_mat), 1).reshape((max_mat, 1)))
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] a_solve = \
+        -a_pre.copy(order='F')
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] b_solve = \
+        -b_pre.copy(order='F')
+
+    a_pre[0] = -delta_0
+    b_pre[0] = -delta_1[:,0]
+
+    cdef np.ndarray[DTYPE_t, ndim=1, mode="fortran"] b_el_holder = np.empty((factors),
+                                                                      order="F")
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] mu_sigma_lam0 = \
+        np.empty((factors, 1), order="F")
+    cdef np.ndarray[DTYPE_t, ndim=1, mode="fortran"] a_b_mu_sig_lam = np.empty((1),
+                                                                         order="F")
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] b_sig = np.empty((1, factors),
+                                                                order="F")
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] b_sig_sig = np.empty((1,
+                                                                     factors),
+                                                                    order="F")
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] half_b_sig_sig_b_delta = \
+        np.empty((1, 1), order="F")
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] phi_sigma_lam_1 = \
+        np.empty((factors, factors), order="F")
+    cdef np.ndarray[DTYPE_t, ndim=2, mode="fortran"] b_pre_prep = np.empty((factors,
+                                                                      1),
+                                                                     order="F")
+
+    for mat in range(max_mat_m1):
+        # Set next value of a
+        #NOTE: set these to arrays to be referenced uniquely
+        b_el_holder = np.asfortranarray(b_pre[mat])
+        a_b_mu_sig_lam = np.asfortranarray(a_pre[mat])
+
+        # This creates a filler array that initially has values of mu
+        dcopy(&mu_size, &mu[0, 0], &inc, &mu_sigma_lam0[0, 0], &inc)
+        # This creates a filler array that initially has values of delta_0
+        dcopy(&dim_one, &delta_0[0, 0], &inc, &half_b_sig_sig_b_delta[0, 0],
+              &inc)
+
+
+        # dgemm(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
+        #NOTE: 13 args
+        dgemm("N", "N", &factors, &dim_one, &factors, &scalar_mone,
+              &sigma[0, 0], &factors, &lam_0[0, 0], &factors, &scalar_one,
+              &mu_sigma_lam0[0, 0], &factors)
+        dgemm("T", "N", &dim_one, &dim_one, &factors, &scalar_one,
+              &b_el_holder[0], &factors, &mu_sigma_lam0[0, 0], &factors,
+              &scalar_one, &a_b_mu_sig_lam[0], &dim_one)
+
+        dgemm("T", "N", &dim_one, &factors, &factors, &scalar_one,
+              &b_el_holder[0], &factors, &sigma[0, 0], &factors,
+              &scalar_zero, &b_sig[0, 0], &dim_one)
+        dgemm("N", "T", &dim_one, &factors, &factors, &scalar_one,
+              &b_sig[0, 0], &dim_one, &sigma[0, 0], &factors, &scalar_zero,
+              &b_sig_sig[0, 0], &dim_one)
+        dgemm("N", "N", &dim_one, &dim_one, &factors, &scalar_half,
+              &b_sig_sig[0, 0], &dim_one, &b_el_holder[0], &factors,
+              &scalar_mone, &half_b_sig_sig_b_delta[0, 0], &dim_one)
+        a_pre[mat + 1] = a_b_mu_sig_lam[dim_zero] + \
+                         half_b_sig_sig_b_delta[dim_zero, dim_zero]
+
+        # Filler array that has initial values of phi
+        dcopy(&factors_sqr, &phi[0, 0], &inc, &phi_sigma_lam_1[0, 0], &inc)
+        # Filler array that has initial value of delta_1
+        dcopy(&factors, &delta_1[0, 0], &inc, &b_pre_prep[0, 0], &inc)
+        # set next value of b
+        dgemm("N", "N", &factors, &factors, &factors, &scalar_mone,
+              &sigma[0, 0], &factors, &lam_1[0, 0], &factors, &scalar_one,
+              &phi_sigma_lam_1[0, 0], &factors)
+        dgemm("T", "N", &factors, &dim_one, &factors, &scalar_one,
+              &phi_sigma_lam_1[0, 0], &factors, &b_el_holder[0], &factors,
+              &scalar_mone, &b_pre_prep[0, 0], &factors)
+        b_pre[mat + 1] = b_pre_prep[:, dim_zero]
+
+    return np.multiply(-a_pre, n_inv), np.multiply(-b_pre, n_inv)
