@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.ma as ma
 import pandas as px
 import datetime as dt
 
@@ -102,9 +103,8 @@ mod_yc_data.dropna(inplace=True)
 mats = [4, 8, 12, 20, 28, 40]
 del mod_yc_data['trcr_m1']
 
-macro_data_use = macro_data.dropna().reindex(columns=['price_pca1',
-                                                      'output_pca1'])
-macro_data_use = macro_data.ix[mod_yc_data.index]
+macro_data_use = macro_data.dropna()[['price_pca1', 'output_pca1']]
+macro_data_use = macro_data_use.ix[mod_yc_data.index]
 
 yc_data_use = mod_yc_data.ix[macro_data_use.index[k_ar:]]
 rf_rate = rf_rate.ix[macro_data_use.index]
@@ -114,10 +114,39 @@ rf_rate = rf_rate.ix[macro_data_use.index]
 
 neqs = len(macro_data_use.columns)
 
-#This is a constructor function for easiloy setting up the system ala Ang and
-#Piazzessi 2003
-lam_0_e, lam_1_e, delta_0_e, delta_1_e, mu_e, phi_e, sigma_e \
-    = ap_constructor(k_ar=k_ar, neqs=neqs, lat=latent)
+dim = neqs * k_ar + latent
+lam_0_e = ma.zeros([dim, 1], dtype=np.complex_)
+lam_1_e = ma.zeros([dim, dim], dtype=np.complex_)
+delta_0_e = ma.zeros([1, 1], dtype=np.complex_)
+delta_1_e = ma.zeros([dim, 1], dtype=np.complex_)
+#delta_1_e[-latent:, 0] = [-0.0001, 0.0000, 0.0001]
+#delta_1_e[-latent:, 0] = [0.0001]
+mu_e = ma.zeros([dim, 1], dtype=np.complex_)
+phi_e = ma.zeros([dim, dim], dtype=np.complex_)
+sigma_e = ma.zeros([dim, dim], dtype=np.complex_)
+
+#mask values to be estimated
+lam_0_e[:neqs, 0] = ma.masked
+lam_0_e[-latent:, 0] = ma.masked
+
+lam_1_e[:neqs, :neqs] = ma.masked
+lam_1_e[:neqs, -latent:] = ma.masked
+lam_1_e[-latent:, :neqs] = ma.masked
+lam_1_e[-latent:, -latent:] = ma.masked
+
+delta_0_e[:, :] = ma.masked
+delta_0_e[:, :] = ma.nomask
+
+delta_1_e[-latent:, :] = ma.masked
+
+mu_e[-latent:, 0] = ma.masked
+
+phi_e[-latent:, -latent:] = ma.masked
+
+sigma_e[:, :] = ma.masked
+sigma_e[:, :] = ma.nomask
+sigma_e[-latent:, -latent:] = np.identity(latent)
+#sigma_e[-latent:, -latent:] = ma.masked
 
 delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
                                                       freq="Q", lat=latent,
@@ -128,11 +157,11 @@ delta_0_e, delta_1_e, mu_e, phi_e, sigma_e = pass_ols(var_data=macro_data_use,
                                                       sigma=sigma_e,
                                                       rf_rate=rf_rate)
 
+
 mod_init = Affine(yc_data=yc_data_use, var_data=macro_data_use, latent=latent,
-                  no_err=[0, 2, 4], lam_0_e=lam_0_e, lam_1_e=lam_1_e,
-                  delta_0_e=delta_0_e, delta_1_e=delta_1_e, mu_e=mu_e,
-                  phi_e=phi_e, sigma_e=sigma_e, mats=mats, k_ar=k_ar,
-                  neqs=neqs)
+                  lam_0_e=lam_0_e, lam_1_e=lam_1_e, delta_0_e=delta_0_e,
+                  delta_1_e=delta_1_e, mu_e=mu_e, phi_e=phi_e, sigma_e=sigma_e,
+                  mats=mats, k_ar=k_ar, neqs=neqs, use_C_extension=False)
 
 guess_length = mod_init.guess_length
 
@@ -140,39 +169,9 @@ guess_params = [0.0000] * guess_length
 
 np.random.seed(100)
 
-for numb, element in enumerate(guess_params[:30]):
-    element = 0.0001
-    guess_params[numb] = element * (np.random.random() - 0.5)
+for numb, element in enumerate(guess_params):
+    element = 0.0000000001
+    guess_params[numb] = np.abs(element * np.random.random())
 
-# #This is for nls method, only need guesses for lam_0, lam_1
-# #bsr_solve = mod_init.solve(lam_0_g=lam_0_g, lam_1_g=lam_1_g, method="nls")
-#bsr_solve = mod_init.solve(guess_params=guess_params, method="ml",
-#                            alg="newton", maxfev=10000000, maxiter=10000000)
-#
-# lam_0 = bsr_solve[0]
-# lam_1 = bsr_solve[1]
-#
-# lam_0, lam_1, delta_1, mu, phi, sigma, a_solve, b_solve, tvalues = bsr_solve
-#
-# print "lam_0"
-# print lam_0
-# print "lam_1"
-# print lam_1
-# print "delta_1"
-# print delta_1
-# print "mu"
-# print mu
-# print "phi"
-# print phi
-# print "sigma"
-# print sigma
-# print "a_solve"
-# print a_solve
-# print "b_solve"
-# print b_solve
-# print "tvalues"
-# print tvalues
-#
-# #send success email
-# passwd = keyring.get_password("email_auth", "bartbkr")
-# success_mail(passwd)
+bsr_solve = mod_init.solve(guess_params=guess_params, method="kalman",
+                           alg="bfgs", maxfev=10000000, maxiter=10000000)

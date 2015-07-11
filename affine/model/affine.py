@@ -7,6 +7,7 @@ This class inherits from the statsmodels LikelihoodModel class
 import numpy as np
 import pandas as pa
 import scipy.linalg as la
+import warnings
 
 from numpy import linalg as nla
 from numpy import ma
@@ -14,9 +15,9 @@ from scipy.optimize import fmin_l_bfgs_b
 from statsmodels.base.model import LikelihoodModel, LikelihoodModelResults
 from statsmodels.tools.decorators import cache_readonly
 from statsmodels.tools.numdiff import approx_hess, approx_fprime
-from statsmodels.tsa.kalmanf.kalmanfilter import StateSpaceModel, kalmanfilter
+from statsmodels.tsa.statespace.api import MLEModel
 from scipy import optimize
-from util import retry, transform_var1
+from util import transform_var1
 
 try:
     from . import Cython_extensions
@@ -35,25 +36,19 @@ opt_gen_pred_coef_funcs = {
 # Create affine class system                #
 #############################################
 
-class Affine(LikelihoodModel, StateSpaceModel):
+class Affine(object):
     """
     Class for construction of affine model of the term structure
     """
-    def __init__(self, yc_data, var_data, lags, neqs, mats, lam_0_e, lam_1_e,
-                 delta_0_e, delta_1_e, mu_e, phi_e, sigma_e, latent=0,
-                 no_err=None, adjusted=False, use_C_extension=True):
+    def __init__(self, yc_data, var_data, mats, lam_0_e, lam_1_e, delta_0_e,
+                 delta_1_e, mu_e, phi_e, sigma_e, latent=0, k_ar=None,
+                 neqs=None, no_err=None, adjusted=False, use_C_extension=True):
         """
         Attempts to instantiate an affine model object
         yc_data : DataFrame
             yield curve data
         var_data : DataFrame
-            data for var model
-        lags : int
-            number of lags for VAR system
-            Only respected when adjusted=False
-        neqs : int
-            Number of equations
-            Only respected when adjusted=True
+            data for var model (pass None if no observed factors)
         mats : list of int
             Maturities in periods of yields included in yc_data
         latent: int
@@ -69,6 +64,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
             VAR(1)
         use_C_extension : boolean
             Indicates whether to use C extension
+        k_ar : int
+            number of lags for VAR system
+            Only respected when adjusted=False and var_data not None
+        neqs : int
+            Number of observed factors included
+            If no observed factors, then set to 0
+            Only respected when adjusted=True
 
         For all estimate parameter arrays:
             elements marked with 'E' or 'e' are estimated
@@ -94,15 +96,28 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.yc_names = yc_data.columns
         self.num_yields = len(yc_data.columns)
         self.yobs = len(yc_data)
-        self.names = names = var_data.columns
-        k_ar = self.k_ar = lags
+
+        # ensure that var_data is either None or a pandas DataFrame
+        self.obs_factors = type(var_data) == pa.core.frame.DataFrame
+
+        #NOTE: Not sure if this should be kept
+        # if not self.obs_factors:
+        #     warnings.warn("k_ar and neqs ignored when obs_factors not used")
+
+        if k_ar:
+            self.k_ar = k_ar
+        else:
+            self.k_ar = 0
+
         if neqs:
             self.neqs = neqs
         else:
-            neqs = self.neqs = len(names)
+            self.neqs = 0
 
+        # Number of latent factors
         self.latent = latent
 
+        # Arrays for setting up affine system
         self.lam_0_e = lam_0_e
         self.lam_1_e = lam_1_e
         self.delta_0_e = delta_0_e
@@ -115,11 +130,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         # generates mats: list of mats in yield curve data
         self.mats = mats
         self.max_mat = max(mats)
-
-        if latent:
-            self.lat = latent
-        else:
-            self.lat = 0
+        self.mats_ix = [mat - 1 for mat in mats]
 
         self.no_err = no_err
         if no_err:
@@ -130,36 +141,45 @@ class Affine(LikelihoodModel, StateSpaceModel):
             self.noerr_cols, self.err_cols = self._gen_col_names()
 
         # DOC: Whether to use Cython extension
+        self.use_C_extension = use_C_extension
         if avail_fast_gen_pred and use_C_extension:
             self.fast_gen_pred = True
         else:
             self.fast_gen_pred = False
 
-        if adjusted:
-            assert len(yc_data.dropna(axis=0)) == \
-                   len(var_data.dropna(axis=0)), \
-                "Number of non-null values unequal in VAR and yield curve data"
-            var_data_vert = self.var_data_vert = var_data[ \
-                                                 var_data.columns[:-neqs]]
-            var_data_vertm1 = self.var_data_vertm1 = var_data[ \
-                                                     var_data.columns[neqs:]]
+        self.adjusted = adjusted
+        if self.obs_factors:
+            if adjusted:
+                assert len(yc_data.dropna(axis=0)) == \
+                       len(var_data.dropna(axis=0)), \
+                    "Number of non-null values unequal in VAR and yield curve data"
+                var_data_vert = self.var_data_vert = var_data[ \
+                                                     var_data.columns[:-neqs]]
+                var_data_vertm1 = self.var_data_vertm1 = var_data[ \
+                                                         var_data.columns[neqs:]]
 
+            else:
+                assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
+                                                        - k_ar, \
+                    "Number of non-null values unequal in VAR and yield curve data"
+
+                x_t_na = transform_var1(var_data, k_ar)
+
+                var_data_vert = self.var_data_vert = x_t_na[x_t_na.columns[:-neqs]]
+                var_data_vertm1 = self.var_data_vertm1 = \
+                    x_t_na[x_t_na.columns[neqs:]]
+
+            self.var_data_vertc = self.var_data_vert.copy()
+            self.var_data_vert_T = np.array(self.var_data_vert.T,
+                                            dtype=np.complex_)
+            self.var_data_vertc.insert(0, "constant",
+                                       np.ones((len(var_data_vert), 1)))
         else:
-            assert len(yc_data.dropna(axis=0)) == len(var_data.dropna(axis=0)) \
-                                                    - k_ar, \
-                "Number of non-null values unequal in VAR and yield curve data"
+            self.var_data_vert = None
+            self.var_data_vertc = None
+            self.var_data_vert_T = None
 
-            x_t_na = transform_var1(var_data, lags)
-
-            var_data_vert = self.var_data_vert = x_t_na[x_t_na.columns[:-neqs]]
-            var_data_vertm1 = self.var_data_vertm1 = \
-                x_t_na[x_t_na.columns[neqs:]]
-
-        self.var_data_vertc = self.var_data_vert.copy()
-        self.var_data_vertc.insert(0, "constant",
-                                   np.ones((len(var_data_vert), 1)))
-
-        self.periods = len(self.var_data_vert)
+        self.periods = len(self.yc_data)
         self.guess_length = self._gen_guess_length()
         assert self.guess_length > 0, "guess_length must be at least 1"
 
@@ -168,12 +188,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
         # DOC: Type checks
         self._type_checks()
 
-        super(Affine, self).__init__(var_data_vert)
+        #super(Affine, self).__init__(var_data_vert)
+        self._init_extend()
 
     def solve(self, guess_params, method, alg="newton", attempts=5,
-              maxfev=10000, maxiter=10000, ftol=1e-8, xtol=1e-8, xi10=[0],
-              ntrain=1, penalty=False, upperbounds=None, lowerbounds=None,
-              full_output=False, **kwargs):
+              maxfev=10000, maxiter=10000, ftol=1e-4, xtol=1e-4,
+              unobs_known=None, burn=5, penalty=False, upperbounds=None,
+              lowerbounds=None, full_output=False, disp=True, **kwargs):
         """
         Returns tuple of arrays
         Attempt to solve affine model based on instantiated object.
@@ -191,18 +212,18 @@ class Affine(LikelihoodModel, StateSpaceModel):
             kalman = kalman filter derived maximum likelihood
         alg : str {'newton','nm','bfgs','powell','cg', or 'ncg'}
             algorithm used for numerical approximation
-            Method can be 'newton' for Newton-Raphson, 'nm' for
-            Nelder-Mead, 'bfgs' for Broyden-Fletcher-Goldfarb-Shanno,
-            'powell' for modified Powell's method, 'cg' for conjugate
-            gradient, or 'ncg' for Newton- conjugate gradient. `method`
-            determines which solver from scipy.optimize is used.  The
-            explicit arguments in `fit` are passed to the solver.  Each
-            solver has several optional arguments that are not the same
-            across solvers.  See the notes section below (or
+            Method can be:
+                'newton' for Newton-Raphson,
+                'nm' for Nelder-Mead,
+                'bfgs' for Broyden-Fletcher-Goldfarb-Shanno,
+                'powell' for modified Powell's method,
+                'cg' for conjugate gradient, or
+                'ncg' for Newton- conjugate gradient. `method`
+            determines which solver from scipy.optimize is used.
+
+            Each solver has several optional arguments that are not the
+            same across solvers. See the notes section below (or
             scipy.optimize) for the available arguments.
-        attempts : int
-            Number of attempts to retry solving if singular matrix
-            Exception raised by Numpy
 
         scipy.optimize params
         maxfev : int
@@ -215,6 +236,14 @@ class Affine(LikelihoodModel, StateSpaceModel):
             relative error desired in the approximate solution
         full_output : bool
             non_zero to return all optional outputs
+        disp : boolean, optional
+            Set to True to print convergence messages.
+
+        Kalman filter params
+        unobs_known: list
+            Initial values of unobserved factors for state space iteration
+        burn: int
+            Number of periods to burn in evaluation of log-likelihood
 
         Returns
         -------
@@ -251,6 +280,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
         yc_data = self.yc_data
         var_data_vert = self.var_data_vert
 
+        # TODO: this should not need to be true, could still be
+        # represented by statespace form
         if method == "kalman" and not self.latent:
             raise NotImplementedError( \
             "Kalman filter not supported with no latent factors")
@@ -261,15 +292,15 @@ class Affine(LikelihoodModel, StateSpaceModel):
             # need to stack for scipy nls
             yield_stack = np.array(yc_data).reshape(-1, order='F').tolist()
             # run optimization
-            solver = retry(optimize.curve_fit, attempts)
-            reslt = solver(func, var_data_vert_tpose, yield_stack, p0=guess_params,
-                           maxfev=maxfev, xtol=xtol, ftol=ftol,
-                           full_output=True, **kwargs)
+            reslt = optimize.curve_fit(func, var_data_vert_tpose, yield_stack,
+                                       p0=guess_params, maxfev=maxfev,
+                                       xtol=xtol, ftol=ftol, full_output=True,
+                                       **kwargs)
             solve_params = reslt[0]
             solv_cov = reslt[1]
 
         elif method == "ml":
-            assert len(self.no_err) == self.lat, \
+            assert len(self.no_err) == self.latent, \
                 "Number of columns estimated without error must match " + \
                 "number of latent variables"
 
@@ -283,28 +314,56 @@ class Affine(LikelihoodModel, StateSpaceModel):
                 score = self.score(solve_params)
 
             else:
-                reslt = self.fit(start_params=guess_params, method=alg,
-                                 maxiter=maxiter, maxfun=maxfev, xtol=xtol,
-                                 ftol=ftol, **kwargs)
+                # create object specifically for estimating through direct ML
+                affineml = AffineML(yc_data=self.yc_data,
+                                    var_data=self.var_data, k_ar=self.k_ar,
+                                    neqs=self.neqs, mats=self.mats,
+                                    lam_0_e=self.lam_0_e, lam_1_e=self.lam_1_e,
+                                    delta_0_e=self.delta_0_e,
+                                    delta_1_e=self.delta_1_e, mu_e=self.mu_e,
+                                    phi_e=self.phi_e, sigma_e=self.sigma_e,
+                                    latent=self.latent, no_err=self.no_err,
+                                    adjusted=self.adjusted,
+                                    use_C_extension=self.use_C_extension)
+
+                reslt = affineml.fit(start_params=guess_params, method=alg,
+                                     maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                                     ftol=ftol, disp=disp, **kwargs)
                 solve_params = reslt.params
-                score = self.score(solve_params)
+                score = affineml.score(solve_params)
                 self.estimation_mlresult = reslt
 
         elif method == "kalman":
-            self.fit_kalman(start_params=guess_params, method=alg, xi10=xi10,
-                            ntrain=ntrain, penalty=penalty,
-                            upperbounds=upperbounds, lowerbounds=lowerbounds,
-                            **kwargs)
-            solve_params = self.params
-            score = self.score(solve_params)
+            affinek = AffineKalman(yc_data=self.yc_data,
+                                   var_data=self.var_data, k_ar=self.k_ar,
+                                   neqs=self.neqs, mats=self.mats,
+                                   lam_0_e=self.lam_0_e, lam_1_e=self.lam_1_e,
+                                   delta_0_e=self.delta_0_e,
+                                   delta_1_e=self.delta_1_e, mu_e=self.mu_e,
+                                   phi_e=self.phi_e, sigma_e=self.sigma_e,
+                                   latent=self.latent, no_err=self.no_err,
+                                   adjusted=self.adjusted,
+                                   use_C_extension=self.use_C_extension)
 
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, dtype = \
+            affinek.loglikelihood_burn = 1
+
+            reslt = affinek.fit(start_params=guess_params, method=alg,
+                                maxiter=maxiter, maxfun=maxfev, xtol=xtol,
+                                ftol=ftol, disp=disp, average_loglike=True,
+                                bfgs_tune=True, **kwargs)
+
+            solve_params = reslt.mlefit.params
+            score = affinek.score(solve_params)
+            self.estimation_kalmanresult = reslt
+
+        # once more to get final filled in values
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
                 self.params_to_array(solve_params)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
                                               mu, phi, sigma)
 
-        if latent:
+        if latent and method == "ml":
             lat_ser, jacob, yield_errs = self._solve_unobs(a_in=a_solve,
                                                            b_in=b_solve)
             var_data_wunob = var_data_vert.join(lat_ser)
@@ -431,12 +490,12 @@ class Affine(LikelihoodModel, StateSpaceModel):
             Array of coeffiencts relating factors to yields
         """
         max_mat = self.max_mat
-        b_width = self.k_ar * self.neqs + self.lat
+        b_width = self.k_ar * self.neqs + self.latent
         half = float(1)/2
         # generate predictions
-        a_pre = np.zeros((max_mat, 1))
+        a_pre = np.zeros((max_mat, 1), dtype=np.complex_)
         a_pre[0] = -delta_0
-        b_pre = np.zeros((max_mat, b_width))
+        b_pre = np.zeros((max_mat, b_width), dtype=np.complex_)
         b_pre[0] = -delta_1[:,0]
 
         n_inv = float(1) / np.add(range(max_mat), 1).reshape((max_mat, 1))
@@ -814,7 +873,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         """
         k_ar = self.k_ar
         neqs = self.neqs
-        lat = self.lat
+        latent = self.latent
         num_yields = self.num_yields
         num_obsrv = neqs * k_ar
 
@@ -823,8 +882,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
         jacob[:num_obsrv, :num_obsrv] = np.identity(neqs*k_ar)
 
         jacob[num_obsrv:, :num_obsrv] = b_obs
-        jacob[num_obsrv:, num_obsrv:num_obsrv + lat] = b_unobs
-        jacob[num_obsrv:, num_obsrv + lat:] = meas_mat
+        jacob[num_obsrv:, num_obsrv:num_obsrv + latent] = b_unobs
+        jacob[num_obsrv:, num_obsrv + latent:] = meas_mat
 
         return jacob
 
@@ -850,7 +909,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         """
         Run size checks on parameter arrays
         """
-        dim = self.neqs * self.k_ar + self.lat
+        dim = self.neqs * self.k_ar + self.latent
         assert np.shape(self.lam_0_e) == (dim, 1), "Shape of lam_0_e incorrect"
         assert np.shape(self.lam_1_e) == (dim, dim), \
                 "Shape of lam_1_e incorrect"
@@ -933,6 +992,281 @@ class Affine(LikelihoodModel, StateSpaceModel):
             return self._array_dtype
         else:
             return set_type
+    def _init_extend(self):
+        pass
+
+class AffineML(Affine, LikelihoodModel):
+    """
+    Estimation class in the case of Direct Maximimum Likelihood
+    """
+    def loglike(self, params):
+        """
+        Returns float
+        Loglikelihood used in latent factor models
+
+        Parameters
+        ----------
+        params : list
+            Values of parameters to pass into masked elements of array
+
+        Returns
+        -------
+        loglikelihood : float
+        """
+
+        latent = self.latent
+        per = self.periods
+        var_data_vert = self.var_data_vert
+        var_data_vertm1 = self.var_data_vertm1
+
+        lam_0, lam_1, delta_0, delta_1, mu, phi, \
+            sigma = self.params_to_array(params)
+
+        if self.fast_gen_pred:
+            solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                      delta_1, mu, phi, sigma)
+
+        else:
+            solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
+                                                  delta_1, mu, phi, sigma)
+
+        # first solve for unknown part of information vector
+        lat_ser, jacob, yield_errs  = self._solve_unobs(a_in=solve_a,
+                                                           b_in=solve_b)
+
+        # here is the likelihood that needs to be used
+        # use two matrices to take the difference
+        var_data_use = var_data_vert.join(lat_ser)[1:]
+        var_data_usem1 = var_data_vertm1.join(lat_ser.shift())[1:]
+
+        errors = var_data_use.values.T - mu - np.dot(phi,
+                                                     var_data_usem1.values.T)
+        sign, j_logdt = nla.slogdet(jacob)
+        j_slogdt = sign * j_logdt
+
+        sign, sigma_logdt = nla.slogdet(np.dot(sigma, sigma.T))
+        sigma_slogdt = sign * sigma_logdt
+
+        var_yields_errs = np.var(yield_errs, axis=1)
+
+        like = -(per - 1) * j_slogdt - (per - 1) * 1.0 / 2 * sigma_slogdt - \
+               1.0 / 2 * np.sum(np.dot(np.dot(errors.T, \
+               la.inv(np.dot(sigma, sigma.T))), errors)) - (per - 1) / 2.0 * \
+               np.log(np.sum(var_yields_errs)) - 1.0 / 2 * \
+               np.sum(yield_errs**2/var_yields_errs[None].T)
+
+        return like
+
+    def nloglike(self, params):
+        """
+        Return negative loglikelihood
+        Negative Loglikelihood used in latent factor models
+        """
+        like = self.loglike(params)
+        return -like
+
+    def score(self, params):
+        """
+        Return the gradient of the loglike at params
+
+        Parameters
+        ----------
+        params : list
+
+        Notes
+        -----
+        Return numerical gradient
+        """
+        loglike = self.loglike
+        return approx_fprime(params, loglike, epsilon=1e-8)
+
+    def hessian(self, params):
+        """
+        Returns numerical hessian.
+        """
+        loglike = self.loglike
+        return approx_hess(params, loglike)
+
+    def std_errs(self, params):
+        """
+        Return standard errors
+        """
+        hessian = self.hessian(params)
+        std_err = np.sqrt(-np.diag(la.inv(hessian)))
+        return std_err
+
+    def _solve_unobs(self, a_in, b_in):
+        """
+        Solves for unknown factors
+
+        Parameters
+        ----------
+        a_in : list of floats (periods)
+            List of elements for A constant in factors -> yields
+            relationship
+        b_in : array (periods, neqs * k_ar + latent)
+            Array of elements for B coefficients in factors -> yields
+            relationship
+
+        Returns
+        -------
+        var_data_c : DataFrame
+            VAR data including unobserved factors
+        jacob : array (neqs * k_ar + num_yields)**2
+            Jacobian used in likelihood
+        yield_errs : array (num_yields - latent, periods)
+            The errors for the yields estimated with error
+        """
+        yc_data = self.yc_data
+        var_data_vert = self.var_data_vert
+        yc_names = self.yc_names
+        num_yields = self.num_yields
+        names = self.names
+        k_ar = self.k_ar
+        neqs = self.neqs
+        latent = self.latent
+        no_err = self.no_err
+        err = self.err
+        no_err_mat = self.no_err_mat
+        err_mat = self.err_mat
+        noerr_cols = self.noerr_cols
+        err_cols = self.err_cols
+
+        yc_data_names = yc_names.tolist()
+        no_err_num = len(noerr_cols)
+        err_num = len(err_cols)
+
+        # need to combine the two matrices
+        # these matrices will collect the final values
+        a_all = np.zeros([num_yields, 1])
+        b_all_obs = np.zeros([num_yields, neqs * k_ar])
+        b_all_unobs = np.zeros([num_yields, latent])
+
+        a_sel = np.zeros([no_err_num, 1])
+        b_sel_obs = np.zeros([no_err_num, neqs * k_ar])
+        b_sel_unobs = np.zeros([no_err_num, latent])
+        for ix, y_pos in enumerate(no_err):
+            a_sel[ix, 0] = a_in[no_err_mat[ix] - 1]
+            b_sel_obs[ix, :] = b_in[no_err_mat[ix] - 1, :neqs * k_ar]
+            b_sel_unobs[ix, :] = b_in[no_err_mat[ix] - 1, neqs * k_ar:]
+
+            a_all[y_pos, 0] = a_in[no_err_mat[ix] - 1]
+            b_all_obs[y_pos, :] = b_in[no_err_mat[ix] - 1][:neqs * k_ar]
+            b_all_unobs[y_pos, :] = b_in[no_err_mat[ix] - 1][neqs * k_ar:]
+
+        # now solve for unknown factors using long arrays
+        unobs = np.dot(la.inv(b_sel_unobs),
+                    yc_data.filter(items=noerr_cols).values.T - a_sel - \
+                    np.dot(b_sel_obs, var_data_vert.T))
+
+        # re-initialize a_sel, b_sel_obs, and b_sel_obs
+        a_sel = np.zeros([err_num, 1])
+        b_sel_obs = np.zeros([err_num, neqs * k_ar])
+        b_sel_unobs = np.zeros([err_num, latent])
+        for ix, y_pos in enumerate(err):
+            a_all[y_pos, 0] =  a_sel[ix, 0] = a_in[err_mat[ix] - 1]
+            b_all_obs[y_pos, :] = b_sel_obs[ix, :] = \
+                    b_in[err_mat[ix] - 1][:neqs * k_ar]
+            b_all_unobs[y_pos, :] = b_sel_unobs[ix, :] = \
+                    b_in[err_mat[ix] - 1][neqs * k_ar:]
+
+        yield_errs = yc_data.filter(items=err_cols).values.T - a_sel - \
+                        np.dot(b_sel_obs, var_data_vert.T) - \
+                        np.dot(b_sel_unobs, unobs)
+
+        lat_ser = pa.DataFrame(index=var_data_vert.index)
+        for factor in range(latent):
+            lat_ser["latent_" + str(factor)] = unobs[factor, :]
+        meas_mat = np.zeros((num_yields, err_num))
+
+        for col_index, col in enumerate(err_cols):
+            row_index = yc_data_names.index(col)
+            meas_mat[row_index, col_index] = 1
+
+        jacob = self._construct_J(b_obs=b_all_obs, b_unobs=b_all_unobs,
+                                  meas_mat=meas_mat)
+
+
+        return lat_ser, jacob, yield_errs
+
+class AffineKalman(Affine, MLEModel):
+    """
+    Estimation class in the case of Kalman Filter Maximimum Likelihood
+    """
+    def _init_extend(self):
+        """
+        Extends default __init_ method with additional information needed for
+        State Space MLEModel attributes and methods
+        """
+        yc_data = self.yc_data
+        latent = self.latent
+        mats_ix = self.mats_ix
+
+        k_states = latent
+        obs_cov = np.identity(len(mats_ix))
+        selection = np.identity(latent)
+
+        latent_iter = range(latent)
+        self._names = ['unobs' + str(ix + 1) for ix in latent_iter]
+        self._latex_names = ['$X_{u' + str(ix + 1) + '}$' for ix in latent_iter]
+
+        import ipdb;ipdb.set_trace()
+        # initialization of State Space MLEModel object
+        MLEModel.__init__(self, endog=yc_data, k_states=latent,
+                          obs_cov=obs_cov, selection=selection)
+
+        self.initialize_stationary()
+
+    def update(self, params, *args, **kwargs):
+        """
+        Update unknown parameters in model
+        """
+        mats_ix = self.mats_ix
+        latent = self.latent
+        var_data_vert_T = self.var_data_vert_T
+
+        # calcualte appropriate arrays, along with affine relationships
+        # A and B
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+            self.params_to_array(params=params)
+        if self.fast_gen_pred:
+            solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
+                                                      delta_1, mu, phi, sigma)
+        else:
+            solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
+                                                  delta_1, mu, phi, sigma)
+
+        self['design'] = solve_b[mats_ix, -latent:]
+
+        # NOTE: because the observed factors are known, can we just work them
+        # into the intercept term in the observation equation
+        # NOTE: working on trying to make this robust to only latent factors
+        # pricing the model
+        if var_data_vert_T:
+            self['obs_intercept'] = solve_a[mats_ix] + np.dot(solve_b[mats_ix,
+                                                                     :-latent],
+                                                              var_data_vert_T)
+        else:
+            self['obs_intercept'] = solve_a[mats_ix]
+
+        # NOTE: in the case of only observed facotrs
+        self['transition'] = phi[-latent:, -latent:]
+        self['state_intercept'] = mu[-latent:, 0]
+        self['state_cov'] = sigma[-latent:, -latent:]
+
+    # def transform_params(self, unconstrained):
+    #     # Parameters must all be positive for likelihood evaluation.
+    #     # This transforms parameters from unconstrained parameters
+    #     # returned by the optimizer to ones that can be used in the model.
+    #     return unconstrained**2
+
+    # def untransform_params(self, constrained):
+    #     # This transforms parameters from constrained parameters used
+    #     # in the model to those used by the optimizer
+    #     return constrained**0.5
+
+    def _get_model_names(self, latex=False):
+        return self._latex_names if latex else self._names
 
 class AffineResult(LikelihoodModelResults, Affine):
     """
@@ -1040,7 +1374,7 @@ class AffineResult(LikelihoodModelResults, Affine):
             "Null values in var_data"
 
         neqs = self.model.neqs
-        lags = self.model.k_ar
+        k_ar = self.model.k_ar
         mats = self.model.mats
         # generate affine prediction coefficients
         a_rsk, b_rsk = self.model.gen_pred_coef(lam_0=self.lam_0,
@@ -1050,7 +1384,7 @@ class AffineResult(LikelihoodModelResults, Affine):
                                                 mu=self.mu, phi=self.phi,
                                                 sigma=self.sigma)
         if not adjusted:
-            var_data = transform_var1(var_data, lags)
+            var_data = transform_var1(var_data, k_ar)
         var_data_vert = var_data[var_data.columns[:-neqs]]
         yields = pa.DataFrame(index=var_data_vert.index)
         for mat in mats:
