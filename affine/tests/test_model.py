@@ -10,6 +10,7 @@ For the following in the docs:
 from unittest import TestCase
 
 import unittest
+import copy
 import numpy as np
 import numpy.ma as ma
 import pandas as pa
@@ -200,6 +201,31 @@ class TestInitialize(TestCase):
         mod_kwargs['lam_1_e'] = make_nomask([self.dim, self.dim])
         self.assertRaises(AssertionError, Affine, **mod_kwargs)
 
+    def test_input_arrays_inconsistently_typed(self):
+        """
+        Tests if check is performed whether the  input arrays are all of the
+        same type.
+        """
+        mod_kwargs = copy.copy(self.mod_kwargs)
+        # DOC: Make each of them complex
+        mod_kwargs['lam_1_e'] = mod_kwargs['lam_1_e'] + 1j
+        self.assertRaises(AssertionError, Affine, **mod_kwargs)
+        mod_kwargs = copy.copy(self.mod_kwargs)
+        mod_kwargs['delta_0_e'] = mod_kwargs['delta_0_e'] + 1j
+        self.assertRaises(AssertionError, Affine, **mod_kwargs)
+        mod_kwargs = copy.copy(self.mod_kwargs)
+        mod_kwargs['delta_1_e'] = mod_kwargs['delta_1_e'] + 1j
+        self.assertRaises(AssertionError, Affine, **mod_kwargs)
+        mod_kwargs = copy.copy(self.mod_kwargs)
+        mod_kwargs['mu_e'] = mod_kwargs['mu_e'] + 1j
+        self.assertRaises(AssertionError, Affine, **mod_kwargs)
+        mod_kwargs = copy.copy(self.mod_kwargs)
+        mod_kwargs['phi_e'] = mod_kwargs['phi_e'] + 1j
+        self.assertRaises(AssertionError, Affine, **mod_kwargs)
+        mod_kwargs = copy.copy(self.mod_kwargs)
+        mod_kwargs['sigma_e'] = mod_kwargs['sigma_e'] + 1j
+        self.assertRaises(AssertionError, Affine, **mod_kwargs)
+
 class TestEstimationSupportMethods(TestCase):
     """
     Tests for support methods related to estimating models
@@ -300,13 +326,23 @@ class TestEstimationSupportMethods(TestCase):
         fails.
         """
         arrays_no_mask = self.affine_obj.params_to_array(self.guess_params)
-        for arr in arrays_no_mask:
+        for arr in arrays_no_mask[:-1]:
             self.assertIsInstance(arr, np.ndarray)
             self.assertNotIsInstance(arr, np.ma.core.MaskedArray)
         arrays_w_mask = self.affine_obj.params_to_array(self.guess_params,
                                                         return_mask=True)
-        for arr in arrays_w_mask:
+        for arr in arrays_w_mask[:-1]:
             self.assertIsInstance(arr, np.ma.core.MaskedArray)
+
+    def test_params_to_array_inconsistent_types(self):
+        """
+        Tests if an assertion error is raised when parameters of different
+        types are passed in
+        """
+        guess_params_adj = self.guess_params
+        guess_params_adj[-1] = np.complex_(guess_params_adj[-1])
+        self.assertRaises(AssertionError, self.affine_obj.params_to_array,
+                          guess_params_adj)
 
     def test_params_to_array_zeromask(self):
         """
@@ -339,7 +375,7 @@ class TestEstimationSupportMethods(TestCase):
         fails.
         """
         params = self.affine_obj.params_to_array(self.guess_params)
-        self.affine_obj.gen_pred_coef(*params)
+        self.affine_obj.gen_pred_coef(*params[:-1])
 
     def test_opt_gen_pred_coef(self):
         """
@@ -358,7 +394,7 @@ class TestEstimationSupportMethods(TestCase):
         passes. Otherwise, the test fails.
         """
         params = self.affine_obj.params_to_array(self.guess_params)
-        py_gpc = self.affine_obj.gen_pred_coef(*params)
+        py_gpc = self.affine_obj.gen_pred_coef(*params[:-1])
         c_gpc = self.affine_obj.opt_gen_pred_coef(*params)
         for aix, array in enumerate(py_gpc):
             np.testing.assert_allclose(array, c_gpc[aix], rtol=1e-14)
@@ -371,7 +407,7 @@ class TestEstimationSupportMethods(TestCase):
         """
         guess_params = self.guess_params
         param_arrays = self.affine_obj.params_to_array(guess_params)
-        a_in, b_in = self.affine_obj.gen_pred_coef(*param_arrays)
+        a_in, b_in = self.affine_obj.gen_pred_coef(*param_arrays[:-1])
         result = self.affine_obj._solve_unobs(a_in=a_in, b_in=b_in)
 
     def test__affine_pred(self):
@@ -404,6 +440,86 @@ class TestEstimationSupportMethods(TestCase):
         self.assertEqual(no_err_mat, [2])
         self.assertEqual(err_mat, [1,3,4,5])
 
+class TestEstimationSupportMethodsComplex(TestCase):
+    """
+    Test cases where instantiation is complex
+    """
+    def setUp(self):
+
+        np.random.seed(100)
+
+        # initialize yield curve and VAR observed factors
+        yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
+                                                      nyields)))
+        var_data_test = pa.DataFrame(np.random.random((test_size, neqs)))
+        mats = list(range(1, nyields + 1))
+
+        # initialize masked arrays
+        self.dim = dim = lags * neqs + latent
+        lam_0 = make_nomask([dim, 1]) + 0j
+        lam_1 = make_nomask([dim, dim]) + 0j
+        delta_0 = make_nomask([1, 1]) + 0j
+        delta_1 = make_nomask([dim, 1]) + 0j
+        mu = make_nomask([dim, 1]) + 0j
+        phi = make_nomask([dim, dim]) + 0j
+        sigma = make_nomask([dim, dim]) + 0j
+
+        # Setup some of the elements as non-zero
+        # This sets up a fake model where only lambda_0 and lambda_1 are
+        # estimated
+        lam_0[:neqs] = ma.masked
+        lam_0[-latent:] = ma.masked
+        lam_1[:neqs, :neqs] = ma.masked
+        lam_1[-latent:, -latent:] = ma.masked
+        delta_0[:, :] = np.random.random(1)
+        delta_1[:neqs] = np.random.random((neqs, 1))
+        mu[:neqs] = np.random.random((neqs, 1))
+        phi[:neqs, :] = np.random.random((neqs, dim))
+        sigma[:, :] = np.identity(dim)
+
+        self.mod_kwargs = {
+            'yc_data': yc_data_test,
+            'var_data': var_data_test,
+            'lags': lags,
+            'neqs': neqs,
+            'mats': mats,
+            'lam_0_e': lam_0,
+            'lam_1_e': lam_1,
+            'delta_0_e': delta_0,
+            'delta_1_e': delta_1,
+            'mu_e': mu,
+            'phi_e': phi,
+            'sigma_e': sigma,
+            'latent': latent,
+            'no_err': [1]
+        }
+
+        self.guess_params = np.random.random((neqs**2 + neqs + (2 * latent),)
+                                            ).tolist()
+        self.affine_obj = Affine(**self.mod_kwargs)
+
+    def test_opt_gen_pred_coef_float(self):
+        """
+        Tests if complex values are return properly
+        """
+        # DOC: Need to make sure that the arrays are also np.complex
+        guess_params = self.guess_params
+        params = self.affine_obj.params_to_array(guess_params)
+        arrays_gpc = self.affine_obj.opt_gen_pred_coef(*params)
+        for array in arrays_gpc:
+            self.assertEqual(array.dtype, np.complex_)
+
+    def test_opt_gen_pred_coef_complex(self):
+        """
+        Tests if complex values are return properly
+        """
+        # DOC: Need to make sure that the arrays are also np.complex
+        guess_params = [np.complex_(el) for el in self.guess_params]
+        params = self.affine_obj.params_to_array(guess_params)
+        arrays_gpc = self.affine_obj.opt_gen_pred_coef(*params)
+        for array in arrays_gpc:
+            self.assertEqual(array.dtype, np.complex_)
+
 class TestEstimationMethods(TestCase):
     """
     Tests for solution methods
@@ -411,7 +527,7 @@ class TestEstimationMethods(TestCase):
     def setUp(self):
 
         ## Non-linear least squares
-        np.random.seed(100)
+        np.random.seed(101)
 
         # initialize yield curve and VAR observed factors
         yc_data_test = pa.DataFrame(np.random.random((test_size - lags,

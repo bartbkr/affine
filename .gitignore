@@ -12,6 +12,7 @@ tags_file
 #build and dist dirs
 /build/
 /dist/
+/testing/
 
 #EGG files
 *.egg-info/

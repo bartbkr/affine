@@ -19,10 +19,17 @@ from scipy import optimize
 from util import retry, transform_var1
 
 try:
-    from . import _C_extensions
+    from . import Cython_extensions
     avail_fast_gen_pred = True
 except:
     avail_fast_gen_pred = False
+
+opt_gen_pred_coef_funcs = {
+    np.float32 : Cython_extensions.sgen_pred_coef,
+    np.float64 : Cython_extensions.dgen_pred_coef,
+    np.complex64 : Cython_extensions.cgen_pred_coef,
+    np.complex128 : Cython_extensions.zgen_pred_coef
+}
 
 #############################################
 # Create affine class system                #
@@ -122,7 +129,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
             # gen position list for processing list input to solver
             self.noerr_cols, self.err_cols = self._gen_col_names()
 
-        # whether to use C extension
+        # DOC: Whether to use Cython extension
         if avail_fast_gen_pred and use_C_extension:
             self.fast_gen_pred = True
         else:
@@ -156,8 +163,10 @@ class Affine(LikelihoodModel, StateSpaceModel):
         self.guess_length = self._gen_guess_length()
         assert self.guess_length > 0, "guess_length must be at least 1"
 
-        # final size checks
+        # DOC: Shape checks
         self._size_checks()
+        # DOC: Type checks
+        self._type_checks()
 
         super(Affine, self).__init__(var_data_vert)
 
@@ -289,7 +298,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
             solve_params = self.params
             score = self.score(solve_params)
 
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, dtype = \
                 self.params_to_array(solve_params)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
@@ -299,28 +308,6 @@ class Affine(LikelihoodModel, StateSpaceModel):
             lat_ser, jacob, yield_errs = self._solve_unobs(a_in=a_solve,
                                                            b_in=b_solve)
             var_data_wunob = var_data_vert.join(lat_ser)
-
-        # attach solved parameter arrays as attributes of object
-        # self.lam_0_solve = lam_0
-        # self.lam_1_solve = lam_1
-        # self.delta_0_solve = delta_0
-        # self.delta_1_solve = delta_1
-        # self.mu_solve = mu
-        # self.phi_solve = phi
-        # self.sigma_solve = sigma
-        # self.solve_params = solve_params
-
-        # if latent:
-        #     return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-        #            b_solve, solve_params, var_data_wunob
-
-        # elif method == "nls":
-        #     return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, a_solve, \
-        #            b_solve, solv_cov
-
-        # elif method == "ml":
-        #         return lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, \
-        #                a_solve, b_solve, solve_params
 
         return AffineResult(self, solve_params)
 
@@ -374,12 +361,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
         var_data_vert = self.var_data_vert
         var_data_vertm1 = self.var_data_vertm1
 
-        lam_0, lam_1, delta_0, delta_1, mu, phi, \
-            sigma = self.params_to_array(params)
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, dtype = \
+            self.params_to_array(params)
 
         if self.fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
-                                                      delta_1, mu, phi, sigma)
+                                                      delta_1, mu, phi, sigma,
+                                                      dtype)
 
         else:
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
@@ -458,17 +446,16 @@ class Affine(LikelihoodModel, StateSpaceModel):
         for mat in range(max_mat-1):
             a_pre[mat + 1] = (a_pre[mat] + np.dot(b_pre[mat].T, \
                             (mu - np.dot(sigma, lam_0))) + \
-                            (half)*np.dot(np.dot(np.dot(b_pre[mat].T, sigma),
+                            (half) * np.dot(np.dot(np.dot(b_pre[mat].T, sigma),
                             sigma.T), b_pre[mat]) - delta_0)[0][0]
-            a_solve[mat + 1] = -a_pre[mat + 1] * n_inv[mat + 1]
+            # probably shouldn't take slice every time
             b_pre[mat + 1] = np.dot((phi - np.dot(sigma, lam_1)).T, \
                                      b_pre[mat]) - delta_1[:, 0]
-            b_solve[mat + 1] = -b_pre[mat + 1] * n_inv[mat + 1]
 
-        return a_solve, b_solve
+        return np.multiply(-a_pre, n_inv), np.multiply(-b_pre, n_inv)
 
-    def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi,
-                          sigma):
+    def opt_gen_pred_coef(self, lam_0, lam_1, delta_0, delta_1, mu, phi, sigma,
+                          dtype):
         """
         Returns tuple of arrays
         Generates prediction coefficient vectors A and B in fast
@@ -483,6 +470,7 @@ class Affine(LikelihoodModel, StateSpaceModel):
         mu : numpy array
         phi : numpy array
         sigma : numpy array
+        dtype : numpy datatype
 
         Returns
         -------
@@ -493,8 +481,8 @@ class Affine(LikelihoodModel, StateSpaceModel):
         """
         max_mat = self.max_mat
 
-        return _C_extensions.gen_pred_coef(lam_0, lam_1, delta_0, delta_1, mu,
-                                           phi, sigma, max_mat)
+        return opt_gen_pred_coef_funcs[dtype](max_mat, lam_0, lam_1, delta_0,
+                                              delta_1, mu, phi, sigma)
 
     def params_to_array(self, params, return_mask=False):
         """
@@ -531,12 +519,20 @@ class Affine(LikelihoodModel, StateSpaceModel):
 
         arg_sep = self._gen_arg_sep([ma.count_masked(struct) for struct in \
                                      all_arrays])
+        # DOC: Get first element of parameters
+        first_el = params[0]
+        # DOC: Make sure that the type of every parameter element passed in is
+        # consistent
+        assert all(isinstance(param, type(first_el)) for param in params), \
+            "Guess parameters are not consistently typed"
 
+        np_dtype = self._choose_numpy_type(first_el)
         for pos, struct in enumerate(all_arrays):
             struct[ma.getmask(struct)] = params[arg_sep[pos]:arg_sep[pos + 1]]
             if not return_mask:
-                all_arrays[pos] = np.ascontiguousarray(struct,
-                                                       dtype=np.float64)
+                all_arrays[pos] = np.asfortranarray(struct, dtype=np_dtype)
+
+        all_arrays.append(np_dtype)
 
         return tuple(all_arrays)
 
@@ -616,11 +612,12 @@ class Affine(LikelihoodModel, StateSpaceModel):
         obsdim = self.neqs * self.k_ar
         dim = obsdim + lat
 
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, dtype = \
             self.params_to_array(params=params)
 
         solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
-                                                  delta_1, mu, phi, sigma)
+                                                  delta_1, mu, phi, sigma,
+                                                  dtype)
 
         F = phi[-lat:, -lat:]
         Q = sigma[-lat:, -lat:]
@@ -748,12 +745,13 @@ class Affine(LikelihoodModel, StateSpaceModel):
         mats = self.mats
         yc_data = self.yc_data
 
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma \
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, dtype \
                 = self.params_to_array(params)
 
         if self.fast_gen_pred:
             solve_a, solve_b = self.opt_gen_pred_coef(lam_0, lam_1, delta_0,
-                                                      delta_1, mu, phi, sigma)
+                                                      delta_1, mu, phi, sigma,
+                                                      dtype)
 
         else:
             solve_a, solve_b = self.gen_pred_coef(lam_0, lam_1, delta_0,
@@ -865,6 +863,37 @@ class Affine(LikelihoodModel, StateSpaceModel):
         assert np.shape(self.sigma_e) == (dim, dim), \
                 "Shape of sig_e incorrect"
 
+    def _type_checks(self):
+        """
+        Ensure that the input arrays are consistently typed
+        """
+        array_dtype = self.lam_0_e.dtype.type
+        # DOC: Ensure that each of the types are consistent
+        assert self.lam_1_e.dtype.type == array_dtype, \
+            "Type of lam_0_e is " + str(array_dtype) + \
+            "\n Type of lam_1_e is " + str(self.lam_1_e.dtype.type)
+        assert self.delta_0_e.dtype.type == array_dtype, \
+            "Type of lam_0_e is " + str(array_dtype) + \
+            "\n Type of delta_0_e is " + str(self.delta_0_e.dtype.type)
+        assert self.delta_0_e.dtype.type == array_dtype, \
+            "Type of lam_0_e is " + str(array_dtype) + \
+            "\n Type of delta_0_e is " + str(self.delta_0_e.dtype.type)
+        assert self.delta_1_e.dtype.type == array_dtype, \
+            "Type of lam_0_e is " + str(array_dtype) + \
+            "\n Type of delta_1_e is " + str(self.delta_1_e.dtype.type)
+        assert self.mu_e.dtype.type == array_dtype, \
+            "Type of lam_0_e is " + str(array_dtype) + \
+            "\n Type of mu_e is " + str(self.mu_e.dtype.type)
+        assert self.phi_e.dtype.type == array_dtype, \
+            "Type of lam_0_e is " + str(array_dtype) + \
+            "\n Type of phi_e is " + str(self.phi_e.dtype.type)
+        assert self.sigma_e.dtype.type == array_dtype, \
+            "Type of lam_0_e is " + str(array_dtype) + \
+            "\n Type of sigma_e is " + str(self.sigma_e.dtype.type)
+        # DOC: Retain this setting in the object for checking later
+        self._array_dtype = array_dtype
+        self._array_dtype_is_complex = np.iscomplexobj(self.lam_0_e)
+
     def _gen_bounds(self, lowerbounds, upperbounds):
         if lowerbounds or upperbounds:
             bounds = []
@@ -882,6 +911,29 @@ class Affine(LikelihoodModel, StateSpaceModel):
         else:
             return None
 
+    def _choose_numpy_type(self, el_test):
+        """
+        Ensures that returned type is a valid numpy type
+        """
+        arrays_complex = self._array_dtype_is_complex
+        el_type = type(el_test)
+        # DOC: Try else statement for python 2/3 compat (long type doesn't
+        # exist in python 3)
+        try:
+            if el_type in [int, long, float]:
+                set_type = np.float64
+            else:
+                set_type = el_type
+        except NameError:
+            if el_type in [int, float]:
+                set_type = np.float64
+            else:
+                set_type = el_type
+        if arrays_complex or np.iscomplexobj(el_test):
+            return self._array_dtype
+        else:
+            return set_type
+
 class AffineResult(LikelihoodModelResults, Affine):
     """
     Results class for estimated affine model
@@ -890,7 +942,7 @@ class AffineResult(LikelihoodModelResults, Affine):
         """
         """
         super(AffineResult, self).__init__(model, params)
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, dtype = \
             self.model.params_to_array(params)
 
         self.lam_0 = lam_0
