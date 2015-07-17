@@ -299,7 +299,7 @@ class TestEstimationSupportMethods(TestCase):
         calculation succeeds without error, then the test passes. Otherwise,
         the test fails.
         """
-        self.affine_obj.score(self.guess_params)
+        self.affineml_obj.score(self.guess_params)
 
     def test_hessian(self):
         """
@@ -307,7 +307,7 @@ class TestEstimationSupportMethods(TestCase):
         calculation succeeds without error, then the test passes. Otherwise,
         the test fails.
         """
-        self.affine_obj.hessian(self.guess_params)
+        self.affineml_obj.hessian(self.guess_params)
 
     def test_std_errs(self):
         """
@@ -418,7 +418,7 @@ class TestEstimationSupportMethods(TestCase):
         and is of the expected shape, the test passes. Otherwise, the test
         fails.
         """
-        lat = self.affine_obj.lat
+        lat = self.affine_obj.latent
         yobs = self.affine_obj.yobs
         mats = self.affine_obj.mats
         var_data_vert_tpose = self.affine_obj.var_data_vert.T
@@ -450,13 +450,13 @@ class TestEstimationSupportMethodsComplex(TestCase):
         np.random.seed(100)
 
         # initialize yield curve and VAR observed factors
-        yc_data_test = pa.DataFrame(np.random.random((test_size - lags,
+        yc_data_test = pa.DataFrame(np.random.random((test_size - k_ar,
                                                       nyields)))
         var_data_test = pa.DataFrame(np.random.random((test_size, neqs)))
         mats = list(range(1, nyields + 1))
 
         # initialize masked arrays
-        self.dim = dim = lags * neqs + latent
+        self.dim = dim = k_ar * neqs + latent
         lam_0 = make_nomask([dim, 1]) + 0j
         lam_1 = make_nomask([dim, dim]) + 0j
         delta_0 = make_nomask([1, 1]) + 0j
@@ -481,7 +481,7 @@ class TestEstimationSupportMethodsComplex(TestCase):
         self.mod_kwargs = {
             'yc_data': yc_data_test,
             'var_data': var_data_test,
-            'lags': lags,
+            'k_ar': k_ar,
             'neqs': neqs,
             'mats': mats,
             'lam_0_e': lam_0,

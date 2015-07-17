@@ -357,7 +357,7 @@ class Affine(object):
             self.estimation_kalmanresult = reslt
 
         # once more to get final filled in values
-        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma = \
+        lam_0, lam_1, delta_0, delta_1, mu, phi, sigma, dtype = \
                 self.params_to_array(solve_params)
 
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
@@ -415,7 +415,7 @@ class Affine(object):
         loglikelihood : float
         """
 
-        lat = self.lat
+        lat = self.latent
         per = self.periods
         var_data_vert = self.var_data_vert
         var_data_vertm1 = self.var_data_vertm1
@@ -698,100 +698,6 @@ class Affine(object):
             loglike += penalty * np.sum((paramsorig-params)**2)
 
         return loglike
-
-    def _solve_unobs(self, a_in, b_in):
-        """
-        Solves for unknown factors
-
-        Parameters
-        ----------
-        a_in : list of floats (periods)
-            List of elements for A constant in factors -> yields
-            relationship
-        b_in : array (periods, neqs * k_ar + lat)
-            Array of elements for B coefficients in factors -> yields
-            relationship
-
-        Returns
-        -------
-        var_data_c : DataFrame
-            VAR data including unobserved factors
-        jacob : array (neqs * k_ar + num_yields)**2
-            Jacobian used in likelihood
-        yield_errs : array (num_yields - lat, periods)
-            The errors for the yields estimated with error
-        """
-        yc_data = self.yc_data
-        var_data_vert = self.var_data_vert
-        yc_names = self.yc_names
-        num_yields = self.num_yields
-        names = self.names
-        k_ar = self.k_ar
-        neqs = self.neqs
-        lat = self.lat
-        no_err = self.no_err
-        err = self.err
-        no_err_mat = self.no_err_mat
-        err_mat = self.err_mat
-        noerr_cols = self.noerr_cols
-        err_cols = self.err_cols
-
-        yc_data_names = yc_names.tolist()
-        no_err_num = len(noerr_cols)
-        err_num = len(err_cols)
-
-        # need to combine the two matrices
-        # these matrices will collect the final values
-        a_all = np.zeros([num_yields, 1])
-        b_all_obs = np.zeros([num_yields, neqs * k_ar])
-        b_all_unobs = np.zeros([num_yields, lat])
-
-        a_sel = np.zeros([no_err_num, 1])
-        b_sel_obs = np.zeros([no_err_num, neqs * k_ar])
-        b_sel_unobs = np.zeros([no_err_num, lat])
-        for ix, y_pos in enumerate(no_err):
-            a_sel[ix, 0] = a_in[no_err_mat[ix] - 1]
-            b_sel_obs[ix, :] = b_in[no_err_mat[ix] - 1, :neqs * k_ar]
-            b_sel_unobs[ix, :] = b_in[no_err_mat[ix] - 1, neqs * k_ar:]
-
-            a_all[y_pos, 0] = a_in[no_err_mat[ix] - 1]
-            b_all_obs[y_pos, :] = b_in[no_err_mat[ix] - 1][:neqs * k_ar]
-            b_all_unobs[y_pos, :] = b_in[no_err_mat[ix] - 1][neqs * k_ar:]
-
-        # now solve for unknown factors using long arrays
-        unobs = np.dot(la.inv(b_sel_unobs),
-                    yc_data.filter(items=noerr_cols).values.T - a_sel - \
-                    np.dot(b_sel_obs, var_data_vert.T))
-
-        # re-initialize a_sel, b_sel_obs, and b_sel_obs
-        a_sel = np.zeros([err_num, 1])
-        b_sel_obs = np.zeros([err_num, neqs * k_ar])
-        b_sel_unobs = np.zeros([err_num, lat])
-        for ix, y_pos in enumerate(err):
-            a_all[y_pos, 0] =  a_sel[ix, 0] = a_in[err_mat[ix] - 1]
-            b_all_obs[y_pos, :] = b_sel_obs[ix, :] = \
-                    b_in[err_mat[ix] - 1][:neqs * k_ar]
-            b_all_unobs[y_pos, :] = b_sel_unobs[ix, :] = \
-                    b_in[err_mat[ix] - 1][neqs * k_ar:]
-
-        yield_errs = yc_data.filter(items=err_cols).values.T - a_sel - \
-                        np.dot(b_sel_obs, var_data_vert.T) - \
-                        np.dot(b_sel_unobs, unobs)
-
-        lat_ser = pa.DataFrame(index=var_data_vert.index)
-        for factor in range(lat):
-            lat_ser["latent_" + str(factor)] = unobs[factor, :]
-        meas_mat = np.zeros((num_yields, err_num))
-
-        for col_index, col in enumerate(err_cols):
-            row_index = yc_data_names.index(col)
-            meas_mat[row_index, col_index] = 1
-
-        jacob = self._construct_J(b_obs=b_all_obs, b_unobs=b_all_unobs,
-                                  meas_mat=meas_mat)
-
-
-        return lat_ser, jacob, yield_errs
 
     def _affine_pred(self, data, *params):
         """
