@@ -315,7 +315,7 @@ class TestEstimationSupportMethods(TestCase):
         calculation succeeds, then the test passes. Otherwise, the test
         fails.
         """
-        self.affine_obj.std_errs(self.guess_params)
+        self.affineml_obj.std_errs(self.guess_params)
 
     def test_params_to_array(self):
         """
@@ -376,7 +376,7 @@ class TestEstimationSupportMethods(TestCase):
         fails.
         """
         params = self.affine_obj.params_to_array(self.guess_params)
-        self.affine_obj.gen_pred_coef(*params[:-1])
+        self.affine_obj.gen_pred_coef(*params)
 
     def test_opt_gen_pred_coef(self):
         """
@@ -395,7 +395,7 @@ class TestEstimationSupportMethods(TestCase):
         passes. Otherwise, the test fails.
         """
         params = self.affine_obj.params_to_array(self.guess_params)
-        py_gpc = self.affine_obj.gen_pred_coef(*params[:-1])
+        py_gpc = self.affine_obj.gen_pred_coef(*params)
         c_gpc = self.affine_obj.opt_gen_pred_coef(*params)
         for aix, array in enumerate(py_gpc):
             np.testing.assert_allclose(array, c_gpc[aix], rtol=1e-14)
@@ -408,8 +408,9 @@ class TestEstimationSupportMethods(TestCase):
         """
         guess_params = self.guess_params
         param_arrays = self.affine_obj.params_to_array(guess_params)
-        a_in, b_in = self.affine_obj.gen_pred_coef(*param_arrays[:-1])
-        result = self.affine_obj._solve_unobs(a_in=a_in, b_in=b_in)
+        a_in, b_in = self.affine_obj.gen_pred_coef(*param_arrays)
+        result = self.affineml_obj._solve_unobs(a_in=a_in, b_in=b_in,
+                                                dtype=param_arrays[-1])
 
     def test__affine_pred(self):
         """
