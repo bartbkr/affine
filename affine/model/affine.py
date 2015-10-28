@@ -353,8 +353,6 @@ class Affine(object):
         a_solve, b_solve = self.gen_pred_coef(lam_0, lam_1, delta_0, delta_1,
                                               mu, phi, sigma, dtype)
         if method == "ml":
-            if np.iscomplexobj(a_solve) or np.iscomplexobj(b_solve):
-                import ipdb;ipdb.set_trace()
             lat_ser, jacob, yield_errs = affineml._solve_unobs(a_in=a_solve,
                                                                b_in=b_solve,
                                                                dtype=dtype)
@@ -909,8 +907,6 @@ class AffineML(Affine, LikelihoodModel):
         a_all = np.zeros([num_yields, 1], dtype=dtype)
         b_all_obs = np.zeros([num_yields, neqs * k_ar], dtype=dtype)
         b_all_unobs = np.zeros([num_yields, latent], dtype=dtype)
-        if np.iscomplexobj(a_in) or np.iscomplexobj(b_in):
-            import ipdb;ipdb.set_trace()
 
         # NOTE: This needs a refactor
         a_sel = np.zeros([no_err_num, 1], dtype=dtype)
@@ -1100,10 +1096,10 @@ class AffineResult(LikelihoodModelResults, Affine):
         yc_rn_pred = pa.DataFrame(index=yc_data.index)
 
         a_rn, b_rn = self.model.gen_pred_coef(lam_0=lam_0_nr, lam_1=lam_1_nr,
-                                        delta_0=self.delta_0,
-                                        delta_1=self.delta_1, mu=self.mu,
-                                        phi=self.phi, sigma=self.sigma,
-                                        dtype=self.dtype)
+                                              delta_0=self.delta_0,
+                                              delta_1=self.delta_1, mu=self.mu,
+                                              phi=self.phi, sigma=self.sigma,
+                                              dtype=self.dtype)
 
         for mat in mats:
             yc_rn_pred[str(mat) + '_risk_neutral'] = a_rn[mat - 1] + \
